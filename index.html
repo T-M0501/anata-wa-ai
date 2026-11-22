@@ -239,6 +239,10 @@ var AIGame = (function () {
   function shuffle(rng, a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function range(n) { var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
   function T(s, kanji) { return String(s).replace(/\{([^|{}]*)\|([^|{}]*)\}/g, function (m, k, j) { return kanji ? j : k; }); }
+  // 文字のレベル：Lv1〜2 は かな、Lv3〜 は ふつうの日本語（会話をつくるあいだ KJ に入る）
+  var KJ = true;
+  function J(k, j) { return KJ ? j : k; }
+  function JT(s) { return T(s, KJ); }
   function V(a, t, c) { return { a: a, t: t, c: c }; }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function hm(m) { return Math.floor(m / 60) + ':' + pad2(m % 60); }
@@ -356,6 +360,10 @@ var AIGame = (function () {
   var SCENES = {};
   var KANA_USERS = USERS.filter(function (u) { return u.kana; }).map(function (u) { return u.id; });
 
+  // ※ ここから先の場面は Lv1〜 から出ます。
+  //   J(かな, ふつう) … レベルに合わせて どちらかを使う（Lv1〜2 は かな、Lv3〜 は ふつうの日本語）
+  //   '{かな|ふつう}' … データや指示書の中で使う同じしくみ
+
   // =====================================================================
   // 1. いつもの おやつ（しゃしん：おやつの え）
   // =====================================================================
@@ -369,50 +377,52 @@ var AIGame = (function () {
     return keys[rank];
   }
   SCENES.snack = {
-    id: 'snack', kind: 'photo', kana: true, minLv: 1, title: '{いつもの おやつ|いつもの おやつ}', users: ['yuto', 'mimi', 'haru'], noLate: true,
+    id: 'snack', kind: 'photo', kana: true, minLv: 1, title: '{いつもの おやつ|いつものおやつ}', users: ['yuto', 'mimi', 'haru'], noLate: true,
     slots: [{ id: 'which', t: '{どの おやつ？|どのおやつ？}' }, { id: 'care', t: '{きを つける こと|気をつけること}' }],
     space: function () { return facts({ word: 4, sick: 2, night: 2 }); },
     lib: [R('which', 1, [E('word', 1)], 'yday'), R('which', 1, [E('word', 2)], 'sib'), R('which', 2, [E('word', 3)], 'second'), R('care', 3, [E('night', 1)], 'after'), R('care', 2, [E('sick', 1)], 'pudding')],
     defaults: [D('which', [E('word', 0)], 'most'), D('care', [E('sick', 0), E('night', 0)], 'asis')],
     phr: {
-      word: [sayK('いつもの'), sayK('きのうと おなじ'), sayK('おにいちゃん（おねえちゃん）と おなじ'), sayK('2ばんめに すきなの')],
-      sick: [V('「おなか いたい」が ない', '「おなか いたい」が なくて', '「おなか いたい」が なければ'), V('「おなか いたい」と {いった|言った}', '「おなか いたい」と {いって|言って}', '「おなか いたい」と {いったら|言ったら}')],
-      night: [V('{ゆうがた 5じより まえの|夕方5時より前の}', '{ゆうがた 5じより まえで|夕方5時より前で}', '{ゆうがた 5じより まえなら|夕方5時より前なら}'), V('{ゆうがた 5じ いこうの|夕方5時以こうの}', '{ゆうがた 5じ いこうで|夕方5時以こうで}', '{ゆうがた 5じ いこうなら|夕方5時以こうなら}')]
+      word: [sayK('いつもの'), sayK('{きのうと おなじ|昨日と同じ}'), sayK('{おにいちゃん（おねえちゃん）と おなじ|お兄ちゃん（お姉ちゃん）と同じ}'), sayK('{2ばんめに すきな|2番目に好きな}')],
+      sick: [V('{「おなか いたい」が ない|「お腹痛い」がない}', '{「おなか いたい」が なくて|「お腹痛い」がなくて}', '{「おなか いたい」が なければ|「お腹痛い」がなければ}'), V('{「おなか いたい」と いった|「お腹痛い」と言った}', '{「おなか いたい」と いって|「お腹痛い」と言って}', '{「おなか いたい」と いったら|「お腹痛い」と言ったら}')],
+      night: [V('{ゆうがた 5じより まえの|夕方5時より前の}', '{ゆうがた 5じより まえで|夕方5時より前で}', '{ゆうがた 5じより まえなら|夕方5時より前なら}'), V('{ゆうがた 5じ いこうの|夕方5時以降の}', '{ゆうがた 5じ いこうで|夕方5時以降で}', '{ゆうがた 5じ いこうなら|夕方5時以降なら}')]
     },
     outs: {
-      most: '{この 1しゅうかんで いちばん おおく たべた おやつ|この1週間で いちばん多く食べた おやつ}', yday: '{きのう たべた おやつ|きのう食べた おやつ}', sib: '{その ひとが いちばん おおく たべた おやつ|その人が いちばん多く食べた おやつ}', second: '{2ばんめに おおく たべた おやつ|2番目に多く食べた おやつ}',
-      asis: '{そのまま わたす|そのまま わたす}', pudding: '{おなかが いたい ときは プリンに する|おなかが いたい時は プリンにする}', after: '{「ごはんの あとでね」と こたえる|「ごはんの あとでね」と答える}'
+      most: '{この 1しゅうかんで いちばん おおく たべた おやつ|この1週間でいちばん多く食べたおやつ}', yday: '{きのう たべた おやつ|昨日食べたおやつ}', sib: '{その ひとが いちばん おおく たべた おやつ|その人がいちばん多く食べたおやつ}', second: '{2ばんめに おおく たべた おやつ|2番目に多く食べたおやつ}',
+      asis: '{そのまま わたす|そのまま渡す}', pudding: '{おなかが いたい ときは プリンに する|お腹が痛い時はプリンにする}', after: '{「ごはんの あとでね」と こたえる|「ごはんの後でね」と答える}'
     },
     session: function (rng) {
       for (;;) {
         var me = [], sib = [];
         for (var i = 0; i < 7; i++) { me.push(pick(rng, SWEETS.slice(0, 6))); sib.push(pick(rng, SWEETS)); }
-        var S = { me: me, sib: sib, today: weekdayToday(rng), sibName: rng() < 0.5 ? 'おねえちゃん' : 'おにいちゃん' };
+        var S = { me: me, sib: sib, today: weekdayToday(rng), sibName: rng() < 0.5 ? J('おねえちゃん', 'お姉ちゃん') : J('おにいちゃん', 'お兄ちゃん') };
         S.most = mostOf(me, 0); S.second = mostOf(me, 1); S.sibMost = mostOf(sib, 0); S.yday = me[6];
         var set = [S.most, S.second, S.sibMost, S.yday, 'pudding'];
         if (set.indexOf(null) < 0 && new Set(set).size === 5) return S;
       }
     },
     realize: function (it, S, vals, prev, rng) {
-      var w = ['いつもの', 'きのうと おなじ', S.sibName + 'と おなじ', '2ばんめに すきな'][it.word];
-      return { msg: (it.sick ? 'おなか いたいけど… ' : '') + w + ' ' + pick(rng, ['おやつ ちょうだい', 'おやつ たべたい', 'おやつ ある？', 'おやつ だして〜']), time: it.night ? ri(rng, 17, 18) * 60 + ri(rng, 0, 50) : ri(rng, 14, 16) * 60 + ri(rng, 0, 50) };
+      var m = KJ
+        ? (it.sick ? 'お腹痛いけど…' : '') + ['いつもの', '昨日と同じ', S.sibName + 'と同じ', '2番目に好きな'][it.word] + pick(rng, ['おやつが食べたい', 'おやつを出して', 'おやつ、何かある？', 'おやつ食べていい？'])
+        : (it.sick ? 'おなか いたいけど… ' : '') + ['いつもの', 'きのうと おなじ', S.sibName + 'と おなじ', '2ばんめに すきな'][it.word] + ' ' + pick(rng, ['おやつ ちょうだい', 'おやつ たべたい', 'おやつ ある？', 'おやつ だして〜']);
+      return { msg: m, time: it.night ? ri(rng, 17, 18) * 60 + ri(rng, 0, 50) : ri(rng, 14, 16) * 60 + ri(rng, 0, 50) };
     },
     content: function (vals, it, S) {
-      if (vals.care === 'after') return { key: 'after', text: 'ごはんの あとで たべようね。' };
+      if (vals.care === 'after') return { key: 'after', text: J('ごはんの あとで たべようね。', 'ごはんの後で食べましょうね。') };
       var id = vals.care === 'pudding' ? 'pudding' : { most: S.most, yday: S.yday, sib: S.sibMost, second: S.second }[vals.which];
-      return { key: id, text: SWEET_NAME[id] + 'を どうぞ。', pic: id };
+      return { key: id, text: SWEET_NAME[id] + J('を どうぞ。', 'をどうぞ。今日のおやつです。'), pic: id };
     },
-    context: function (S) { return { info: [['きょう', dk(S.today)]], grid: { cap: 'この 1しゅうかんの おやつ（ひだりが ふるい ひ・みぎが きのう）', rows: [['じぶん', S.me], [S.sibName, S.sib]] } }; }
+    context: function (S) { return { info: [[J('きょう', '今日'), J(dk(S.today), dj(S.today))]], grid: { cap: J('この 1しゅうかんの おやつ（ひだりが ふるい ひ・みぎが きのう）', 'この1週間のおやつ（左が古い日・右が昨日）'), rows: [[J('じぶん', '自分'), S.me], [S.sibName, S.sib]] } }; }
   };
 
   // =====================================================================
   // 2. 「あれ とって！」（かいわ）
   // =====================================================================
-  var ITEMS = ['ボール', 'えほん', 'クレヨン', 'ぼうし', 'すいとう', 'つみき', 'めがね', 'なわとび'];
+  var ITEMS = ['ボール', '{えほん|絵本}', 'クレヨン', '{ぼうし|帽子}', '{すいとう|水筒}', '{つみき|積み木}', 'メガネ', 'なわとび'];
   var FOODS = ['バナナ', 'クッキー', 'りんご'];
-  var PLACES = ['げんかん', 'リビングの たな', 'こどもべやの はこ', 'つくえの うえ', 'ベッドの した'];
+  var PLACES = ['{げんかん|玄関}', '{リビングの たな|リビングの棚}', '{こどもべやの はこ|子ども部屋の箱}', '{つくえの うえ|机の上}', '{ベッドの した|ベッドの下}'];
   SCENES.are = {
-    id: 'are', kind: 'text', kana: true, minLv: 1, title: '{「あれ とって！」|「あれ とって！」}', users: ['yuto', 'mimi', 'haru', 'kazuko', 'masao'], noLate: true,
+    id: 'are', kind: 'text', kana: true, minLv: 1, title: '「あれ{ とって！|取って！}」', users: ['yuto', 'mimi', 'haru', 'kazuko', 'masao'], noLate: true,
     slots: [{ id: 'what', t: '{なにの こと？|何のこと？}' }, { id: 'do', t: '{なにを する？|何をする？}' }],
     space: function () { return facts({ word: 4, follow: 2, foodLast: 2, ask: 2, tie: 2 }).filter(function (f) { return !(f.follow && f.word) && !(f.tie && (f.word || f.follow || f.foodLast)); }); },
     lib: [
@@ -422,55 +432,58 @@ var AIGame = (function () {
     ],
     defaults: [D('what', [E('word', 0), E('follow', 0), E('foodLast', 0), E('tie', 0)], 'last'), D('do', [E('ask', 0)], 'bring')],
     phr: {
-      word: [sayK('あれ'), sayK('いつもの'), sayK('きのうの'), sayK('ママが いってた')],
+      word: [sayK('あれ'), sayK('いつもの'), sayK('{きのうの|昨日の}'), sayK('{ママが いってた|ママが言ってた}')],
       follow: [V('「さっきの」では ない', '「さっきの」では なくて', '「さっきの」で なければ'), sayK('さっきの')],
-      foodLast: [V('{さいごに でた ものが たべもの では ない|最後に出た ものが 食べ物ではない}', '{さいごに でた ものが たべもの では なくて|最後に出た ものが 食べ物ではなくて}', '{さいごが たべもの で なければ|最後が 食べ物で なければ}'), V('{さいごに でた ものが たべもの|最後に出た ものが 食べ物}', '{さいごに でた ものが たべもので|最後に出た ものが 食べ物で}', '{さいごが たべものなら|最後が 食べ物なら}')],
-      tie: [V('{さいごの はなしに でた ものが 1つ|最後の話に出たものが1つ}', '{さいごに でた ものが 1つで|最後に出たものが1つで}', '{さいごに でた ものが 1つなら|最後に出たものが1つなら}'), V('{さいごの はなしに ものが 2つ でた|最後の話にものが2つ出た}', '{さいごの はなしに ものが 2つ でて|最後の話にものが2つ出て}', '{ものが 2つ でたなら|ものが2つ出たなら}')],
-      ask: [V('「とって」「もってきて」と {いった|言った}', '「とって」「もってきて」と {いって|言って}', '「とって」「もってきて」と {いったら|言ったら}'), V('「どこ」と きいた', '「どこ」と きいて', '「どこ」と きいたら')]
+      foodLast: [V('{さいごに でた ものが たべもの では ない|最後に出た物が食べ物ではない}', '{さいごに でた ものが たべもの では なくて|最後に出た物が食べ物ではなくて}', '{さいごが たべもの で なければ|最後が食べ物でなければ}'), V('{さいごに でた ものが たべもの|最後に出た物が食べ物}', '{さいごに でた ものが たべもので|最後に出た物が食べ物で}', '{さいごが たべものなら|最後が食べ物なら}')],
+      tie: [V('{さいごの はなしに でた ものが 1つ|最後の話に出た物が1つ}', '{さいごに でた ものが 1つで|最後に出た物が1つで}', '{さいごに でた ものが 1つなら|最後に出た物が1つなら}'), V('{さいごの はなしに ものが 2つ でた|最後の話に物が2つ出た}', '{さいごの はなしに ものが 2つ でて|最後の話に物が2つ出て}', '{ものが 2つ でたなら|物が2つ出たなら}')],
+      ask: [V('{「とって」「もってきて」と いった|「取って」「持ってきて」と言われた}', '{「とって」と いって|「取って」と言われて}', '{「とって」と いったら|「取って」と言われたら}'), V('{「どこ」と きいた|「どこ」と聞かれた}', '{「どこ」と きいて|「どこ」と聞かれて}', '{「どこ」と きいたら|「どこ」と聞かれたら}')]
     },
     outs: {
-      last: '{かいわで いちばん さいごに でた もの（アイの へんじは のぞく）|会話で いちばん最後に出た もの（アイの返事はのぞく）}', before: '{その ひとつ まえに でた もの（たべものは とれないから）|その ひとつ前に出た もの（食べ物は とれないから）}', fav: '{プロフィールの「おきにいり」|プロフィールの「お気に入り」}', yday: '{きのうの かいわに でた もの|きのうの会話に出た もの}', mama: '{ママが さいごに いった もの|ママが 最後に言った もの}', prevQ: '{まえの しつもんで こたえた もの|前の質問で 答えた もの}',
-      ask: '{ききかえす（「Aと B、どっち？」と 1つだけ きく）|聞き返す（「AとB、どっち？」と1つだけ聞く）}',
-      bring: '{もってくる|持ってくる}', where: '{おいてある ばしょを おしえる|おいてある場所を 教える}'
+      ask: '{ききかえす（「Aと B、どっち？」と 1つだけ きく）|聞き返す（「AとB、どちら？」と1つだけ聞く）}',
+      last: '{かいわで いちばん さいごに でた もの（アイの へんじは のぞく）|会話でいちばん最後に出た物（アイの返事は除く）}', before: '{その ひとつ まえに でた もの（たべものは とれないから）|その1つ前に出た物（食べ物は取れないため）}', fav: '{プロフィールの「おきにいり」|プロフィールの「お気に入り」}', yday: '{きのうの かいわに でた もの|昨日の会話に出た物}', mama: '{ママが さいごに いった もの|ママが最後に言った物}', prevQ: '{まえの しつもんで こたえた もの|前の質問で答えた物}',
+      bring: '{もってくる|持ってくる}', where: '{おいてある ばしょを おしえる|置いてある場所を教える}'
     },
     session: function (rng) {
       var it = shuffle(rng, ITEMS), places = {}, ps = shuffle(rng, PLACES);
       it.forEach(function (x, i) { places[x] = ps[i % ps.length]; });
-      return { log: [['きのう', 'ママ', it[0] + 'を かたづけてね'], ['きのう', 'おねえちゃん', it[1] + 'で あそびたいな'], ['きょう', 'ママ', it[2] + 'を ほして おいたよ'], ['きょう', 'パパ', it[3] + 'が でてきたよ']],
+      var K = J('きのう', '昨日'), Q = J('きょう', '今日'), ne = J('おねえちゃん', 'お姉ちゃん');
+      return { log: [[K, 'ママ', JT(it[0]) + J('を かたづけてね', 'を片付けてね')], [K, ne, JT(it[1]) + J('で あそびたいな', 'で遊びたいな')], [Q, 'ママ', JT(it[2]) + J('を ほして おいたよ', 'を干しておいたよ')], [Q, 'パパ', JT(it[3]) + J('が でてきたよ', 'が出てきたよ')]],
         fav: it[4], last: it[3], yday: it[1], mama: it[2], places: places, spare: [it[5], it[6], it[7]] };
     },
     realize: function (it, S, vals, prev, rng) {
       if (it.follow && !prev) return null;
-      var w = it.follow ? 'さっきの' : ['あれ', 'いつもの', 'きのうの', 'ママが いってた'][it.word];
+      var w = it.follow ? 'さっきの' : (KJ ? ['あれ', 'いつもの', '昨日の', 'ママが言ってた'] : ['あれ', 'いつもの', 'きのうの', 'ママが いってた'])[it.word];
+      var end = KJ ? pick(rng, it.ask ? ['、どこに置いた？', '、どこに行った？', 'の場所、どこ？', 'がある場所を教えて'] : ['、取って！', '、持ってきて！', '、取ってきて〜', '、取ってくれる？'])
+        : ' ' + pick(rng, it.ask ? ['どこ？', 'どこに ある？', 'どこ いった？', 'どこだっけ？', 'どこ〜？'] : ['とって！', 'もってきて！', 'とってきて〜', 'とって〜', 'もってきて〜', 'とってくれる？']);
       var lastSoFar = prev ? prev.preItem : S.last;
-      var x = { msg: w + ' ' + (it.ask ? pick(rng, ['どこ？', 'どこに ある？', 'どこ いった？', 'どこだっけ？', 'どこ〜？']) : pick(rng, ['とって！', 'もってきて！', 'とってきて〜', 'とって〜', 'もってきて〜', 'とってくれる？'])), before: lastSoFar };
-      if (it.tie) { var two = shuffle(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })).slice(0, 2); x.pre = [pick(rng, ['パパ', 'おねえちゃん']), two[0] + 'と ' + two[1] + 'が でてきたよ']; x.tie = two; x.last = two[1]; }
-      else if (it.foodLast) { if (FOODS.indexOf(lastSoFar) >= 0) return null; var f = pick(rng, FOODS); x.pre = [pick(rng, ['パパ', 'ママ']), f + 'を かって きたよ']; x.last = f; }
-      else { var sp = pick(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })); x.pre = [pick(rng, ['パパ', 'おねえちゃん']), sp + 'が でてきたよ']; x.last = sp; }
+      var x = { msg: w + end, before: lastSoFar }, who = pick(rng, ['パパ', J('おねえちゃん', 'お姉ちゃん')]);
+      if (it.tie) { var two = shuffle(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })).slice(0, 2); x.pre = [who, JT(two[0]) + J('と ', 'と') + JT(two[1]) + J('が でてきたよ', 'が出てきたよ')]; x.tie = two; x.last = two[1]; }
+      else if (it.foodLast) { if (FOODS.indexOf(lastSoFar) >= 0) return null; var f = pick(rng, FOODS); x.pre = [pick(rng, ['パパ', 'ママ']), f + J('を かって きたよ', 'を買ってきたよ')]; x.last = f; }
+      else { var sp = pick(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })); x.pre = [who, JT(sp) + J('が でてきたよ', 'が出てきたよ')]; x.last = sp; }
       return x;
     },
     content: function (vals, it, S, prev, x0) {
       var x = vals.what === 'prevQ' ? prev.item : vals.what === 'last' ? x0.last : vals.what === 'before' ? x0.before : S[vals.what];
-      var memo = { item: x, preItem: x0.last };
-      if (FOODS.indexOf(x) >= 0 && vals.do === 'where') return { key: x + '|w', text: x + 'は だいどころに あるよ。', memo: memo };
-      return { key: x + '|' + vals.do, text: vals.do === 'where' ? x + 'は ' + (S.places[x] || 'だいどころ') + 'に あるよ。' : x + 'を もってくるね。', memo: memo };
+      var memo = { item: x, preItem: x0.last }, n = JT(x);
+      if (FOODS.indexOf(x) >= 0 && vals.do === 'where') return { key: x + '|w', text: n + J('は だいどころに あるよ。', 'は台所にあります。'), memo: memo };
+      return { key: x + '|' + vals.do, text: vals.do === 'where' ? n + J('は ', 'は') + JT(S.places[x] || '{だいどころ|台所}') + J('に あるよ。', 'にあります。') : n + J('を もってくるね。', 'を持ってきますね。'), memo: memo };
     },
     asks: { what: {
       options: function (it, S, x) { return x.tie; },
-      good: function (o) { return o[0] + 'と ' + o[1] + '、どっち？'; },
-      open: function () { return 'なにが ほしいの？ いろ・かたち・ばしょを ぜんぶ おしえて。'; },
-      needless: function () { return 'あれって なんの こと？'; },
-      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: c + pick(rng, ['の ほう', 'だよ', 'の こと', 'に きまってるじゃん']), it: { tie: 0 }, x: { last: c, tie: null } }; }
+      good: function (o) { return JT(o[0]) + J('と ', 'と') + JT(o[1]) + J('、どっち？', '、どちらを指していますか？'); },
+      open: function () { return J('なにが ほしいの？ いろ・かたち・ばしょを ぜんぶ おしえて。', '何がほしいですか？ 色・形・場所を全部教えてください。'); },
+      needless: function () { return J('あれって なんの こと？', '「あれ」とは何のことですか？'); },
+      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: JT(c) + pick(rng, KJ ? ['の方', 'の方だよ', 'の方に決まってるじゃん', 'の方をお願い'] : ['の ほう', 'だよ', 'の こと', 'に きまってるじゃん']), it: { tie: 0 }, x: { last: c, tie: null } }; }
     } },
-    context: function (S) { return { info: [['おきにいり', S.fav]], log: S.log, list: { cap: 'ものの ばしょ', rows: Object.keys(S.places).map(function (k) { return [k, S.places[k]]; }) } }; }
+    context: function (S) { return { info: [[J('おきにいり', 'お気に入り'), JT(S.fav)]], log: S.log, list: { cap: J('ものの ばしょ', '物の場所'), rows: Object.keys(S.places).map(function (k) { return [JT(k), JT(S.places[k])]; }) } }; }
   };
 
   // =====================================================================
   // 3. あした かさ いる？（ひょう）
   // =====================================================================
-  var KW_WORD = ['きょう', 'あした', 'あさって', 'こんどの どようび'], KW_SKY = ['はれ', 'くもり', 'あめ'];
+  var SKY_K = ['はれ', 'くもり', 'あめ'], SKY_N = ['晴れ', 'くもり', '雨'];
   SCENES.kweather = {
-    id: 'kweather', kind: 'table', kana: true, minLv: 1, title: '{あした かさ いる？|明日 かさ いる？}', users: KANA_USERS, noLate: true,
+    id: 'kweather', kind: 'table', kana: true, minLv: 1, title: '{あした かさ いる？|明日、傘いる？}', users: KANA_USERS, noLate: true,
     slots: [{ id: 'day', t: '{いつの こと？|いつのこと？}' }, { id: 'place', t: '{どこの こと？|どこのこと？}' }, { id: 'ans', t: '{なにを こたえる？|何を答える？}' }],
     space: function () { return facts({ when: 4, place: 2, ask: 3, follow: 2 }).filter(function (f) { return !(f.follow && (f.place || f.ask)); }); },
     lib: [
@@ -480,25 +493,26 @@ var AIGame = (function () {
     ],
     defaults: [D('day', [E('when', 0)], 'p0'), D('place', [E('place', 0)], 'home'), D('ans', [E('ask', 0)], 'sky')],
     phr: {
-      when: [sayK('きょう'), sayK('あした'), sayK('あさって'), sayK('こんどの どようび')],
-      place: [V('ばしょを いわない', 'ばしょを いわなくて', 'ばしょを いわなければ'), sayK('おばあちゃんち')],
-      ask: [V('「てんき」を きいた', '「てんき」を きいて', '「てんき」を きいたら'), V('「かさ」の ことを きいた', '「かさ」の ことを きいて', '「かさ」の ことを きいたら'), V('「ふく」の ことを きいた', '「ふく」の ことを きいて', '「ふく」の ことを きいたら')],
-      follow: [V('「じゃあ」で はじまらない', '「じゃあ」で はじまらなくて', '「じゃあ」で はじまらなければ'), V('「じゃあ ◯◯は？」と きいた', '「じゃあ ◯◯は？」と きいて', '「じゃあ ◯◯は？」と きいたら')]
+      when: [sayK('{きょう|今日}'), sayK('{あした|明日}'), sayK('あさって'), sayK('{こんどの どようび|今度の土曜日}')],
+      place: [V('{ばしょを いわない|場所を言わない}', '{ばしょを いわなくて|場所を言わなくて}', '{ばしょを いわなければ|場所を言わなければ}'), sayK('おばあちゃんち')],
+      ask: [V('{「てんき」を きいた|「天気」を聞かれた}', '{「てんき」を きいて|「天気」を聞かれて}', '{「てんき」を きいたら|「天気」を聞かれたら}'), V('{「かさ」の ことを きいた|「傘」のことを聞かれた}', '{「かさ」の ことを きいて|「傘」のことを聞かれて}', '{「かさ」の ことを きいたら|「傘」のことを聞かれたら}'), V('{「ふく」の ことを きいた|「服」のことを聞かれた}', '{「ふく」の ことを きいて|「服」のことを聞かれて}', '{「ふく」の ことを きいたら|「服」のことを聞かれたら}')],
+      follow: [V('{「じゃあ」で はじまらない|「じゃあ」で始まらない}', '{「じゃあ」で はじまらなくて|「じゃあ」で始まらなくて}', '{「じゃあ」で はじまらなければ|「じゃあ」で始まらなければ}'), V('{「じゃあ ◯◯は？」と きいた|「じゃあ◯◯は？」と聞かれた}', '{「じゃあ ◯◯は？」と きいて|「じゃあ◯◯は？」と聞かれて}', '{「じゃあ ◯◯は？」と きいたら|「じゃあ◯◯は？」と聞かれたら}')]
     },
     outs: {
-      p0: '{きょうの らんを みる|今日の らんを見る}', p1: '{きょうの つぎの ひの らんを みる|今日の 次の日の らんを見る}', p2: '{きょうから 2にち あとの らんを みる|今日から 2日あとの らんを見る}', sat: '{つぎの どようびの らんを みる|次の 土曜日の らんを見る}',
-      home: '{じぶんの まち（さくらまち）の らんを みる|自分の町（さくらまち）の らんを見る}', gma: '{おばあちゃんの まち（うみべまち）の らんを みる|おばあちゃんの町（うみべまち）の らんを見る}', prevP: '{まえの しつもんと おなじ まちに する|前の質問と 同じ町に する}',
-      sky: '{てんきを そのまま こたえる|天気を そのまま答える}', umb: '「あめ」なら「かさ いるよ」、ちがえば「いらないよ」', coat: '{きおんが 10どより ひくければ「コート」、それ いがいは「うわぎ」|気温が10度より低ければ「コート」、それ以外は「上着」}', prevA: '{まえの しつもんと おなじ ききかたで こたえる|前の質問と 同じききかたで答える}'
+      p0: '{きょうの らんを みる|今日の欄を見る}', p1: '{きょうの つぎの ひの らんを みる|今日の次の日の欄を見る}', p2: '{きょうから 2にち あとの らんを みる|今日から2日後の欄を見る}', sat: '{つぎの どようびの らんを みる|次の土曜日の欄を見る}',
+      home: '{じぶんの まち（さくらまち）の らんを みる|自分の町（さくらまち）の欄を見る}', gma: '{おばあちゃんの まち（うみべまち）の らんを みる|おばあちゃんの町（うみべまち）の欄を見る}', prevP: '{まえの しつもんと おなじ まちに する|前の質問と同じ町にする}',
+      sky: '{てんきを そのまま こたえる|天気をそのまま答える}', umb: '{「あめ」なら「かさ いるよ」、ちがえば「いらないよ」|「雨」なら「傘が必要」、それ以外なら「不要」}', coat: '{きおんが 10どより ひくければ「コート」、それ いがいは「うわぎ」|気温が10度より低ければ「コート」、それ以外は「上着」}', prevA: '{まえの しつもんと おなじ ききかたで こたえる|前の質問と同じ聞き方で答える}'
     },
     session: function (rng) {
       var today = weekdayToday(rng), rows = [];
-      for (var i = 0; i < 6; i++) rows.push([[pick(rng, KW_SKY), ri(rng, 4, 18)], [pick(rng, KW_SKY), ri(rng, 4, 18)]]);
+      for (var i = 0; i < 6; i++) rows.push([[ri(rng, 0, 2), ri(rng, 4, 18)], [ri(rng, 0, 2), ri(rng, 4, 18)]]);
       return { today: today, rows: rows };
     },
     realize: function (it, S, vals, prev, rng) {
       if (it.follow && !prev) return null;
-      var W = KW_WORD[it.when];
-      if (it.follow) return { msg: 'じゃあ ' + W + pick(rng, ['は？', 'は どう？', 'の ほうは？']) };
+      var W = (KJ ? ['今日', '明日', 'あさって', '今度の土曜日'] : ['きょう', 'あした', 'あさって', 'こんどの どようび'])[it.when];
+      if (it.follow) return { msg: KJ ? 'じゃあ' + W + pick(rng, ['の天気は？', 'の方は？', 'の予報は？']) : 'じゃあ ' + W + pick(rng, ['は？', 'は どう？', 'の ほうは？']) };
+      if (KJ) return { msg: (it.place ? 'おばあちゃんちの' : '') + W + '、' + pick(rng, [['天気どう？', '天気教えて', 'どんな天気？'], ['傘いる？', '傘持っていく？', '傘は必要？'], ['何を着ていけばいい？', '服どうしよう？', 'どんな服がいい？']][it.ask]) };
       return { msg: (it.place ? 'おばあちゃんちで ' : '') + W + ' ' + pick(rng, [['てんき どう？', 'てんき おしえて', 'どんな てんき？'], ['かさ いる？', 'かさ もってく？', 'かさ ひつよう？'], ['なに ふく きていけば いい？', 'ふく どうしよう？', 'どんな ふく が いい？']][it.ask]) };
     },
     content: function (vals, it, S, prev) {
@@ -506,64 +520,66 @@ var AIGame = (function () {
       var town = vals.place === 'prevP' ? prev.town : vals.place === 'gma' ? 1 : 0;
       var ans = vals.ans === 'prevA' ? prev.ans : vals.ans;
       var c = S.rows[off][town], text;
-      if (ans === 'umb') text = c[0] === 'あめ' ? 'かさ いるよ。' : 'かさ いらないよ。';
-      else if (ans === 'coat') text = c[1] < 10 ? 'コートを きていこう。' : 'うわぎで だいじょうぶ。';
-      else text = c[0] + '、' + c[1] + 'ど だよ。';
+      if (ans === 'umb') text = c[0] === 2 ? J('かさ いるよ。', '傘が必要です。') : J('かさ いらないよ。', '傘は不要です。');
+      else if (ans === 'coat') text = c[1] < 10 ? J('コートを きていこう。', 'コートを着ていきましょう。') : J('うわぎで だいじょうぶ。', '上着で大丈夫です。');
+      else text = J(SKY_K[c[0]] + '、' + c[1] + 'ど だよ。', SKY_N[c[0]] + '、' + c[1] + '度です。');
       return { key: text, text: text, memo: { town: town, ans: ans } };
     },
     context: function (S) {
-      return { info: [['きょう', dk(S.today)], ['すんでいる まち', 'さくらまち'], ['おばあちゃんの いえ', 'うみべまち']],
-        table: { cap: 'てんきよほう（てんき・きおん）', cols: ['ひ', 'さくらまち', 'うみべまち'], rows: S.rows.map(function (r, i) { return [dk(addDays(S.today, i)), r[0][0] + ' ' + r[0][1] + 'ど', r[1][0] + ' ' + r[1][1] + 'ど']; }) } };
+      return { info: [[J('きょう', '今日'), J(dk(S.today), dj(S.today))], [J('すんでいる まち', '住んでいる町'), 'さくらまち'], [J('おばあちゃんの いえ', 'おばあちゃんの家'), 'うみべまち']],
+        table: { cap: J('てんきよほう（てんき・きおん）', '天気予報（天気・気温）'), cols: [J('ひ', '日'), 'さくらまち', 'うみべまち'], rows: S.rows.map(function (r, i) { var d = addDays(S.today, i); return [J(dk(d), dj(d))].concat(r.map(function (c) { return J(SKY_K[c[0]] + ' ' + c[1] + 'ど', SKY_N[c[0]] + ' ' + c[1] + '度'); })); }) } };
     }
   };
 
   // =====================================================================
   // 4. ごみの ひ（ひょう）
   // =====================================================================
-  var GOMI_ITEM = ['ペットボトル', 'ざっし', 'あきかん', 'びん'];
-  var GOMI_CAT = ['もえるごみ', 'プラスチック', 'かみ', 'かん・びん', 'もえないごみ'];
+  var GOMI_ITEM = ['ペットボトル', '{ざっし|雑誌}', '{あきかん|空き缶}', 'びん'];
+  var GOMI_CAT = ['{もえるごみ|燃えるごみ}', 'プラスチック', '{かみ|紙}', '{かん・びん|缶・びん}', '{もえないごみ|燃えないごみ}'];
   var GOMI_OF = [1, 2, 3, 3];
   SCENES.gomi = {
-    id: 'gomi', kind: 'table', kana: true, minLv: 1, title: '{これ いつ だせば いい？|これ いつ出せばいい？}', users: KANA_USERS, noLate: true,
+    id: 'gomi', kind: 'table', kana: true, minLv: 1, title: '{これ いつ だせば いい？|これ、いつ出せばいい？}', users: KANA_USERS, noLate: true,
     slots: [{ id: 'cat', t: '{なにの ごみ？|何のごみ？}' }, { id: 'day', t: '{いつ だす？|いつ出す？}' }],
     space: function () { return facts({ item: 4, dirty: 2, broken: 2, ask: 2, past8: 2 }).filter(function (f) { return !(f.dirty && f.item !== 0) && !(f.broken && f.item !== 3); }); },
     lib: [R('cat', 1, [E('dirty', 1)], 'burn'), R('cat', 3, [E('broken', 1)], 'nonburn'), R('day', 1, [E('ask', 1)], 'tmr'), R('day', 2, [E('past8', 1)], 'skip')],
     defaults: [D('cat', [E('dirty', 0), E('broken', 0)], 'table'), D('day', [E('ask', 0), E('past8', 0)], 'next')],
     phr: {
-      dirty: [V('「よごれてる」が ない', '「よごれてる」が なくて', '「よごれてる」が なければ'), V('「よごれてる」と {いった|言った}', '「よごれてる」と {いって|言って}', '「よごれてる」と {いったら|言ったら}')],
-      broken: [V('「われた」が ない', '「われた」が なくて', '「われた」が なければ'), V('「われた」と {いった|言った}', '「われた」と {いって|言って}', '「われた」と {いったら|言ったら}')],
-      ask: [V('「いつ」と きいた', '「いつ」と きいて', '「いつ」と きいたら'), V('「あした」と きいた', '「あした」と きいて', '「あした」と きいたら')],
-      past8: [V('{あさ 8じより まえの メッセージ|朝8時より前のメッセージ}', '{あさ 8じより まえで|朝8時より前で}', '{あさ 8じより まえなら|朝8時より前なら}'), V('{あさ 8じを すぎた メッセージ|朝8時をすぎたメッセージ}', '{8じを すぎていて|8時をすぎていて}', '{8じを すぎていたら|8時をすぎていたら}')]
+      dirty: [V('{「よごれてる」が ない|「汚れてる」がない}', '{「よごれてる」が なくて|「汚れてる」がなくて}', '{「よごれてる」が なければ|「汚れてる」がなければ}'), V('{「よごれてる」と いった|「汚れてる」と言われた}', '{「よごれてる」と いって|「汚れてる」と言われて}', '{「よごれてる」と いったら|「汚れてる」と言われたら}')],
+      broken: [V('{「われた」が ない|「割れた」がない}', '{「われた」が なくて|「割れた」がなくて}', '{「われた」が なければ|「割れた」がなければ}'), V('{「われた」と いった|「割れた」と言われた}', '{「われた」と いって|「割れた」と言われて}', '{「われた」と いったら|「割れた」と言われたら}')],
+      ask: [V('{「いつ」と きいた|「いつ」と聞かれた}', '{「いつ」と きいて|「いつ」と聞かれて}', '{「いつ」と きいたら|「いつ」と聞かれたら}'), V('{「あした」と きいた|「明日」と聞かれた}', '{「あした」と きいて|「明日」と聞かれて}', '{「あした」と きいたら|「明日」と聞かれたら}')],
+      past8: [V('{あさ 8じより まえの メッセージ|朝8時より前のメッセージ}', '{あさ 8じより まえで|朝8時より前で}', '{あさ 8じより まえなら|朝8時より前なら}'), V('{あさ 8じを すぎた メッセージ|朝8時を過ぎたメッセージ}', '{8じを すぎていて|8時を過ぎていて}', '{8じを すぎていたら|8時を過ぎていたら}')]
     },
     outs: {
-      table: '{ひょうの「わけかた」の とおり|表の「分け方」のとおり}', burn: '{よごれた ペットボトルは「もえるごみ」|よごれたペットボトルは「燃えるごみ」}', nonburn: '{われた びんは「もえないごみ」|われたびんは「燃えないごみ」}',
-      next: '{きょうを ふくめて、つぎの その ごみの ひを こたえる|今日をふくめて、次のその ごみの日を答える}', tmr: '{あしたが その ごみの ひなら「だせるよ」、ちがえば「だせないよ」|明日がその ごみの日なら「出せるよ」、ちがえば「出せないよ」}', skip: '{8じを すぎていたら きょうは だめ。あした いこうで つぎの ひを こたえる|8時をすぎていたら今日はだめ。明日以こうで次の日を答える}'
+      table: '{ひょうの「わけかた」の とおり|表の「分け方」のとおり}', burn: '{よごれた ペットボトルは「もえるごみ」|汚れたペットボトルは「燃えるごみ」}', nonburn: '{われた びんは「もえないごみ」|割れたびんは「燃えないごみ」}',
+      next: '{きょうを ふくめて、つぎの その ごみの ひを こたえる|今日を含めて、次のそのごみの日を答える}', tmr: '{あしたが その ごみの ひなら「だせるよ」、ちがえば「だせないよ」|明日がそのごみの日なら「出せる」、違えば「出せない」}', skip: '{8じを すぎていたら きょうは だめ。あした いこうで つぎの ひを こたえる|8時を過ぎていたら今日はだめ。明日以降で次の日を答える}'
     },
     session: function (rng) {
       for (;;) {
         var today = new Date(Date.UTC(2026, 10, 2 + ri(rng, 0, 50))); if (today.getUTCDay() === 0 || today.getUTCDay() === 6) continue;
-        var cal = shuffle(rng, [0, 1, 2, 3, 4]); // 月〜金
-        return { today: today, cal: cal };
+        return { today: today, cal: shuffle(rng, [0, 1, 2, 3, 4]) };
       }
     },
     catOn: function (S, d) { var w = d.getUTCDay(); return w >= 1 && w <= 5 ? S.cal[w - 1] : -1; },
     realize: function (it, S, vals, prev, rng) {
-      var m = (it.dirty ? 'よごれてる ' : '') + (it.broken ? 'われちゃった ' : '') + GOMI_ITEM[it.item] + (it.ask ? pick(rng, ['、あした だせる？', '、あした すてて いい？', 'って あした だして いい？']) : pick(rng, ['、つぎ いつ だせる？', '、こんど いつ だせる？', 'って いつ すてれば いい？']));
+      var item = JT(GOMI_ITEM[it.item]), m;
+      if (KJ) m = (it.dirty ? '汚れてる' : '') + (it.broken ? '割れちゃった' : '') + item + pick(rng, it.ask ? ['、明日出せる？', '、明日捨てていい？', 'って明日出していい？'] : ['、次いつ出せる？', '、今度いつ出せる？', 'っていつ捨てればいい？']);
+      else m = (it.dirty ? 'よごれてる ' : '') + (it.broken ? 'われちゃった ' : '') + item + pick(rng, it.ask ? ['、あした だせる？', '、あした すてて いい？', 'って あした だして いい？'] : ['、つぎ いつ だせる？', '、こんど いつ だせる？', 'って いつ すてれば いい？']);
       return { msg: m, time: it.past8 ? ri(rng, 9, 20) * 60 + ri(rng, 0, 59) : ri(rng, 6, 7) * 60 + ri(rng, 0, 59) };
     },
     content: function (vals, it, S) {
-      var cat = vals.cat === 'burn' ? 0 : vals.cat === 'nonburn' ? 4 : GOMI_OF[it.item], t;
-      if (vals.day === 'tmr') t = this.catOn(S, addDays(S.today, 1)) === cat ? 'あした だせるよ（' + GOMI_CAT[cat] + '）。' : 'あしたは だせないよ（' + GOMI_CAT[cat] + 'じゃ ない ひ）。';
+      var cat = vals.cat === 'burn' ? 0 : vals.cat === 'nonburn' ? 4 : GOMI_OF[it.item], cn = JT(GOMI_CAT[cat]), t;
+      if (vals.day === 'tmr') t = this.catOn(S, addDays(S.today, 1)) === cat ? J('あした だせるよ（' + cn + '）。', '明日出せます（' + cn + 'の日です）。') : J('あしたは だせないよ（' + cn + 'じゃ ない ひ）。', '明日は出せません（' + cn + 'の日ではありません）。');
       else {
         for (var i = vals.day === 'skip' ? 1 : 0; i < 14; i++) if (this.catOn(S, addDays(S.today, i)) === cat) break;
-        t = dk(addDays(S.today, i)) + 'の ' + GOMI_CAT[cat] + 'の ひ だよ。';
+        var d = addDays(S.today, i);
+        t = J(dk(d) + 'の ' + cn + 'の ひ だよ。', dj(d) + 'の' + cn + 'の日です。');
       }
       return { key: t, text: t };
     },
     context: function (S) {
-      return { info: [['きょう', dk(S.today)], ['だす じかん', 'あさ 8じまで']],
-        table: { cap: 'ごみの ひ', cols: ['ようび', 'ごみ'], rows: [0, 1, 2, 3, 4].map(function (i) { return [WD_K[i + 1] + 'ようび', GOMI_CAT[S.cal[i]]]; }).concat([['ど・にち', 'なし']]) },
-        list: { cap: 'わけかた', rows: GOMI_ITEM.map(function (x, i) { return [x, GOMI_CAT[GOMI_OF[i]]]; }) } };
+      return { info: [[J('きょう', '今日'), J(dk(S.today), dj(S.today))], [J('だす じかん', '出す時間'), J('あさ 8じまで', '朝8時まで')]],
+        table: { cap: J('ごみの ひ', 'ごみの日'), cols: [J('ようび', '曜日'), 'ごみ'], rows: [0, 1, 2, 3, 4].map(function (i) { return [J(WD_K[i + 1] + 'ようび', WD_J[i + 1] + '曜日'), JT(GOMI_CAT[S.cal[i]])]; }).concat([[J('ど・にち', '土・日'), 'なし']]) },
+        list: { cap: J('わけかた', '分け方'), rows: GOMI_ITEM.map(function (x, i) { return [JT(x), JT(GOMI_CAT[GOMI_OF[i]])]; }) } };
     }
   };
 
@@ -713,7 +729,7 @@ var AIGame = (function () {
       if ((it.place === 0 && !it.follow && off === S.tripDay ? 1 : 0) !== it.trip) return null;
       if ((S.nohome && it.place === 0 && !it.follow && !it.trip ? 1 : 0) !== it.nohome) return null;
       var named = pick(rng, [0, 1, 2]), W = ['今日', '明日', 'あさって', '週末'][it.when];
-      if (it.follow) return { msg: 'じゃあ' + W + pick(rng, ['は？', 'はどう？', 'のほうは？']), named: named };
+      if (it.follow) return { msg: 'じゃあ' + W + pick(rng, ['の天気は？', 'の方は？', 'の予報は？']), named: named };
       var where = it.place === 1 ? CITIES[named] + 'の' : it.place === 2 ? '学校のほうの' : '';
       return { msg: W + 'の' + where + pick(rng, [['天気は？', '天気どう？', '天気教えて'], ['傘いる？', '傘いるかな？', '傘持ってく？'], ['洗濯物干せる？', '洗濯物、外に干せる？', '洗濯物どうしよう？']][it.ask]), named: named };
     },
@@ -844,7 +860,7 @@ var AIGame = (function () {
     phr: {
       word: [sayA('あれ'), sayA('次の予定'), sayA('誕生日'), sayA('来週の')],
       follow: [V('「それ」ではない', '「それ」ではなく', '「それ」でなければ'), sayA('それ')],
-      ask: [V('「いつ」と聞かれた', '「いつ」と聞かれて', '「いつ」と聞かれたら'), V('「あと何日」と聞かれた', '「あと何日」と聞かれて', '「あと何日」と聞かれたら')],
+      ask: [V('「いつ」「何日」と聞かれた', '「いつ」「何日」と聞かれて', '「いつ」「何日」と聞かれたら'), V('「あと何日」と聞かれた', '「あと何日」と聞かれて', '「あと何日」と聞かれたら')],
       tie: [V('直前の会話に出た予定が1つ', '直前の会話の予定が1つで', '直前の予定が1つなら'), V('直前の会話に予定が2つ出ている', '直前の会話に予定が2つ出ていて', '直前の会話に予定が2つなら')]
     },
     outs: {
@@ -863,7 +879,7 @@ var AIGame = (function () {
       if (it.follow && !prev) return null;
       if ((S.tie && it.word === 0 && !it.follow ? 1 : 0) !== it.tie) return null;
       var w = it.follow ? pick(rng, ['それって', 'それ', 'じゃあそれって']) : pick(rng, [['あれ', 'あれって', 'あれさ', 'ねえ、あれ'], ['次の予定', '次の予定って', '次の予定さ'], [S.fam + 'の誕生日', S.fam + 'の誕生日って', S.fam + 'の誕生日さ'], ['来週の予定', '来週の予定って', '来週のやつ']][it.word]);
-      return { msg: w + '、' + pick(rng, [['いつだっけ？', 'いつだった？', 'いつなの？'], ['あと何日？', 'まであと何日？', 'あと何日だっけ？']][it.ask]) };
+      return { msg: w + '、' + pick(rng, [['何日だっけ？', 'いつの予定だっけ？', '何日だった？'], ['あと何日？', 'まであと何日？', 'あと何日だっけ？']][it.ask]) };
     },
     pickEv: function (v, S, prev, x) {
       if (v === 'prevQ') return prev.ev;
@@ -987,12 +1003,13 @@ var AIGame = (function () {
   };
 
   // =====================================================================
-  // ひらがなの ひょうの ばめん（Lv1〜）を まとめて つくる しくみ
+  // ひょうの ばめん（Lv1〜）を まとめて つくる しくみ
   //   words … 「なにの こと？」の よみかた（さいしょが ふだんの よみかた）
   //   asks  … 「なにを こたえる？」の よみかた（さいしょが ふだんの よみかた）
-  //   say   … メッセージの いいかたの バリエーション（キーワードを かならず ふくむ）
+  //   say / sayJ … メッセージの いいかた（かな版／ふつう版。kw を かならず ふくむ）
   // =====================================================================
   function kmd(d) { return (d.getUTCMonth() + 1) + 'がつ ' + d.getUTCDate() + 'にち'; }
+  function jmd(d) { return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'; }
   function tableScene(o) {
     var sc = {
       id: o.id, kind: 'table', kana: true, minLv: 1, title: o.title, users: KANA_USERS, noLate: true,
@@ -1003,7 +1020,7 @@ var AIGame = (function () {
       defaults: [D('which', [E('word', 0)], o.words[0].out), D('ans', [E('ask', 0)], o.asks[0].out)],
       phr: {
         word: o.words.map(function (w) { return sayK(w.kw); }),
-        ask: o.asks.map(function (a) { return V('「' + a.kw + '」の ことを きいた', '「' + a.kw + '」の ことを きいて', '「' + a.kw + '」の ことを きいたら'); })
+        ask: o.asks.map(function (a) { return V('「' + a.kw + '」{の ことを きいた|のことを聞かれた}', '「' + a.kw + '」{の ことを きいて|のことを聞かれて}', '「' + a.kw + '」{の ことを きいたら|のことを聞かれたら}'); })
       },
       outs: {},
       session: function (rng) {
@@ -1013,7 +1030,12 @@ var AIGame = (function () {
         }
         throw new Error('session ' + o.id);
       },
-      realize: function (it, S, vals, prev, rng) { return { msg: pick(rng, o.words[it.word].say) + ' ' + pick(rng, o.asks[it.ask].say) }; },
+      realize: function (it, S, vals, prev, rng) {
+        var w = o.words[it.word], a = o.asks[it.ask];
+        if (!KJ) return { msg: pick(rng, w.say) + ' ' + pick(rng, a.say) };
+        var aw = pick(rng, a.sayJ);
+        return { msg: pick(rng, w.sayJ) + (/^(まで|って|の)/.test(aw) ? '' : '、') + aw };
+      },
       content: function (vals, it, S) {
         var w = o.words.filter(function (x) { return x.out === vals.which; })[0], a = o.asks.filter(function (x) { return x.out === vals.ans; })[0];
         var t = a.val(S.rows[w.pick(S)], S);
@@ -1028,133 +1050,132 @@ var AIGame = (function () {
   function firstIdx(rows, f) { for (var i = 0; i < rows.length; i++) if (f(rows[i], i)) return i; return -1; }
 
   // テレビ ばんぐみひょう
-  var TV_NAMES = ['どうぶつ ずかん', 'ゆかいな うた', 'クイズ なんでしょう', 'おりょうり きょうしつ', 'ニュース', 'サッカー', 'まほうの じかん', 'むかしばなし'];
-  var TV_ANIME = ['アニメ ほしの こ', 'アニメ もりの なかま', 'アニメ ロボくん'];
+  var TV_NAMES = ['{どうぶつ ずかん|動物図鑑}', '{ゆかいな うた|ゆかいな歌}', '{クイズ なんでしょう|クイズ何でしょう}', '{おりょうり きょうしつ|お料理教室}', 'ニュース', 'サッカー', '{まほうの じかん|魔法の時間}', '{むかしばなし|昔話}'];
+  var TV_ANIME = ['{アニメ ほしの こ|アニメ 星の子}', '{アニメ もりの なかま|アニメ 森の仲間}', 'アニメ ロボくん'];
   tableScene({
-    id: 'tv', title: 'あの ばんぐみ なんじから？', whichT: 'どの ばんぐみ？', ansT: 'なにを こたえる？',
+    id: 'tv', title: '{あの ばんぐみ なんじから？|あの番組、何時から？}', whichT: '{どの ばんぐみ？|どの番組？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
-      var names = shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME).slice(0, 2)), t = 16 * 60, rows = [];
-      names = shuffle(rng, names);
-      names.forEach(function (n) { var len = pick(rng, [15, 30, 30, 45]); rows.push({ name: n, s: t, ch: ri(rng, 1, 9), len: len, anime: n.indexOf('アニメ') === 0 }); t += len; });
+      var names = shuffle(rng, shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME).slice(0, 2))), t = 16 * 60, rows = [];
+      names.forEach(function (n) { var len = pick(rng, [15, 30, 30, 45]); rows.push({ name: n, s: t, ch: ri(rng, 1, 9), len: len, anime: TV_ANIME.indexOf(n) >= 0 }); t += len; });
       return { rows: rows, now: 16 * 60 + ri(rng, 0, 50), fav: ri(rng, 0, 4) };
     },
     words: [
-      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], out: 'fav', text: 'プロフィールの「すきな ばんぐみ」', pick: function (S) { return S.fav; } },
-      { kw: 'つぎの', say: ['つぎの ばんぐみ', 'つぎの テレビ', 'つぎの やつ'], out: 'next', tier: 1, text: 'いまの じかんより あとに はじまる さいしょの ばんぐみ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.s > S.now; }); } },
-      { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], out: 'anime', tier: 2, text: 'アニメの なかで いちばん はやく はじまる ばんぐみ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime; }); } }
+      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], sayJ: ['いつもの番組', 'いつものテレビ番組', 'いつものやつ'], out: 'fav', text: '{プロフィールの「すきな ばんぐみ」|プロフィールの「好きな番組」}', pick: function (S) { return S.fav; } },
+      { kw: '{つぎの|次の}', say: ['つぎの ばんぐみ', 'つぎの テレビ', 'つぎの やつ'], sayJ: ['次の番組', '次のテレビ', '次の放送'], out: 'next', tier: 1, text: '{いまの じかんより あとに はじまる さいしょの ばんぐみ|今の時刻より後に始まる最初の番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.s > S.now; }); } },
+      { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], sayJ: ['アニメ', 'アニメの番組', 'アニメのやつ'], out: 'anime', tier: 2, text: '{アニメの なかで いちばん はやく はじまる ばんぐみ|アニメの中でいちばん早く始まる番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime; }); } }
     ],
     asks: [
-      { kw: 'なんじ', say: ['なんじから？', 'なんじに はじまる？', 'なんじから やる？'], out: 'time', text: 'はじまる じかんを こたえる', val: function (r) { return r.name + 'は ' + hm(r.s) + 'から だよ。'; } },
-      { kw: 'チャンネル', say: ['なんばんの チャンネル？', 'チャンネル どこ？', 'チャンネル なんばん？'], out: 'ch', tier: 1, text: 'チャンネルを こたえる', val: function (r) { return r.name + 'は ' + r.ch + 'チャンネル だよ。'; } },
-      { kw: 'なんぷん', say: ['なんぷん やる？', 'なんぷん あるの？', 'なんぷん みられる？'], out: 'len', tier: 2, text: 'ながさ（なんぷん）を こたえる', val: function (r) { return r.name + 'は ' + r.len + 'ぷん だよ。'; } }
+      { kw: '{なんじ|何時}', say: ['なんじから？', 'なんじに はじまる？', 'なんじから やる？'], sayJ: ['何時から？', '何時に始まる？', '何時からやる？'], out: 'time', text: '{はじまる じかんを こたえる|始まる時刻を答える}', val: function (r) { var n = JT(r.name); return J(n + 'は ' + hm(r.s) + 'から だよ。', n + 'は' + hm(r.s) + 'から放送です。'); } },
+      { kw: 'チャンネル', say: ['なんばんの チャンネル？', 'チャンネル どこ？', 'チャンネル なんばん？'], sayJ: ['何チャンネル？', 'チャンネルは何番？', 'チャンネル何番だっけ？'], out: 'ch', tier: 1, text: '{チャンネルを こたえる|チャンネルを答える}', val: function (r) { var n = JT(r.name); return J(n + 'は ' + r.ch + 'チャンネル だよ。', n + 'は' + r.ch + 'チャンネルで放送します。'); } },
+      { kw: '{なんぷん|何分}', say: ['なんぷん やる？', 'なんぷん あるの？', 'なんぷん みられる？'], sayJ: ['何分やる？', '何分あるの？', '何分くらい？'], out: 'len', tier: 2, text: '{ながさ（なんぷん）を こたえる|長さ（何分）を答える}', val: function (r) { var n = JT(r.name); return J(n + 'は ' + r.len + 'ぷん だよ。', n + 'は' + r.len + '分の番組です。'); } }
     ],
     context: function (S) {
-      return { info: [['いま', hm(S.now)], ['すきな ばんぐみ', S.rows[S.fav].name]],
-        table: { cap: 'きょうの ばんぐみひょう', cols: ['じかん', 'ばんぐみ', 'チャンネル', 'ながさ'], rows: S.rows.map(function (r) { return [hm(r.s), r.name, r.ch, r.len + 'ぷん']; }) } };
+      return { info: [[J('いま', '今'), hm(S.now)], [J('すきな ばんぐみ', '好きな番組'), JT(S.rows[S.fav].name)]],
+        table: { cap: J('きょうの ばんぐみひょう', '今日の番組表'), cols: [J('じかん', '時間'), J('ばんぐみ', '番組'), 'チャンネル', J('ながさ', '長さ')], rows: S.rows.map(function (r) { return [hm(r.s), JT(r.name), r.ch, J(r.len + 'ぷん', r.len + '分')]; }) } };
     }
   });
 
   // バスの じこくひょう
-  var BUS_DEST = ['えき', 'がっこう', 'びょういん', 'こうえん', 'としょかん'];
+  var BUS_DEST = ['{えき|駅}', '{がっこう|学校}', '{びょういん|病院}', '{こうえん|公園}', '{としょかん|図書館}'];
   tableScene({
-    id: 'bus', title: 'つぎの バス なんじ？', whichT: 'どの バス？', ansT: 'なにを こたえる？',
+    id: 'bus', title: '{つぎの バス なんじ？|次のバス、何時？}', whichT: '{どの バス？|どのバス？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var t = ri(rng, 7, 15) * 60 + ri(rng, 0, 20), rows = [];
       for (var i = 0; i < 6; i++) { t += ri(rng, 6, 18); rows.push({ t: t, dest: pick(rng, BUS_DEST), nb: ri(rng, 1, 4) }); }
       return { rows: rows, now: rows[0].t + ri(rng, -5, 3) };
     },
     words: [
-      { kw: 'つぎの', say: ['つぎの バス', 'つぎの バスって', 'つぎに くる バス'], out: 'next', text: 'いまより あとに でる さいしょの バス', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now; }); } },
-      { kw: 'がっこう', say: ['がっこう いきの バス', 'がっこうに いく バス', 'がっこうまでの バス'], out: 'school', tier: 1, text: '「がっこう」いきで、いまより あとの さいしょの バス', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now && r.dest === 'がっこう'; }); } },
-      { kw: 'さいご', say: ['さいごの バス', 'きょう さいごの バス', 'いちばん さいごの バス'], out: 'last', tier: 2, text: 'ひょうの いちばん さいごの バス', pick: function (S) { return S.rows.length - 1; } }
+      { kw: '{つぎの|次の}', say: ['つぎの バス', 'つぎの バスって', 'つぎに くる バスの'], sayJ: ['次のバス', '次のバスって', '次の便'], out: 'next', text: '{いまより あとに でる さいしょの バス|今より後に出る最初のバス}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now; }); } },
+      { kw: '{がっこう|学校}', say: ['がっこう いきの バス', 'がっこうに いく バス', 'がっこうまでの バス'], sayJ: ['学校行きのバス', '学校に行くバス', '学校までのバス'], out: 'school', tier: 1, text: '{「がっこう」いきで、いまより あとの さいしょの バス|「学校」行きで、今より後の最初のバス}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now && r.dest === BUS_DEST[1]; }); } },
+      { kw: '{さいご|最後}', say: ['さいごの バス', 'きょう さいごの バス', 'いちばん さいごの バス'], sayJ: ['最後のバス', '今日最後のバス', 'いちばん最後のバス'], out: 'last', tier: 2, text: '{ひょうの いちばん さいごの バス|表のいちばん最後のバス}', pick: function (S) { return S.rows.length - 1; } }
     ],
     asks: [
-      { kw: 'なんじ', say: ['なんじ？', 'なんじに でる？', 'なんじに くる？'], out: 'time', text: 'でる じかんを こたえる', val: function (r) { return r.dest + ' いきは ' + hm(r.t) + 'に でるよ。'; } },
-      { kw: 'のりば', say: ['どこの のりば？', 'のりば どこ？', 'なんばん のりば？'], out: 'nb', tier: 1, text: 'のりばを こたえる', val: function (r) { return hm(r.t) + 'の バスは ' + r.nb + 'ばん のりば だよ。'; } }
+      { kw: '{なんじ|何時}', say: ['なんじ？', 'なんじに でる？', 'なんじに くる？'], sayJ: ['何時？', '何時に出る？', '何時に来る？'], out: 'time', text: '{でる じかんを こたえる|出発時刻を答える}', val: function (r) { var d = JT(r.dest); return J(d + ' いきは ' + hm(r.t) + 'に でるよ。', d + '行きは' + hm(r.t) + 'に出発します。'); } },
+      { kw: '{のりば|乗り場}', say: ['どこの のりば？', 'のりば どこ？', 'なんばん のりば？'], sayJ: ['どこの乗り場？', '乗り場どこ？', '何番乗り場？'], out: 'nb', tier: 1, text: '{のりばを こたえる|乗り場を答える}', val: function (r) { return J(hm(r.t) + 'の バスは ' + r.nb + 'ばん のりば だよ。', hm(r.t) + 'のバスは' + r.nb + '番乗り場です。'); } }
     ],
     context: function (S) {
-      return { info: [['いま', hm(S.now)]], table: { cap: 'バスの じこくひょう', cols: ['でる じかん', 'いきさき', 'のりば'], rows: S.rows.map(function (r) { return [hm(r.t), r.dest, r.nb + 'ばん']; }) } };
+      return { info: [[J('いま', '今'), hm(S.now)]], table: { cap: J('バスの じこくひょう', 'バスの時刻表'), cols: [J('でる じかん', '出発'), J('いきさき', '行き先'), J('のりば', '乗り場')], rows: S.rows.map(function (r) { return [hm(r.t), JT(r.dest), J(r.nb + 'ばん', r.nb + '番')]; }) } };
     }
   });
 
   // たんじょうび
-  var FAM = ['パパ', 'ママ', 'おねえちゃん', 'おじいちゃん', 'おばあちゃん', 'いとこの ケン'];
-  var LIKES = ['おはな', 'ケーキ', 'えほん', 'おちゃ', 'ぼうし', 'えのぐ', 'てぶくろ', 'クッキー'];
+  var FAM = ['パパ', 'ママ', '{おねえちゃん|お姉ちゃん}', 'おじいちゃん', 'おばあちゃん', '{いとこの ケン|いとこのケン}'];
+  var LIKES = ['{おはな|お花}', 'ケーキ', '{えほん|絵本}', '{おちゃ|お茶}', '{ぼうし|帽子}', '{えのぐ|絵の具}', '{てぶくろ|手袋}', 'クッキー'];
   tableScene({
-    id: 'bday', title: 'たんじょうび いつ？', whichT: 'だれの たんじょうび？', ansT: 'なにを こたえる？',
+    id: 'bday', title: '{たんじょうび いつ？|誕生日、いつ？}', whichT: '{だれの たんじょうび？|誰の誕生日？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var today = new Date(Date.UTC(2026, ri(rng, 0, 11), ri(rng, 1, 28))), offs = shuffle(rng, range(60).map(function (i) { return i + 2; })).slice(0, 5);
       var who = ['ママ'].concat(shuffle(rng, FAM.filter(function (f) { return f !== 'ママ'; })).slice(0, 4)), likes = shuffle(rng, LIKES);
       return { today: today, rows: shuffle(rng, who).map(function (w, i) { return { who: w, off: offs[i], like: likes[i] }; }) };
     },
     words: [
-      { kw: 'つぎの', say: ['つぎの たんじょうび', 'つぎの おたんじょうび', 'つぎの たんじょうびって'], out: 'next', text: 'きょうから いちばん ちかい たんじょうびの ひと', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off < S.rows[b].off) b = i; }); return b; } },
-      { kw: 'ママの', say: ['ママの たんじょうび', 'ママの おたんじょうび', 'ママの たんじょうびって'], out: 'mama', tier: 1, text: 'ママの たんじょうび', pick: function (S) { return firstIdx(S.rows, function (r) { return r.who === 'ママ'; }); } },
-      { kw: 'いちばん さき', say: ['いちばん さきの たんじょうび', 'いちばん さきの おたんじょうび'], out: 'far', tier: 2, text: 'きょうから いちばん とおい たんじょうびの ひと', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off > S.rows[b].off) b = i; }); return b; } }
+      { kw: '{つぎの|次の}', say: ['つぎの たんじょうび', 'つぎの おたんじょうび', 'つぎの たんじょうびって'], sayJ: ['次の誕生日', '次のお誕生日', '次の誕生日って'], out: 'next', text: '{きょうから いちばん ちかい たんじょうびの ひと|今日からいちばん近い誕生日の人}', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off < S.rows[b].off) b = i; }); return b; } },
+      { kw: 'ママの', say: ['ママの たんじょうび', 'ママの おたんじょうび', 'ママの たんじょうびって'], sayJ: ['ママの誕生日', 'ママのお誕生日', 'ママの誕生日って'], out: 'mama', tier: 1, text: '{ママの たんじょうび|ママの誕生日}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.who === 'ママ'; }); } },
+      { kw: '{いちばん さき|いちばん先}', say: ['いちばん さきの たんじょうび', 'いちばん さきの おたんじょうび'], sayJ: ['いちばん先の誕生日', 'いちばん先のお誕生日'], out: 'far', tier: 2, text: '{きょうから いちばん とおい たんじょうびの ひと|今日からいちばん遠い誕生日の人}', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off > S.rows[b].off) b = i; }); return b; } }
     ],
     asks: [
-      { kw: 'いつ', say: ['いつ？', 'いつだっけ？', 'って いつ？'], out: 'date', text: 'ひにちを こたえる', val: function (r, S) { return r.who + 'の たんじょうびは ' + kmd(addDays(S.today, r.off)) + ' だよ。'; } },
-      { kw: 'プレゼント', say: ['プレゼント なにが いい？', 'プレゼント どうしよう？', 'プレゼント なに あげよう？'], out: 'gift', tier: 1, text: 'その ひとの すきな ものを こたえる', val: function (r) { return r.who + 'には ' + r.like + 'が いいと おもうよ。'; } },
-      { kw: 'あと なんにち', say: ['まで あと なんにち？', 'って あと なんにち？'], out: 'days', tier: 2, text: 'あと なんにちかを こたえる', val: function (r) { return r.who + 'の たんじょうびまで あと ' + r.off + 'にち だよ。'; } }
+      { kw: 'いつ', say: ['いつ？', 'いつだっけ？', 'って いつ？'], sayJ: ['いつ？', 'いつだっけ？', 'っていつ？'], out: 'date', text: '{ひにちを こたえる|日にちを答える}', val: function (r, S) { var w = JT(r.who), d = addDays(S.today, r.off); return J(w + 'の たんじょうびは ' + kmd(d) + ' だよ。', w + 'の誕生日は' + jmd(d) + 'です。'); } },
+      { kw: 'プレゼント', say: ['プレゼント なにが いい？', 'プレゼント どうしよう？', 'プレゼント なに あげよう？'], sayJ: ['プレゼント何がいい？', 'プレゼントどうしよう？', 'プレゼント何をあげよう？'], out: 'gift', tier: 1, text: '{その ひとの すきな ものを こたえる|その人の好きなものを答える}', val: function (r) { var w = JT(r.who), l = JT(r.like); return J(w + 'には ' + l + 'が いいと おもうよ。', w + 'には' + l + 'がいいと思います。'); } },
+      { kw: '{あと なんにち|あと何日}', say: ['まで あと なんにち？', 'って あと なんにち？'], sayJ: ['まであと何日？', 'ってあと何日？'], out: 'days', tier: 2, text: '{あと なんにちかを こたえる|あと何日かを答える}', val: function (r) { var w = JT(r.who); return J(w + 'の たんじょうびまで あと ' + r.off + 'にち だよ。', w + 'の誕生日まで、あと' + r.off + '日です。'); } }
     ],
     context: function (S) {
-      return { info: [['きょう', kmd(S.today)]], table: { cap: 'かぞくの たんじょうび', cols: ['だれ', 'たんじょうび', 'すきな もの'], rows: S.rows.map(function (r) { return [r.who, kmd(addDays(S.today, r.off)), r.like]; }) } };
+      return { info: [[J('きょう', '今日'), J(kmd(S.today), jmd(S.today))]], table: { cap: J('かぞくの たんじょうび', '家族の誕生日'), cols: [J('だれ', '誰'), J('たんじょうび', '誕生日'), J('すきな もの', '好きなもの')], rows: S.rows.map(function (r) { var d = addDays(S.today, r.off); return [JT(r.who), J(kmd(d), jmd(d)), JT(r.like)]; }) } };
     }
   });
 
   // しゅくだい・ならいごと
-  var LESSONS = [['ピアノ', 'がくふ'], ['すいえい', 'みずぎ'], ['サッカー', 'ボール'], ['えいご', 'えいごの ノート'], ['しゅうじ', 'ふで'], ['たいそう', 'たいそうふく']];
-  var HOMEWORK = ['さんすう プリント', 'かんじ ドリル', 'にっき', 'おんどく', 'けいさん カード', 'えにっき'];
+  var LESSONS = [['ピアノ', '{がくふ|楽譜}'], ['{すいえい|水泳}', '{みずぎ|水着}'], ['サッカー', 'ボール'], ['{えいご|英語}', '{えいごの ノート|英語のノート}'], ['{しゅうじ|習字}', '{ふで|筆}'], ['{たいそう|体操}', '{たいそうふく|体操服}']];
+  var HOMEWORK = ['{さんすう プリント|算数プリント}', '{かんじ ドリル|漢字ドリル}', '{にっき|日記}', '{おんどく|音読}', '{けいさん カード|計算カード}', '{えにっき|絵日記}'];
   tableScene({
-    id: 'lesson', title: 'あした なに ある？', whichT: 'いつの こと？', ansT: 'なにを こたえる？',
+    id: 'lesson', title: '{あした なに ある？|明日、何がある？}', whichT: '{いつの こと？|いつのこと？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var today = weekdayToday(rng), rows = [];
-      for (var i = 0; i < 6; i++) { var l = pick(rng, LESSONS); rows.push({ d: dk(addDays(today, i)), les: l[0], item: l[1], hw: pick(rng, HOMEWORK) }); }
+      for (var i = 0; i < 6; i++) { var l = pick(rng, LESSONS), d = addDays(today, i); rows.push({ d: J(dk(d), dj(d)), les: l[0], item: l[1], hw: pick(rng, HOMEWORK) }); }
       return { today: today, rows: rows };
     },
     words: [
-      { kw: 'きょう', say: ['きょう', 'きょうって', 'きょうは'], out: 'p0', text: 'きょうの らん', pick: function () { return 0; } },
-      { kw: 'あした', say: ['あした', 'あしたって', 'あしたは'], out: 'p1', tier: 1, text: 'きょうの つぎの ひの らん', pick: function () { return 1; } },
-      { kw: 'どようび', say: ['こんどの どようび', 'どようび', 'どようびって'], out: 'sat', tier: 2, text: 'つぎの どようびの らん', pick: function (S) { return satOffset(S.today); } }
+      { kw: '{きょう|今日}', say: ['きょう', 'きょうって', 'きょうは'], sayJ: ['今日', '今日って', '今日は'], out: 'p0', text: '{きょうの らん|今日の欄}', pick: function () { return 0; } },
+      { kw: '{あした|明日}', say: ['あした', 'あしたって', 'あしたは'], sayJ: ['明日', '明日って', '明日は'], out: 'p1', tier: 1, text: '{きょうの つぎの ひの らん|今日の次の日の欄}', pick: function () { return 1; } },
+      { kw: '{どようび|土曜日}', say: ['こんどの どようび', 'どようび', 'どようびって'], sayJ: ['今度の土曜日', '土曜日', '土曜日って'], out: 'sat', tier: 2, text: '{つぎの どようびの らん|次の土曜日の欄}', pick: function (S) { return satOffset(S.today); } }
     ],
     asks: [
-      { kw: 'ある', say: ['なに ある？', 'なにが あるんだっけ？', 'ならいごと ある？'], out: 'les', text: 'ならいごとを こたえる', val: function (r) { return r.d + 'は ' + r.les + ' だよ。'; } },
-      { kw: 'もって', say: ['なに もっていく？', 'なにを もっていけば いい？', 'もっていく もの なに？'], out: 'item', tier: 1, text: 'もちものを こたえる', val: function (r) { return r.d + 'は ' + r.item + 'を もっていこう。'; } },
-      { kw: 'しゅくだい', say: ['しゅくだい なに？', 'しゅくだい なんだっけ？', 'しゅくだい ある？'], out: 'hw', tier: 2, text: 'しゅくだいを こたえる', val: function (r) { return r.d + 'の しゅくだいは ' + r.hw + ' だよ。'; } }
+      { kw: '{ある|ある}', say: ['なに ある？', 'なにが あるんだっけ？', 'ならいごと ある？'], sayJ: ['何がある？', '何があるんだっけ？', '習い事ある？'], out: 'les', text: '{ならいごとを こたえる|習い事を答える}', val: function (r) { var l = JT(r.les); return J(r.d + 'は ' + l + ' だよ。', r.d + 'は' + l + 'があります。'); } },
+      { kw: '{もって|持って}', say: ['なに もっていく？', 'なにを もっていけば いい？', 'もっていく もの なに？'], sayJ: ['何を持っていく？', '何を持っていけばいい？', '持っていくもの何？'], out: 'item', tier: 1, text: '{もちものを こたえる|持ち物を答える}', val: function (r) { var t = JT(r.item); return J(r.d + 'は ' + t + 'を もっていこう。', r.d + 'は' + t + 'を持っていきましょう。'); } },
+      { kw: '{しゅくだい|宿題}', say: ['しゅくだい なに？', 'しゅくだい なんだっけ？', 'しゅくだい ある？'], sayJ: ['宿題は何？', '宿題なんだっけ？', '宿題ある？'], out: 'hw', tier: 2, text: '{しゅくだいを こたえる|宿題を答える}', val: function (r) { var t = JT(r.hw); return J(r.d + 'の しゅくだいは ' + t + ' だよ。', r.d + 'の宿題は' + t + 'です。'); } }
     ],
     context: function (S) {
-      return { info: [['きょう', dk(S.today)]], table: { cap: 'よていひょう', cols: ['ひ', 'ならいごと', 'もちもの', 'しゅくだい'], rows: S.rows.map(function (r) { return [r.d, r.les, r.item, r.hw]; }) } };
+      return { info: [[J('きょう', '今日'), J(dk(S.today), dj(S.today))]], table: { cap: J('よていひょう', '予定表'), cols: [J('ひ', '日'), J('ならいごと', '習い事'), J('もちもの', '持ち物'), J('しゅくだい', '宿題')], rows: S.rows.map(function (r) { return [r.d, JT(r.les), JT(r.item), JT(r.hw)]; }) } };
     }
   });
 
   // ペットの おせわ
-  var PETS = [['いぬ', ['ポチ', 'コロ', 'ハチ']], ['ねこ', ['タマ', 'ミケ', 'クロ']], ['とり', ['ピーちゃん', 'チュン']], ['うさぎ', ['ぴょん', 'モモ']], ['かめ', ['カメきち', 'のろ']]];
-  var PET_FOOD = ['ドッグフード', 'キャットフード', 'とりの えさ', 'にんじん', 'かめの えさ'];
+  var PETS = [['{いぬ|犬}', ['ポチ', 'コロ', 'ハチ']], ['{ねこ|猫}', ['タマ', 'ミケ', 'クロ']], ['{とり|鳥}', ['ピーちゃん', 'チュン']], ['うさぎ', ['ぴょん', 'モモ']], ['カメ', ['カメきち', 'のろ']]];
+  var PET_FOOD = ['ドッグフード', 'キャットフード', '{とりの えさ|鳥のえさ}', 'にんじん', '{カメの えさ|カメのえさ}'];
   tableScene({
-    id: 'pet', title: 'うちの こ ごはん いつ？', whichT: 'どの ペット？', ansT: 'なにを こたえる？',
+    id: 'pet', title: '{うちの こ ごはん いつ？|うちの子のごはん、いつ？}', whichT: '{どの ペット？|どのペット？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var ks = [0].concat(shuffle(rng, [1, 2, 3, 4]).slice(0, 3)), years = shuffle(rng, [1, 2, 3, 4, 5, 6]).slice(0, 4);
-      var rows = shuffle(rng, ks).map(function (k, i) { return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: pick(rng, ['7じ', '8じ', '12じ', '5じ', '6じ']) + 'と ' + pick(rng, ['5じ', '6じ', '7じ']), y: years[i] }; });
+      var rows = shuffle(rng, ks).map(function (k, i) { var h1 = pick(rng, [7, 8, 12]), h2 = pick(rng, [5, 6, 7]); return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: J('あさ ' + h1 + 'じと よる ' + h2 + 'じ', '朝' + h1 + '時と夜' + h2 + '時'), y: years[i] }; });
       return { rows: rows, fav: ri(rng, 0, 3) };
     },
     words: [
-      { kw: 'うちの こ', say: ['うちの こ', 'うちの こって', 'うちの こ、'], out: 'fav', text: 'プロフィールの「いちばん なかよしの ペット」', pick: function (S) { return S.fav; } },
-      { kw: 'いぬ', say: ['いぬ', 'いぬの こ', 'うちの いぬ'], out: 'dog', tier: 1, text: 'いぬ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.kind === 'いぬ'; }); } },
-      { kw: 'あたらしい', say: ['あたらしい こ', 'あたらしい ペット', 'あたらしい こって'], out: 'new', tier: 2, text: 'いちばん さいきん うちに きた ペット', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.y < S.rows[b].y) b = i; }); return b; } }
+      { kw: '{うちの こ|うちの子}', say: ['うちの こ', 'うちの こって', 'うちの こ、'], sayJ: ['うちの子', 'うちの子って', 'うちの子さ'], out: 'fav', text: '{プロフィールの「いちばん なかよしの ペット」|プロフィールの「いちばん仲良しのペット」}', pick: function (S) { return S.fav; } },
+      { kw: '{いぬ|犬}', say: ['いぬ', 'いぬの こ', 'うちの いぬ'], sayJ: ['犬', '犬の子', 'うちの犬'], out: 'dog', tier: 1, text: '{いぬ|犬}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.kind === PETS[0][0]; }); } },
+      { kw: '{あたらしい|新しい}', say: ['あたらしい こ', 'あたらしい ペット', 'あたらしい こって'], sayJ: ['新しい子', '新しいペット', '新しい子って'], out: 'new', tier: 2, text: '{いちばん さいきん うちに きた ペット|いちばん最近うちに来たペット}', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.y < S.rows[b].y) b = i; }); return b; } }
     ],
     asks: [
-      { kw: 'ごはん', say: ['ごはん なんじ？', 'ごはん いつ あげる？', 'ごはんの じかん いつ？'], out: 'time', text: 'ごはんの じかんを こたえる', val: function (r) { return r.name + 'の ごはんは ' + r.time + ' だよ。'; } },
-      { kw: 'たべる', say: ['なに たべるの？', 'なに たべる？', 'たべる もの なに？'], out: 'food', tier: 1, text: 'ごはんの なかみを こたえる', val: function (r) { return r.name + 'は ' + r.food + 'を たべるよ。'; } }
+      { kw: 'ごはん', say: ['ごはん なんじ？', 'ごはん いつ あげる？', 'ごはんの じかん いつ？'], sayJ: ['ごはん何時？', 'ごはん、いつあげる？', 'ごはんの時間いつ？'], out: 'time', text: '{ごはんの じかんを こたえる|ごはんの時間を答える}', val: function (r) { return J(r.name + 'の ごはんは ' + r.time + ' だよ。', r.name + 'のごはんは' + r.time + 'です。'); } },
+      { kw: '{たべる|食べる}', say: ['なに たべるの？', 'なに たべる？', 'たべる もの なに？'], sayJ: ['何を食べるの？', '何食べる？', '食べるもの何？'], out: 'food', tier: 1, text: '{ごはんの なかみを こたえる|ごはんの中身を答える}', val: function (r) { var f = JT(r.food); return J(r.name + 'は ' + f + 'を たべるよ。', r.name + 'は' + f + 'を食べます。'); } }
     ],
     context: function (S) {
-      return { info: [['いちばん なかよし', S.rows[S.fav].name]], table: { cap: 'ペットの おせわ ひょう', cols: ['なまえ', 'どうぶつ', 'ごはんの じかん', 'ごはん', 'うちに きた'], rows: S.rows.map(function (r) { return [r.name, r.kind, r.time, r.food, r.y + 'ねん まえ']; }) } };
+      return { info: [[J('いちばん なかよし', 'いちばん仲良し'), S.rows[S.fav].name]], table: { cap: J('ペットの おせわ ひょう', 'ペットのお世話表'), cols: [J('なまえ', '名前'), J('どうぶつ', '動物'), J('ごはんの じかん', 'ごはんの時間'), 'ごはん', J('うちに きた', 'うちに来た')], rows: S.rows.map(function (r) { return [r.name, JT(r.kind), r.time, JT(r.food), J(r.y + 'ねん まえ', r.y + '年前')]; }) } };
     }
   });
 
   // おみせ
-  var KSHOPS = [['パンやさん', 'パン'], ['ほんやさん', 'ほん'], ['おもちゃやさん', 'おもちゃ'], ['やおやさん', 'やさい'], ['くすりやさん', 'くすり'], ['はなやさん', 'はな'], ['おかしやさん', 'おかし']];
+  var KSHOPS = [['{パンやさん|パン屋さん}', 'パン'], ['{ほんやさん|本屋さん}', '本'], ['{おもちゃやさん|おもちゃ屋さん}', 'おもちゃ'], ['{やおやさん|八百屋さん}', '野菜'], ['{くすりやさん|薬屋さん}', '薬'], ['{はなやさん|花屋さん}', '花'], ['{おかしやさん|お菓子屋さん}', 'お菓子']];
   tableScene({
-    id: 'kshop', title: 'いつもの おみせ やってる？', whichT: 'どの おみせ？', ansT: 'なにを こたえる？',
+    id: 'kshop', title: '{いつもの おみせ やってる？|いつものお店、やってる？}', whichT: '{どの おみせ？|どのお店？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var sh = shuffle(rng, KSHOPS).slice(0, 5), walks = shuffle(rng, range(18).map(function (i) { return i + 3; })).slice(0, 5);
       var rows = sh.map(function (s, i) { return { name: s[0], sells: s[1], walk: walks[i], close: ri(rng, 17, 21) }; });
@@ -1162,16 +1183,16 @@ var AIGame = (function () {
       return { rows: rows, hist: hist, usual: +mostOf(hist.map(String), 0) };
     },
     words: [
-      { kw: 'いつもの', say: ['いつもの おみせ', 'いつもの ところ', 'いつもの おみせって'], out: 'usual', text: 'いった きろくで いちばん おおい おみせ', pick: function (S) { return isNaN(S.usual) ? -1 : S.usual; } },
-      { kw: 'ちかく', say: ['ちかくの おみせ', 'いちばん ちかくの おみせ', 'ちかくの ところ'], out: 'near', tier: 1, text: 'あるいて いちばん ちかい おみせ', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.walk < S.rows[b].walk) b = i; }); return b; } },
-      { kw: 'パン', say: ['パンの おみせ', 'パンやさん', 'パン かう ところ'], out: 'bread', tier: 2, text: 'パンを うっている おみせ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.sells === 'パン'; }); } }
+      { kw: 'いつもの', say: ['いつもの おみせ', 'いつもの ところ', 'いつもの おみせって'], sayJ: ['いつものお店', 'いつもの店', 'いつものお店って'], out: 'usual', text: '{いった きろくで いちばん おおい おみせ|行った記録でいちばん多いお店}', pick: function (S) { return isNaN(S.usual) ? -1 : S.usual; } },
+      { kw: '{ちかく|近く}', say: ['ちかくの おみせ', 'いちばん ちかくの おみせ', 'ちかくの ところ'], sayJ: ['近くのお店', 'いちばん近くのお店', '近くの店'], out: 'near', tier: 1, text: '{あるいて いちばん ちかい おみせ|歩いていちばん近いお店}', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.walk < S.rows[b].walk) b = i; }); return b; } },
+      { kw: 'パン', say: ['パンの おみせ', 'パンやさん', 'パン かう ところ'], sayJ: ['パンのお店', 'パン屋さん', 'パンを買うお店'], out: 'bread', tier: 2, text: '{パンを うっている おみせ|パンを売っているお店}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.sells === 'パン'; }); } }
     ],
     asks: [
-      { kw: 'なんじまで', say: ['なんじまで やってる？', 'なんじまで あいてる？', 'なんじまで？'], out: 'close', text: 'しまる じかんを こたえる', val: function (r) { return r.name + 'は ' + r.close + 'じまで だよ。'; } },
-      { kw: 'なんぷん', say: ['あるいて なんぷん？', 'なんぷんで つく？', 'まで なんぷん？'], out: 'walk', tier: 1, text: 'あるいて なんぷんかを こたえる', val: function (r) { return r.name + 'までは あるいて ' + r.walk + 'ふん だよ。'; } }
+      { kw: '{なんじまで|何時まで}', say: ['なんじまで やってる？', 'なんじまで あいてる？', 'なんじまで？'], sayJ: ['何時までやってる？', '何時まで開いてる？', '何時まで？'], out: 'close', text: '{しまる じかんを こたえる|閉店時刻を答える}', val: function (r) { var n = JT(r.name); return J(n + 'は ' + r.close + 'じまで だよ。', n + 'は' + r.close + '時まで営業しています。'); } },
+      { kw: '{なんぷん|何分}', say: ['あるいて なんぷん？', 'なんぷんで つく？', 'まで なんぷん？'], sayJ: ['歩いて何分？', '何分で着く？', 'まで何分？'], out: 'walk', tier: 1, text: '{あるいて なんぷんかを こたえる|歩いて何分かを答える}', val: function (r) { var n = JT(r.name); return J(n + 'までは あるいて ' + r.walk + 'ふん だよ。', n + 'までは歩いて' + r.walk + '分です。'); } }
     ],
     context: function (S) {
-      return { info: [['いった きろく', S.hist.map(function (i) { return S.rows[i].name; }).join('、')]], table: { cap: 'ちかくの おみせ', cols: ['おみせ', 'あるいて', 'しまる じかん'], rows: S.rows.map(function (r) { return [r.name, r.walk + 'ふん', r.close + 'じ']; }) } };
+      return { info: [[J('いった きろく', '行った記録'), S.hist.map(function (i) { return JT(S.rows[i].name); }).join('、')]], table: { cap: J('ちかくの おみせ', '近くのお店'), cols: [J('おみせ', 'お店'), J('あるいて', '徒歩'), J('しまる じかん', '閉店')], rows: S.rows.map(function (r) { return [JT(r.name), J(r.walk + 'ふん', r.walk + '分'), J(r.close + 'じ', r.close + '時')]; }) } };
     }
   });
 
@@ -1338,7 +1359,7 @@ var AIGame = (function () {
     rng = rng || Math.random;
     var m = getManual(sceneId, lv), base = SCENES[sceneId], cfg = L(lv);
     var user = userById(userId || pick(rng, base.users));
-    var kana = base.kana || !cfg.kanji;
+    var kana = !cfg.kanji; KJ = cfg.kanji;
     for (var tries = 0; tries < 200; tries++) {
       var th = Object.create(base); th.m = m; th.user = user;
       var S = th.session(rng); S.user = user; th.S = S; S._msgs = {};
@@ -1372,6 +1393,9 @@ var AIGame = (function () {
         var ctx = th.context(S);
         ctx.profile = [[kana ? 'へんじの このみ' : '返事の好み', kana ? ['とくに なし', 'みじかめ', 'ていねい'][S.pref] : ['とくになし', '短め', 'ていねい'][S.pref]]];
         if (S.fb) ctx.past = kana ? 'まえの かいわで「へんじ ながいよ」と いわれた' : '前回の会話で「返事、長いよ」と言われた';
+        var fix = function (v) { return typeof v === 'string' ? T(v, cfg.kanji) : Array.isArray(v) ? v.map(fix) : v && typeof v === 'object' && !(v instanceof Date) ? Object.keys(v).reduce(function (o, k) { o[k] = fix(v[k]); return o; }, {}) : v; };
+        ctx = fix(ctx);
+        qs.forEach(function (q) { q.msg = T(q.msg, cfg.kanji); if (q.pre) q.pre = q.pre.map(function (p) { return T(p, cfg.kanji); }); q.cands.forEach(function (c) { c.text = T(c.text, cfg.kanji); }); });
         return { scene: sceneId, level: lv, user: user.id, kana: kana, ctx: ctx, qs: qs, S: S, code: 'lv' + lv + '-' + sceneId };
       }
     }

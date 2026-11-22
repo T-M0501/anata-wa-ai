@@ -114,6 +114,7 @@ for (const id of Object.keys(G.SCENES)) {
       const p = G.ruleParts(id, r, m.kanji), s = p.cond + p.out;
       ok(!/[{}|]|undefined|NaN|null/.test(s), `${tag} 文章がきれい: ${s}`);
       if (lv <= 2) ok(!KANJI.test(s.replace(WEEKDAY, '')), `${tag} Lv${lv}の指示書に漢字なし: ${s}`);
+      if (lv >= 4) ok(KANJI.test(s), `${tag} Lv4〜の指示書のルールに漢字: ${s}`);
     });
     m.slots.forEach(sid => ok(!KANJI.test(G.slotTitle(id, sid, m.kanji)) || m.kanji, `${tag} 項目名`));
     const hits = new Array(rules.length).fill(0), users = {};
@@ -160,6 +161,14 @@ for (const id of Object.keys(G.SCENES)) {
           });
         }
         if (q.followOf != null) follows++;
+        // 文字のレベル：Lv4〜は漢字まじり、Lv6〜は長いひらがなの続きがない
+        if (lv >= 4) {
+          const u = G.userById(sess.user);
+          if (u.age !== 'child') ok(KANJI.test(q.msg), `${tag} Lv4〜のユーザーのメッセージに漢字: ${q.msg}`);
+          q.cands.forEach(c => ok(KANJI.test(c.text), `${tag} Lv4〜の返事に漢字: ${c.text}`));
+        }
+        if (lv >= 3) ok(!/^[ぁ-んー\s、。！？〜🎵✨💦😢😭]+$/.test(q.msg), `${tag} Lv3〜のメッセージがひらがなだけでない: ${q.msg}`);
+        if (lv >= 6) q.cands.forEach(c => ok(!/[ぁ-ん]{15,}/.test(c.text.replace(/\s/g, '')), `${tag} Lv6〜の返事に長いひらがなの続きがない: ${c.text}`));
         if (sess.kana) [q.msg].concat(q.cands.map(c => c.text)).forEach(s => ok(lv > 2 || !KANJI.test(s.replace(WEEKDAY, '')), `${tag} Lv1〜2の文に漢字なし: ${s}`));
         ok(!/[{}|]|undefined|NaN|null/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 表示の文がきれい`);
         prevMemo = q.memo;
