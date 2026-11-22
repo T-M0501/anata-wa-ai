@@ -237,6 +237,7 @@ var AIGame = (function () {
   function pick(rng, a) { return a.length ? a[Math.floor(rng() * a.length)] : null; }
   function ri(rng, lo, hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
   function shuffle(rng, a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function range(n) { var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
   function T(s, kanji) { return String(s).replace(/\{([^|{}]*)\|([^|{}]*)\}/g, function (m, k, j) { return kanji ? j : k; }); }
   function V(a, t, c) { return { a: a, t: t, c: c }; }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
@@ -394,7 +395,7 @@ var AIGame = (function () {
     },
     realize: function (it, S, vals, prev, rng) {
       var w = ['いつもの', 'きのうと おなじ', S.sibName + 'と おなじ', '2ばんめに すきな'][it.word];
-      return { msg: (it.sick ? 'おなか いたいけど… ' : '') + w + ' おやつ ちょうだい', time: it.night ? ri(rng, 17, 18) * 60 + ri(rng, 0, 50) : ri(rng, 14, 16) * 60 + ri(rng, 0, 50) };
+      return { msg: (it.sick ? 'おなか いたいけど… ' : '') + w + ' ' + pick(rng, ['おやつ ちょうだい', 'おやつ たべたい', 'おやつ ある？', 'おやつ だして〜']), time: it.night ? ri(rng, 17, 18) * 60 + ri(rng, 0, 50) : ri(rng, 14, 16) * 60 + ri(rng, 0, 50) };
     },
     content: function (vals, it, S) {
       if (vals.care === 'after') return { key: 'after', text: 'ごはんの あとで たべようね。' };
@@ -425,7 +426,7 @@ var AIGame = (function () {
       follow: [V('「さっきの」では ない', '「さっきの」では なくて', '「さっきの」で なければ'), sayK('さっきの')],
       foodLast: [V('{さいごに でた ものが たべもの では ない|最後に出た ものが 食べ物ではない}', '{さいごに でた ものが たべもの では なくて|最後に出た ものが 食べ物ではなくて}', '{さいごが たべもの で なければ|最後が 食べ物で なければ}'), V('{さいごに でた ものが たべもの|最後に出た ものが 食べ物}', '{さいごに でた ものが たべもので|最後に出た ものが 食べ物で}', '{さいごが たべものなら|最後が 食べ物なら}')],
       tie: [V('{さいごの はなしに でた ものが 1つ|最後の話に出たものが1つ}', '{さいごに でた ものが 1つで|最後に出たものが1つで}', '{さいごに でた ものが 1つなら|最後に出たものが1つなら}'), V('{さいごの はなしに ものが 2つ でた|最後の話にものが2つ出た}', '{さいごの はなしに ものが 2つ でて|最後の話にものが2つ出て}', '{ものが 2つ でたなら|ものが2つ出たなら}')],
-      ask: [V('「とって」と {いった|言った}', '「とって」と {いって|言って}', '「とって」と {いったら|言ったら}'), V('「どこ？」と きいた', '「どこ？」と きいて', '「どこ？」と きいたら')]
+      ask: [V('「とって」「もってきて」と {いった|言った}', '「とって」「もってきて」と {いって|言って}', '「とって」「もってきて」と {いったら|言ったら}'), V('「どこ」と きいた', '「どこ」と きいて', '「どこ」と きいたら')]
     },
     outs: {
       last: '{かいわで いちばん さいごに でた もの（アイの へんじは のぞく）|会話で いちばん最後に出た もの（アイの返事はのぞく）}', before: '{その ひとつ まえに でた もの（たべものは とれないから）|その ひとつ前に出た もの（食べ物は とれないから）}', fav: '{プロフィールの「おきにいり」|プロフィールの「お気に入り」}', yday: '{きのうの かいわに でた もの|きのうの会話に出た もの}', mama: '{ママが さいごに いった もの|ママが 最後に言った もの}', prevQ: '{まえの しつもんで こたえた もの|前の質問で 答えた もの}',
@@ -442,7 +443,7 @@ var AIGame = (function () {
       if (it.follow && !prev) return null;
       var w = it.follow ? 'さっきの' : ['あれ', 'いつもの', 'きのうの', 'ママが いってた'][it.word];
       var lastSoFar = prev ? prev.preItem : S.last;
-      var x = { msg: w + ' ' + (it.ask ? 'どこ？' : 'とって！'), before: lastSoFar };
+      var x = { msg: w + ' ' + (it.ask ? pick(rng, ['どこ？', 'どこに ある？', 'どこ いった？', 'どこだっけ？', 'どこ〜？']) : pick(rng, ['とって！', 'もってきて！', 'とってきて〜', 'とって〜', 'もってきて〜', 'とってくれる？'])), before: lastSoFar };
       if (it.tie) { var two = shuffle(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })).slice(0, 2); x.pre = [pick(rng, ['パパ', 'おねえちゃん']), two[0] + 'と ' + two[1] + 'が でてきたよ']; x.tie = two; x.last = two[1]; }
       else if (it.foodLast) { if (FOODS.indexOf(lastSoFar) >= 0) return null; var f = pick(rng, FOODS); x.pre = [pick(rng, ['パパ', 'ママ']), f + 'を かって きたよ']; x.last = f; }
       else { var sp = pick(rng, S.spare.concat([S.mama, S.yday]).filter(function (y) { return y !== lastSoFar; })); x.pre = [pick(rng, ['パパ', 'おねえちゃん']), sp + 'が でてきたよ']; x.last = sp; }
@@ -459,7 +460,7 @@ var AIGame = (function () {
       good: function (o) { return o[0] + 'と ' + o[1] + '、どっち？'; },
       open: function () { return 'なにが ほしいの？ いろ・かたち・ばしょを ぜんぶ おしえて。'; },
       needless: function () { return 'あれって なんの こと？'; },
-      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: c + 'の ほう', it: { tie: 0 }, x: { last: c, tie: null } }; }
+      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: c + pick(rng, ['の ほう', 'だよ', 'の こと', 'に きまってるじゃん']), it: { tie: 0 }, x: { last: c, tie: null } }; }
     } },
     context: function (S) { return { info: [['おきにいり', S.fav]], log: S.log, list: { cap: 'ものの ばしょ', rows: Object.keys(S.places).map(function (k) { return [k, S.places[k]]; }) } }; }
   };
@@ -481,7 +482,7 @@ var AIGame = (function () {
     phr: {
       when: [sayK('きょう'), sayK('あした'), sayK('あさって'), sayK('こんどの どようび')],
       place: [V('ばしょを いわない', 'ばしょを いわなくて', 'ばしょを いわなければ'), sayK('おばあちゃんち')],
-      ask: [V('「てんき」を きいた', '「てんき」を きいて', '「てんき」を きいたら'), V('「かさ いる？」と きいた', '「かさ いる？」と きいて', '「かさ いる？」と きいたら'), V('「なに きていく？」と きいた', '「なに きていく？」と きいて', '「なに きていく？」と きいたら')],
+      ask: [V('「てんき」を きいた', '「てんき」を きいて', '「てんき」を きいたら'), V('「かさ」の ことを きいた', '「かさ」の ことを きいて', '「かさ」の ことを きいたら'), V('「ふく」の ことを きいた', '「ふく」の ことを きいて', '「ふく」の ことを きいたら')],
       follow: [V('「じゃあ」で はじまらない', '「じゃあ」で はじまらなくて', '「じゃあ」で はじまらなければ'), V('「じゃあ ◯◯は？」と きいた', '「じゃあ ◯◯は？」と きいて', '「じゃあ ◯◯は？」と きいたら')]
     },
     outs: {
@@ -494,11 +495,11 @@ var AIGame = (function () {
       for (var i = 0; i < 6; i++) rows.push([[pick(rng, KW_SKY), ri(rng, 4, 18)], [pick(rng, KW_SKY), ri(rng, 4, 18)]]);
       return { today: today, rows: rows };
     },
-    realize: function (it, S, vals, prev) {
+    realize: function (it, S, vals, prev, rng) {
       if (it.follow && !prev) return null;
       var W = KW_WORD[it.when];
-      if (it.follow) return { msg: 'じゃあ ' + W + 'は？' };
-      return { msg: (it.place ? 'おばあちゃんちで ' : '') + W + ' ' + ['てんき どう？', 'かさ いる？', 'なに きていけば いい？'][it.ask] };
+      if (it.follow) return { msg: 'じゃあ ' + W + pick(rng, ['は？', 'は どう？', 'の ほうは？']) };
+      return { msg: (it.place ? 'おばあちゃんちで ' : '') + W + ' ' + pick(rng, [['てんき どう？', 'てんき おしえて', 'どんな てんき？'], ['かさ いる？', 'かさ もってく？', 'かさ ひつよう？'], ['なに ふく きていけば いい？', 'ふく どうしよう？', 'どんな ふく が いい？']][it.ask]) };
     },
     content: function (vals, it, S, prev) {
       var off = { p0: 0, p1: 1, p2: 2, sat: satOffset(S.today) }[vals.day];
@@ -531,7 +532,7 @@ var AIGame = (function () {
     phr: {
       dirty: [V('「よごれてる」が ない', '「よごれてる」が なくて', '「よごれてる」が なければ'), V('「よごれてる」と {いった|言った}', '「よごれてる」と {いって|言って}', '「よごれてる」と {いったら|言ったら}')],
       broken: [V('「われた」が ない', '「われた」が なくて', '「われた」が なければ'), V('「われた」と {いった|言った}', '「われた」と {いって|言って}', '「われた」と {いったら|言ったら}')],
-      ask: [V('「つぎ いつ？」と きいた', '「つぎ いつ？」と きいて', '「つぎ いつ？」と きいたら'), V('「あした だせる？」と きいた', '「あした だせる？」と きいて', '「あした だせる？」と きいたら')],
+      ask: [V('「いつ」と きいた', '「いつ」と きいて', '「いつ」と きいたら'), V('「あした」と きいた', '「あした」と きいて', '「あした」と きいたら')],
       past8: [V('{あさ 8じより まえの メッセージ|朝8時より前のメッセージ}', '{あさ 8じより まえで|朝8時より前で}', '{あさ 8じより まえなら|朝8時より前なら}'), V('{あさ 8じを すぎた メッセージ|朝8時をすぎたメッセージ}', '{8じを すぎていて|8時をすぎていて}', '{8じを すぎていたら|8時をすぎていたら}')]
     },
     outs: {
@@ -547,7 +548,7 @@ var AIGame = (function () {
     },
     catOn: function (S, d) { var w = d.getUTCDay(); return w >= 1 && w <= 5 ? S.cal[w - 1] : -1; },
     realize: function (it, S, vals, prev, rng) {
-      var m = (it.dirty ? 'よごれてる ' : '') + (it.broken ? 'われちゃった ' : '') + GOMI_ITEM[it.item] + (it.ask ? '、あした だせる？' : '、つぎ いつ だせる？');
+      var m = (it.dirty ? 'よごれてる ' : '') + (it.broken ? 'われちゃった ' : '') + GOMI_ITEM[it.item] + (it.ask ? pick(rng, ['、あした だせる？', '、あした すてて いい？', 'って あした だして いい？']) : pick(rng, ['、つぎ いつ だせる？', '、こんど いつ だせる？', 'って いつ すてれば いい？']));
       return { msg: m, time: it.past8 ? ri(rng, 9, 20) * 60 + ri(rng, 0, 59) : ri(rng, 6, 7) * 60 + ri(rng, 0, 59) };
     },
     content: function (vals, it, S) {
@@ -595,7 +596,7 @@ var AIGame = (function () {
     realize: function (it, S, vals, prev, rng) {
       var found = it.when === 0 ? pick(rng, [14 * 60 + 40, 16 * 60 + 10]) : ri(rng, 16, 17) * 60 + ri(rng, 10, 50);
       var w = ['さっき', '朝イチのあと', 'お昼前に', '昨日'][it.when];
-      return { msg: w + '、レンタル部屋Bでこれ見つけた。誰の？', time: found, pic: { kind: it.kind, tag: it.tag ? pick(rng, STAFF) : null } };
+      return { msg: w + pick(rng, ['、レンタル部屋Bでこれ見つけた。誰の？', '、部屋Bに落ちてたんだけど、誰のかな？', '、レンタル部屋Bでこれ拾った。持ち主わかる？']), time: found, pic: { kind: it.kind, tag: it.tag ? pick(rng, STAFF) : null } };
     },
     content: function (vals, it, S, prev, x) {
       var host;
@@ -680,7 +681,7 @@ var AIGame = (function () {
       when: [sayA('今日'), sayA('明日'), sayA('あさって'), sayA('週末')],
       place: [V('地名がない', '地名がなく', '地名がなければ'), V('地名がある', '地名があって', '地名があれば'), sayA('学校（会社）のほう')],
       trip: [V('その日に旅行・出張の予定がない', 'その日に旅行・出張の予定がなく', 'その日に予定がなければ'), V('その日に旅行・出張の予定がある', 'その日に旅行・出張の予定があって', 'その日に予定があれば')],
-      ask: [V('「天気は？」と聞かれた', '「天気は？」と聞かれて', '「天気は？」と聞かれたら'), sayA('傘いる？'), sayA('洗濯物干せる？')],
+      ask: [V('「天気」を聞かれた', '「天気」を聞かれて', '「天気」を聞かれたら'), V('「傘」のことを聞かれた', '「傘」のことを聞かれて', '「傘」のことを聞かれたら'), V('「洗濯物」のことを聞かれた', '「洗濯物」のことを聞かれて', '「洗濯物」のことを聞かれたら')],
       follow: [V('「じゃあ」で始まらない', '「じゃあ」で始まらず', '「じゃあ」で始まらなければ'), sayA('じゃあ ◯◯は？')],
       nohome: [V('プロフィールに住まいがある', 'プロフィールに住まいがあって', 'プロフィールに住まいがあれば'), V('地名も予定もなく、プロフィールにも住まいがない', '地名も予定も住まいもなく', '地名も住まいもわからなければ')]
     },
@@ -703,7 +704,7 @@ var AIGame = (function () {
       good: function (o) { return CITIES[o[0]] + 'と' + CITIES[o[1]] + '、どちらの地域のことですか？'; },
       open: function () { return 'どこの、いつの、何についての天気ですか？ 詳しく教えてください。'; },
       needless: function () { return '念のため、どこの地域か教えてもらえますか？'; },
-      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: CITIES[c], it: { place: 1, nohome: 0 }, x: { named: c } }; }
+      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: CITIES[c] + pick(rng, ['', 'のほう', 'だよ', 'に決まってるでしょ']), it: { place: 1, nohome: 0 }, x: { named: c } }; }
     } },
     dayOff: function (v, S) { return { p0: 0, p0b: 0, p1: 1, p2: 2, sat: satOffset(S.today) }[v]; },
     realize: function (it, S, vals, prev, rng) {
@@ -712,9 +713,9 @@ var AIGame = (function () {
       if ((it.place === 0 && !it.follow && off === S.tripDay ? 1 : 0) !== it.trip) return null;
       if ((S.nohome && it.place === 0 && !it.follow && !it.trip ? 1 : 0) !== it.nohome) return null;
       var named = pick(rng, [0, 1, 2]), W = ['今日', '明日', 'あさって', '週末'][it.when];
-      if (it.follow) return { msg: 'じゃあ' + W + 'は？', named: named };
+      if (it.follow) return { msg: 'じゃあ' + W + pick(rng, ['は？', 'はどう？', 'のほうは？']), named: named };
       var where = it.place === 1 ? CITIES[named] + 'の' : it.place === 2 ? '学校のほうの' : '';
-      return { msg: W + 'の' + where + ['天気は？', '傘いる？', '洗濯物干せる？'][it.ask], named: named };
+      return { msg: W + 'の' + where + pick(rng, [['天気は？', '天気どう？', '天気教えて'], ['傘いる？', '傘いるかな？', '傘持ってく？'], ['洗濯物干せる？', '洗濯物、外に干せる？', '洗濯物どうしよう？']][it.ask]), named: named };
     },
     content: function (vals, it, S, prev, x) {
       var off = this.dayOff(vals.day, S);
@@ -744,7 +745,7 @@ var AIGame = (function () {
     defaults: [D('which', [E('word', 0)], 'usual'), D('ans', [E('ask', 0), E('closed', 0)], 'can')],
     phr: {
       word: [sayA('いつもの店'), sayA('近くの店'), sayA('安い店')],
-      ask: [sayA('今から行ける？'), sayA('何時まで？')],
+      ask: [V('「今から」と言われた', '「今から」と言われて', '「今から」と言われたら'), V('「何時まで」と聞かれた', '「何時まで」と聞かれて', '「何時まで」と聞かれたら')],
       closed: [V('今日がその店の定休日ではない', '今日が定休日ではなく', '今日が定休日でなければ'), V('今日がその店の定休日である', '今日がその店の定休日で', '今日がその店の定休日なら')]
     },
     outs: {
@@ -767,10 +768,10 @@ var AIGame = (function () {
         return S;
       }
     },
-    realize: function (it, S, vals) {
+    realize: function (it, S, vals, prev, rng) {
       var idx = S[vals.which];
       if ((S.rows[idx].off === S.today.getUTCDay() ? 1 : 0) !== it.closed) return null;
-      return { msg: ['いつもの店', '近くの店', '安い店'][it.word] + '、' + ['今から行ける？', '何時まで？'][it.ask], time: S.now };
+      return { msg: ['いつもの店', '近くの店', '安い店'][it.word] + '、' + pick(rng, [['今から行ける？', '今から行けるかな？', '今から行って間に合う？'], ['何時まで？', '何時までやってる？', '何時まで開いてる？']][it.ask]), time: S.now };
     },
     content: function (vals, it, S) {
       var r = S.rows[S[vals.which]], t;
@@ -808,9 +809,9 @@ var AIGame = (function () {
       var dur = ri(rng, 25, 40);
       return { today: weekdayToday(rng), now: 6 * 60 + ri(rng, 10, 150), dep: dep, dur: dur, goalClock: pick(rng, [8 * 60, 8 * 60 + 30, 9 * 60]), plan: pick(rng, [8 * 60 + 40, 9 * 60 + 10, 9 * 60 + 30]), place: pick(rng, ['駅前クリニック', '市民ホール', '中央図書館']) };
     },
-    realize: function (it, S) {
-      var w = ['' + hm(S.goalClock) + 'に着きたいんだけど', '予定に間に合う電車', '朝イチの電車', '今から出るんだけど'][it.word];
-      return { msg: w + '、何時のに乗ればいい？' + (it.safe ? ' 余裕をもって。' : ''), time: S.now };
+    realize: function (it, S, vals, prev, rng) {
+      var w = pick(rng, [[hm(S.goalClock) + 'に着きたいんだけど', hm(S.goalClock) + 'に着きたい', hm(S.goalClock) + 'には着きたいんだけど'], ['予定に間に合う電車', '予定に間に合うやつ', '予定に間に合う便'], ['朝イチの電車', '朝イチで行きたい', '朝イチので'], ['今から出るんだけど', '今から出るから', '今から行くんだけど']][it.word]);
+      return { msg: w + pick(rng, ['、何時のに乗ればいい？', '、どの電車に乗ればいい？', '、何時発に乗ればいい？']) + (it.safe ? ' 余裕をもって。' : ''), time: S.now };
     },
     content: function (vals, it, S) {
       var list = S.dep.map(function (d) { return { d: d, a: d + S.dur }; }), cand;
@@ -843,7 +844,7 @@ var AIGame = (function () {
     phr: {
       word: [sayA('あれ'), sayA('次の予定'), sayA('誕生日'), sayA('来週の')],
       follow: [V('「それ」ではない', '「それ」ではなく', '「それ」でなければ'), sayA('それ')],
-      ask: [sayA('いつだっけ？'), sayA('あと何日？')],
+      ask: [V('「いつ」と聞かれた', '「いつ」と聞かれて', '「いつ」と聞かれたら'), V('「あと何日」と聞かれた', '「あと何日」と聞かれて', '「あと何日」と聞かれたら')],
       tie: [V('直前の会話に出た予定が1つ', '直前の会話の予定が1つで', '直前の予定が1つなら'), V('直前の会話に予定が2つ出ている', '直前の会話に予定が2つ出ていて', '直前の会話に予定が2つなら')]
     },
     outs: {
@@ -858,11 +859,11 @@ var AIGame = (function () {
       var hasAsk = this.m && this.m.rules.some(function (r) { return r.out === 'ask'; }), other = cal.filter(function (c) { return c !== chatEv; })[0];
       return { today: today, cal: cal, chat: chatEv, chat2: other, tie: hasAsk && rng() < 0.5 ? 1 : 0, fam: fam, bdayOff: ri(rng, 3, 20) };
     },
-    realize: function (it, S, vals, prev) {
+    realize: function (it, S, vals, prev, rng) {
       if (it.follow && !prev) return null;
       if ((S.tie && it.word === 0 && !it.follow ? 1 : 0) !== it.tie) return null;
-      var w = it.follow ? 'それって' : ['あれ', '次の予定', S.fam + 'の誕生日', '来週の予定'][it.word];
-      return { msg: w + '、' + ['いつだっけ？', 'あと何日？'][it.ask] };
+      var w = it.follow ? pick(rng, ['それって', 'それ', 'じゃあそれって']) : pick(rng, [['あれ', 'あれって', 'あれさ', 'ねえ、あれ'], ['次の予定', '次の予定って', '次の予定さ'], [S.fam + 'の誕生日', S.fam + 'の誕生日って', S.fam + 'の誕生日さ'], ['来週の予定', '来週の予定って', '来週のやつ']][it.word]);
+      return { msg: w + '、' + pick(rng, [['いつだっけ？', 'いつだった？', 'いつなの？'], ['あと何日？', 'まであと何日？', 'あと何日だっけ？']][it.ask]) };
     },
     pickEv: function (v, S, prev, x) {
       if (v === 'prevQ') return prev.ev;
@@ -882,7 +883,7 @@ var AIGame = (function () {
       good: function (o) { return o[0].name + 'と' + o[1].name + '、どちらの予定ですか？'; },
       open: function () { return 'どの予定のことですか？ 日付や内容など、詳しく教えてください。'; },
       needless: function () { return 'どの予定のことですか？'; },
-      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: c.name + 'のほう', it: { tie: 0 }, x: { chosen: c } }; }
+      resolve: function (it, S, x, o, rng) { var c = pick(rng, o); return { msg: c.name + pick(rng, ['のほう', 'のこと', 'の方だよ', 'に決まってるじゃん']), it: { tie: 0 }, x: { chosen: c } }; }
     } },
     context: function (S) {
       return { info: [['今日', dj(S.today)], ['家族の誕生日', S.fam + '：' + dj(addDays(S.today, S.bdayOff)).replace(/（.）/, '')]],
@@ -902,7 +903,7 @@ var AIGame = (function () {
     space: function () { return facts({ word: 3, dis: 2 }); },
     lib: [R('pick', 1, [E('word', 1)], 'light'), R('pick', 2, [E('word', 2)], 'heavy'), R('ex', 2, [E('dis', 1)], 'nodis')],
     defaults: [D('pick', [E('word', 0)], 'quick'), D('ex', [E('dis', 0)], 'none')],
-    phr: { word: [sayA('なんでもいい'), sayA('さっぱりしたもの'), sayA('がっつり')], dis: [V('苦手な食材を使う料理が答えにならない', '苦手な食材が関係なく', '苦手な食材が関係なければ'), V('答えの料理にプロフィールの苦手な食材が入る', '答えの料理に苦手な食材が入って', '答えの料理に苦手な食材が入るなら')] },
+    phr: { word: [sayA('なんでもいい'), sayA('さっぱり'), sayA('がっつり')], dis: [V('苦手な食材を使う料理が答えにならない', '苦手な食材が関係なく', '苦手な食材が関係なければ'), V('答えの料理にプロフィールの苦手な食材が入る', '答えの料理に苦手な食材が入って', '答えの料理に苦手な食材が入るなら')] },
     outs: { quick: '冷蔵庫の材料で作れる中で、手間が最も短い料理', light: '作れる「さっぱり」の中で手間が最も短い料理', heavy: '作れる「こってり」の中で手間が最も短い料理', none: 'なし', nodis: 'プロフィールの苦手な食材を使う料理を除いて選び直す' },
     session: function (rng) {
       for (;;) {
@@ -923,11 +924,11 @@ var AIGame = (function () {
       if (c[1] && c[1][3] === c[0][3]) return 'tie';
       return c[0];
     },
-    realize: function (it, S, vals) {
+    realize: function (it, S, vals, prev, rng) {
       var a = this.choose(vals.pick, false, S), b = this.choose(vals.pick, true, S);
       if (!a || a === 'tie' || !b || b === 'tie') return null;
       if ((a !== b ? 1 : 0) !== it.dis) return null;
-      return { msg: '今晩なに作れる？ ' + ['なんでもいいよ', 'さっぱりしたのがいいな', 'がっつり食べたい'][it.word] };
+      return { msg: pick(rng, ['今晩なに作れる？ ', '夜ごはん何にしよう？ ', '冷蔵庫のもので何か作れる？ ']) + pick(rng, [['なんでもいいよ', 'なんでもいい', 'なんでもいいけど'], ['さっぱりしたのがいいな', 'さっぱりしたもの希望', 'さっぱり系で'], ['がっつり食べたい', 'がっつりで', 'がっつりいきたい']][it.word]) };
     },
     content: function (vals, it, S) {
       var d = this.choose(vals.pick, vals.ex === 'nodis', S); if (!d || d === 'tie') return null;
@@ -984,6 +985,195 @@ var AIGame = (function () {
         table: { cap: '宿の空き状況', cols: ['宿', '1泊', '駅徒歩', '喫煙', dj(s1).replace(/（.）/, ''), dj(s2).replace(/（.）/, '')], rows: S.rows.map(function (r) { return [r.name, yen(r.price) + '円', r.walk + '分', r.smoke ? '可' : '不可', r.a1 ? '○' : '×', r.a2 ? '○' : '×']; }) } };
     }
   };
+
+  // =====================================================================
+  // ひらがなの ひょうの ばめん（Lv1〜）を まとめて つくる しくみ
+  //   words … 「なにの こと？」の よみかた（さいしょが ふだんの よみかた）
+  //   asks  … 「なにを こたえる？」の よみかた（さいしょが ふだんの よみかた）
+  //   say   … メッセージの いいかたの バリエーション（キーワードを かならず ふくむ）
+  // =====================================================================
+  function kmd(d) { return (d.getUTCMonth() + 1) + 'がつ ' + d.getUTCDate() + 'にち'; }
+  function tableScene(o) {
+    var sc = {
+      id: o.id, kind: 'table', kana: true, minLv: 1, title: o.title, users: KANA_USERS, noLate: true,
+      slots: [{ id: 'which', t: o.whichT }, { id: 'ans', t: o.ansT }],
+      space: function () { return facts({ word: o.words.length, ask: o.asks.length }); },
+      lib: o.words.slice(1).map(function (w, i) { return R('which', w.tier, [E('word', i + 1)], w.out); })
+        .concat(o.asks.slice(1).map(function (a, i) { return R('ans', a.tier, [E('ask', i + 1)], a.out); })),
+      defaults: [D('which', [E('word', 0)], o.words[0].out), D('ans', [E('ask', 0)], o.asks[0].out)],
+      phr: {
+        word: o.words.map(function (w) { return sayK(w.kw); }),
+        ask: o.asks.map(function (a) { return V('「' + a.kw + '」の ことを きいた', '「' + a.kw + '」の ことを きいて', '「' + a.kw + '」の ことを きいたら'); })
+      },
+      outs: {},
+      session: function (rng) {
+        for (var t = 0; t < 300; t++) {
+          var S = o.make(rng), idx = o.words.map(function (w) { return w.pick(S); });
+          if (idx.every(function (x) { return x != null && x >= 0; }) && new Set(idx).size === idx.length) return S;
+        }
+        throw new Error('session ' + o.id);
+      },
+      realize: function (it, S, vals, prev, rng) { return { msg: pick(rng, o.words[it.word].say) + ' ' + pick(rng, o.asks[it.ask].say) }; },
+      content: function (vals, it, S) {
+        var w = o.words.filter(function (x) { return x.out === vals.which; })[0], a = o.asks.filter(function (x) { return x.out === vals.ans; })[0];
+        var t = a.val(S.rows[w.pick(S)], S);
+        return { key: t, text: t };
+      },
+      context: o.context
+    };
+    o.words.forEach(function (w) { sc.outs[w.out] = w.text; });
+    o.asks.forEach(function (a) { sc.outs[a.out] = a.text; });
+    SCENES[o.id] = sc;
+  }
+  function firstIdx(rows, f) { for (var i = 0; i < rows.length; i++) if (f(rows[i], i)) return i; return -1; }
+
+  // テレビ ばんぐみひょう
+  var TV_NAMES = ['どうぶつ ずかん', 'ゆかいな うた', 'クイズ なんでしょう', 'おりょうり きょうしつ', 'ニュース', 'サッカー', 'まほうの じかん', 'むかしばなし'];
+  var TV_ANIME = ['アニメ ほしの こ', 'アニメ もりの なかま', 'アニメ ロボくん'];
+  tableScene({
+    id: 'tv', title: 'あの ばんぐみ なんじから？', whichT: 'どの ばんぐみ？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var names = shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME).slice(0, 2)), t = 16 * 60, rows = [];
+      names = shuffle(rng, names);
+      names.forEach(function (n) { var len = pick(rng, [15, 30, 30, 45]); rows.push({ name: n, s: t, ch: ri(rng, 1, 9), len: len, anime: n.indexOf('アニメ') === 0 }); t += len; });
+      return { rows: rows, now: 16 * 60 + ri(rng, 0, 50), fav: ri(rng, 0, 4) };
+    },
+    words: [
+      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], out: 'fav', text: 'プロフィールの「すきな ばんぐみ」', pick: function (S) { return S.fav; } },
+      { kw: 'つぎの', say: ['つぎの ばんぐみ', 'つぎの テレビ', 'つぎの やつ'], out: 'next', tier: 1, text: 'いまの じかんより あとに はじまる さいしょの ばんぐみ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.s > S.now; }); } },
+      { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], out: 'anime', tier: 2, text: 'アニメの なかで いちばん はやく はじまる ばんぐみ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime; }); } }
+    ],
+    asks: [
+      { kw: 'なんじ', say: ['なんじから？', 'なんじに はじまる？', 'なんじから やる？'], out: 'time', text: 'はじまる じかんを こたえる', val: function (r) { return r.name + 'は ' + hm(r.s) + 'から だよ。'; } },
+      { kw: 'チャンネル', say: ['なんばんの チャンネル？', 'チャンネル どこ？', 'チャンネル なんばん？'], out: 'ch', tier: 1, text: 'チャンネルを こたえる', val: function (r) { return r.name + 'は ' + r.ch + 'チャンネル だよ。'; } },
+      { kw: 'なんぷん', say: ['なんぷん やる？', 'なんぷん あるの？', 'なんぷん みられる？'], out: 'len', tier: 2, text: 'ながさ（なんぷん）を こたえる', val: function (r) { return r.name + 'は ' + r.len + 'ぷん だよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['いま', hm(S.now)], ['すきな ばんぐみ', S.rows[S.fav].name]],
+        table: { cap: 'きょうの ばんぐみひょう', cols: ['じかん', 'ばんぐみ', 'チャンネル', 'ながさ'], rows: S.rows.map(function (r) { return [hm(r.s), r.name, r.ch, r.len + 'ぷん']; }) } };
+    }
+  });
+
+  // バスの じこくひょう
+  var BUS_DEST = ['えき', 'がっこう', 'びょういん', 'こうえん', 'としょかん'];
+  tableScene({
+    id: 'bus', title: 'つぎの バス なんじ？', whichT: 'どの バス？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var t = ri(rng, 7, 15) * 60 + ri(rng, 0, 20), rows = [];
+      for (var i = 0; i < 6; i++) { t += ri(rng, 6, 18); rows.push({ t: t, dest: pick(rng, BUS_DEST), nb: ri(rng, 1, 4) }); }
+      return { rows: rows, now: rows[0].t + ri(rng, -5, 3) };
+    },
+    words: [
+      { kw: 'つぎの', say: ['つぎの バス', 'つぎの バスって', 'つぎに くる バス'], out: 'next', text: 'いまより あとに でる さいしょの バス', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now; }); } },
+      { kw: 'がっこう', say: ['がっこう いきの バス', 'がっこうに いく バス', 'がっこうまでの バス'], out: 'school', tier: 1, text: '「がっこう」いきで、いまより あとの さいしょの バス', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now && r.dest === 'がっこう'; }); } },
+      { kw: 'さいご', say: ['さいごの バス', 'きょう さいごの バス', 'いちばん さいごの バス'], out: 'last', tier: 2, text: 'ひょうの いちばん さいごの バス', pick: function (S) { return S.rows.length - 1; } }
+    ],
+    asks: [
+      { kw: 'なんじ', say: ['なんじ？', 'なんじに でる？', 'なんじに くる？'], out: 'time', text: 'でる じかんを こたえる', val: function (r) { return r.dest + ' いきは ' + hm(r.t) + 'に でるよ。'; } },
+      { kw: 'のりば', say: ['どこの のりば？', 'のりば どこ？', 'なんばん のりば？'], out: 'nb', tier: 1, text: 'のりばを こたえる', val: function (r) { return hm(r.t) + 'の バスは ' + r.nb + 'ばん のりば だよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['いま', hm(S.now)]], table: { cap: 'バスの じこくひょう', cols: ['でる じかん', 'いきさき', 'のりば'], rows: S.rows.map(function (r) { return [hm(r.t), r.dest, r.nb + 'ばん']; }) } };
+    }
+  });
+
+  // たんじょうび
+  var FAM = ['パパ', 'ママ', 'おねえちゃん', 'おじいちゃん', 'おばあちゃん', 'いとこの ケン'];
+  var LIKES = ['おはな', 'ケーキ', 'えほん', 'おちゃ', 'ぼうし', 'えのぐ', 'てぶくろ', 'クッキー'];
+  tableScene({
+    id: 'bday', title: 'たんじょうび いつ？', whichT: 'だれの たんじょうび？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var today = new Date(Date.UTC(2026, ri(rng, 0, 11), ri(rng, 1, 28))), offs = shuffle(rng, range(60).map(function (i) { return i + 2; })).slice(0, 5);
+      var who = ['ママ'].concat(shuffle(rng, FAM.filter(function (f) { return f !== 'ママ'; })).slice(0, 4)), likes = shuffle(rng, LIKES);
+      return { today: today, rows: shuffle(rng, who).map(function (w, i) { return { who: w, off: offs[i], like: likes[i] }; }) };
+    },
+    words: [
+      { kw: 'つぎの', say: ['つぎの たんじょうび', 'つぎの おたんじょうび', 'つぎの たんじょうびって'], out: 'next', text: 'きょうから いちばん ちかい たんじょうびの ひと', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off < S.rows[b].off) b = i; }); return b; } },
+      { kw: 'ママの', say: ['ママの たんじょうび', 'ママの おたんじょうび', 'ママの たんじょうびって'], out: 'mama', tier: 1, text: 'ママの たんじょうび', pick: function (S) { return firstIdx(S.rows, function (r) { return r.who === 'ママ'; }); } },
+      { kw: 'いちばん さき', say: ['いちばん さきの たんじょうび', 'いちばん さきの おたんじょうび'], out: 'far', tier: 2, text: 'きょうから いちばん とおい たんじょうびの ひと', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.off > S.rows[b].off) b = i; }); return b; } }
+    ],
+    asks: [
+      { kw: 'いつ', say: ['いつ？', 'いつだっけ？', 'って いつ？'], out: 'date', text: 'ひにちを こたえる', val: function (r, S) { return r.who + 'の たんじょうびは ' + kmd(addDays(S.today, r.off)) + ' だよ。'; } },
+      { kw: 'プレゼント', say: ['プレゼント なにが いい？', 'プレゼント どうしよう？', 'プレゼント なに あげよう？'], out: 'gift', tier: 1, text: 'その ひとの すきな ものを こたえる', val: function (r) { return r.who + 'には ' + r.like + 'が いいと おもうよ。'; } },
+      { kw: 'あと なんにち', say: ['まで あと なんにち？', 'って あと なんにち？'], out: 'days', tier: 2, text: 'あと なんにちかを こたえる', val: function (r) { return r.who + 'の たんじょうびまで あと ' + r.off + 'にち だよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['きょう', kmd(S.today)]], table: { cap: 'かぞくの たんじょうび', cols: ['だれ', 'たんじょうび', 'すきな もの'], rows: S.rows.map(function (r) { return [r.who, kmd(addDays(S.today, r.off)), r.like]; }) } };
+    }
+  });
+
+  // しゅくだい・ならいごと
+  var LESSONS = [['ピアノ', 'がくふ'], ['すいえい', 'みずぎ'], ['サッカー', 'ボール'], ['えいご', 'えいごの ノート'], ['しゅうじ', 'ふで'], ['たいそう', 'たいそうふく']];
+  var HOMEWORK = ['さんすう プリント', 'かんじ ドリル', 'にっき', 'おんどく', 'けいさん カード', 'えにっき'];
+  tableScene({
+    id: 'lesson', title: 'あした なに ある？', whichT: 'いつの こと？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var today = weekdayToday(rng), rows = [];
+      for (var i = 0; i < 6; i++) { var l = pick(rng, LESSONS); rows.push({ d: dk(addDays(today, i)), les: l[0], item: l[1], hw: pick(rng, HOMEWORK) }); }
+      return { today: today, rows: rows };
+    },
+    words: [
+      { kw: 'きょう', say: ['きょう', 'きょうって', 'きょうは'], out: 'p0', text: 'きょうの らん', pick: function () { return 0; } },
+      { kw: 'あした', say: ['あした', 'あしたって', 'あしたは'], out: 'p1', tier: 1, text: 'きょうの つぎの ひの らん', pick: function () { return 1; } },
+      { kw: 'どようび', say: ['こんどの どようび', 'どようび', 'どようびって'], out: 'sat', tier: 2, text: 'つぎの どようびの らん', pick: function (S) { return satOffset(S.today); } }
+    ],
+    asks: [
+      { kw: 'ある', say: ['なに ある？', 'なにが あるんだっけ？', 'ならいごと ある？'], out: 'les', text: 'ならいごとを こたえる', val: function (r) { return r.d + 'は ' + r.les + ' だよ。'; } },
+      { kw: 'もって', say: ['なに もっていく？', 'なにを もっていけば いい？', 'もっていく もの なに？'], out: 'item', tier: 1, text: 'もちものを こたえる', val: function (r) { return r.d + 'は ' + r.item + 'を もっていこう。'; } },
+      { kw: 'しゅくだい', say: ['しゅくだい なに？', 'しゅくだい なんだっけ？', 'しゅくだい ある？'], out: 'hw', tier: 2, text: 'しゅくだいを こたえる', val: function (r) { return r.d + 'の しゅくだいは ' + r.hw + ' だよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['きょう', dk(S.today)]], table: { cap: 'よていひょう', cols: ['ひ', 'ならいごと', 'もちもの', 'しゅくだい'], rows: S.rows.map(function (r) { return [r.d, r.les, r.item, r.hw]; }) } };
+    }
+  });
+
+  // ペットの おせわ
+  var PETS = [['いぬ', ['ポチ', 'コロ', 'ハチ']], ['ねこ', ['タマ', 'ミケ', 'クロ']], ['とり', ['ピーちゃん', 'チュン']], ['うさぎ', ['ぴょん', 'モモ']], ['かめ', ['カメきち', 'のろ']]];
+  var PET_FOOD = ['ドッグフード', 'キャットフード', 'とりの えさ', 'にんじん', 'かめの えさ'];
+  tableScene({
+    id: 'pet', title: 'うちの こ ごはん いつ？', whichT: 'どの ペット？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var ks = [0].concat(shuffle(rng, [1, 2, 3, 4]).slice(0, 3)), years = shuffle(rng, [1, 2, 3, 4, 5, 6]).slice(0, 4);
+      var rows = shuffle(rng, ks).map(function (k, i) { return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: pick(rng, ['7じ', '8じ', '12じ', '5じ', '6じ']) + 'と ' + pick(rng, ['5じ', '6じ', '7じ']), y: years[i] }; });
+      return { rows: rows, fav: ri(rng, 0, 3) };
+    },
+    words: [
+      { kw: 'うちの こ', say: ['うちの こ', 'うちの こって', 'うちの こ、'], out: 'fav', text: 'プロフィールの「いちばん なかよしの ペット」', pick: function (S) { return S.fav; } },
+      { kw: 'いぬ', say: ['いぬ', 'いぬの こ', 'うちの いぬ'], out: 'dog', tier: 1, text: 'いぬ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.kind === 'いぬ'; }); } },
+      { kw: 'あたらしい', say: ['あたらしい こ', 'あたらしい ペット', 'あたらしい こって'], out: 'new', tier: 2, text: 'いちばん さいきん うちに きた ペット', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.y < S.rows[b].y) b = i; }); return b; } }
+    ],
+    asks: [
+      { kw: 'ごはん', say: ['ごはん なんじ？', 'ごはん いつ あげる？', 'ごはんの じかん いつ？'], out: 'time', text: 'ごはんの じかんを こたえる', val: function (r) { return r.name + 'の ごはんは ' + r.time + ' だよ。'; } },
+      { kw: 'たべる', say: ['なに たべるの？', 'なに たべる？', 'たべる もの なに？'], out: 'food', tier: 1, text: 'ごはんの なかみを こたえる', val: function (r) { return r.name + 'は ' + r.food + 'を たべるよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['いちばん なかよし', S.rows[S.fav].name]], table: { cap: 'ペットの おせわ ひょう', cols: ['なまえ', 'どうぶつ', 'ごはんの じかん', 'ごはん', 'うちに きた'], rows: S.rows.map(function (r) { return [r.name, r.kind, r.time, r.food, r.y + 'ねん まえ']; }) } };
+    }
+  });
+
+  // おみせ
+  var KSHOPS = [['パンやさん', 'パン'], ['ほんやさん', 'ほん'], ['おもちゃやさん', 'おもちゃ'], ['やおやさん', 'やさい'], ['くすりやさん', 'くすり'], ['はなやさん', 'はな'], ['おかしやさん', 'おかし']];
+  tableScene({
+    id: 'kshop', title: 'いつもの おみせ やってる？', whichT: 'どの おみせ？', ansT: 'なにを こたえる？',
+    make: function (rng) {
+      var sh = shuffle(rng, KSHOPS).slice(0, 5), walks = shuffle(rng, range(18).map(function (i) { return i + 3; })).slice(0, 5);
+      var rows = sh.map(function (s, i) { return { name: s[0], sells: s[1], walk: walks[i], close: ri(rng, 17, 21) }; });
+      var hist = []; for (var i = 0; i < 6; i++) hist.push(pick(rng, [0, 0, 1, 2, 3, 4]));
+      return { rows: rows, hist: hist, usual: +mostOf(hist.map(String), 0) };
+    },
+    words: [
+      { kw: 'いつもの', say: ['いつもの おみせ', 'いつもの ところ', 'いつもの おみせって'], out: 'usual', text: 'いった きろくで いちばん おおい おみせ', pick: function (S) { return isNaN(S.usual) ? -1 : S.usual; } },
+      { kw: 'ちかく', say: ['ちかくの おみせ', 'いちばん ちかくの おみせ', 'ちかくの ところ'], out: 'near', tier: 1, text: 'あるいて いちばん ちかい おみせ', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.walk < S.rows[b].walk) b = i; }); return b; } },
+      { kw: 'パン', say: ['パンの おみせ', 'パンやさん', 'パン かう ところ'], out: 'bread', tier: 2, text: 'パンを うっている おみせ', pick: function (S) { return firstIdx(S.rows, function (r) { return r.sells === 'パン'; }); } }
+    ],
+    asks: [
+      { kw: 'なんじまで', say: ['なんじまで やってる？', 'なんじまで あいてる？', 'なんじまで？'], out: 'close', text: 'しまる じかんを こたえる', val: function (r) { return r.name + 'は ' + r.close + 'じまで だよ。'; } },
+      { kw: 'なんぷん', say: ['あるいて なんぷん？', 'なんぷんで つく？', 'まで なんぷん？'], out: 'walk', tier: 1, text: 'あるいて なんぷんかを こたえる', val: function (r) { return r.name + 'までは あるいて ' + r.walk + 'ふん だよ。'; } }
+    ],
+    context: function (S) {
+      return { info: [['いった きろく', S.hist.map(function (i) { return S.rows[i].name; }).join('、')]], table: { cap: 'ちかくの おみせ', cols: ['おみせ', 'あるいて', 'しまる じかん'], rows: S.rows.map(function (r) { return [r.name, r.walk + 'ふん', r.close + 'じ']; }) } };
+    }
+  });
 
   // ---------- 場面に「言い方」の項目を足して仕上げる ----------
   Object.keys(SCENES).forEach(function (id) {
@@ -1124,7 +1314,7 @@ var AIGame = (function () {
   function decorate(x, it, user, kana, rng) {
     var K = kana ? 'k' : 'j', m = x.msg;
     if (user.style === 'yurufuwa') m = (it.emo ? '' : pick(rng, FLUFF[K])) + m + (it.emo ? '' : (kana ? ' 🎵' : ' ✨'));
-    else if (user.style === 'teinei') m = (kana ? 'すみません、' : 'すみません、') + m.replace(/？$/, '') + (kana ? '？ おしえて ください。' : '？ 教えてください。');
+    else if (user.style === 'teinei') { var qn = /？$/.test(m); m = 'すみません、' + m.replace(/[！？〜]+$/, '') + (qn ? (kana ? '？ おしえて ください。' : '？ 教えてください。') : '。 おねがいします。'); }
     else if (user.style === 'sekkachi') m = (kana ? 'ねえ！ ' : 'ちょっと！ ') + m;
     if (it.emo) m += ' ' + pick(rng, EMO[K]);
     if (it.hurry) m += ' ' + pick(rng, HURRY[K]);
@@ -1149,9 +1339,9 @@ var AIGame = (function () {
     var m = getManual(sceneId, lv), base = SCENES[sceneId], cfg = L(lv);
     var user = userById(userId || pick(rng, base.users));
     var kana = base.kana || !cfg.kanji;
-    for (var tries = 0; tries < 80; tries++) {
+    for (var tries = 0; tries < 200; tries++) {
       var th = Object.create(base); th.m = m; th.user = user;
-      var S = th.session(rng); S.user = user; th.S = S;
+      var S = th.session(rng); S.user = user; th.S = S; S._msgs = {};
       var usesKey = function (k) { return m.rules.some(function (r) { return !r.def && r.conds.some(function (c) { return c.k === k; }); }); };
       S.pref = m.rules.some(function (r) { return !r.def && r.conds.some(function (c) { return c.k === 'pref' && c.v === user.pref; }); }) ? user.pref : 0;
       S.fb = usesKey('fb') && rng() < 0.3 ? 1 : 0;
@@ -1175,7 +1365,7 @@ var AIGame = (function () {
           else { f2.followOf = qs.length; made.next = f2; }
         }
         if (!made) { ok = false; break; }
-        qs.push(made);
+        qs.push(made); S._msgs[made.msg] = 1; if (made.next) S._msgs[made.next.msg] = 1;
         if (made.next) { qs.push(made.next); q++; prev = made.next.memo; delete made.next; } else prev = made.memo;
       }
       if (ok) {
@@ -1193,6 +1383,7 @@ var AIGame = (function () {
     var x;
     if (fixedX) x = fixedX;
     else { x = th.realize(it, S, ev.vals, prev, rng); if (!x) return null; x = decorate(x, it, user, kana, rng); if (!x) return null; }
+    if (S._msgs && S._msgs[x.msg]) return null;
     var askSlot = m.slots.filter(function (s) { return ev.vals[s] === 'ask'; })[0];
     if (askSlot) return askQuestion(th, m, it, S, prev, target, rng, kana, ev, x, askSlot);
     var correct = th.content(ev.vals, it, S, prev, x); if (!correct) return null;
@@ -1492,7 +1683,9 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   function hdr(act, title) { return '<div class="hdr">' + backBtn(act) + '<div class="ttl">' + title + '</div><span style="width:44px"></span></div>'; }
   function showOvl(html) { var o = $('ovl'); o.className = 'ovl on'; o.innerHTML = html; }
   function hideOvl() { var o = $('ovl'); o.className = 'ovl'; o.innerHTML = ''; }
-  function unlocked(lv) { return lv === 1 || !!save.best[lv - 1]; }
+  /* ★ 最初から遊べるレベル（この数字までは、はじめから遊べます。それより上は、前のレベルをクリアすると開きます） */
+  var FREE_LEVELS = 7;
+  function unlocked(lv) { return lv <= FREE_LEVELS || !!save.best[lv - 1]; }
 
   // ---------- ユーザーの顔と機嫌 ----------
   var MOOD_FACE = ['😠', '😟', '😐', '🙂', '😊'];
@@ -1552,6 +1745,7 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   function renderLevels() {
     var h = '<div class="narrow">' + hdr('toTitle', 'レベルを選ぶ') + '<div class="scroll" style="flex:1"><div class="lvlist">';
     var nextLv = 1; while (nextLv < 10 && save.best[nextLv]) nextLv++;
+    h = h.replace('<div class="lvlist">', '<p class="muted" style="margin:0 0 8px">Lv1〜Lv' + FREE_LEVELS + 'は最初から遊べます。Lv' + (FREE_LEVELS + 1) + '〜は前のレベルをクリアすると開きます。</p><div class="lvlist">');
     G.LEVELS.forEach(function (c) {
       var ok = unlocked(c.lv), b = save.best[c.lv];
       var info = !ok ? '🔒' : b ? '<span class="st">' + '★★★'.slice(0, b.stars) + '<span style="opacity:.3">' + '★★★'.slice(0, 3 - b.stars) + '</span></span><br>' + b.perfect + '/' + b.n : 'ルール' + (c.counts) + '〜';

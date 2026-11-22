@@ -78,7 +78,7 @@ for (let lv = 1; lv <= 10; lv++) {
   const maxU = Math.max(...Object.values(cu)) / N;
   ok(maxU <= 0.2, `Lv${lv} どのユーザーも20%以下 (最大 ${(maxU * 100).toFixed(0)}%)`);
   ok(Object.keys(cu).length >= 6, `Lv${lv} ユーザーは6人以上`);
-  ok(Object.keys(cs).length >= (lv <= 2 ? 4 : 8), `Lv${lv} 場面は${lv <= 2 ? 4 : 8}つ以上 (${Object.keys(cs).length})`);
+  ok(Object.keys(cs).length >= 8, `Lv${lv} 場面は8つ以上 (${Object.keys(cs).length})`);
   if (lv <= 2) Object.keys(cs).forEach(id => ok(G.SCENES[id].kana, `Lv${lv} はひらがなの場面だけ: ${id}`));
 }
 const genders = new Set(G.USERS.map(u => u.age)), styles = {};
@@ -86,6 +86,15 @@ G.USERS.forEach(u => { styles[u.style] = styles[u.style] || new Set(); styles[u.
 ok(G.USERS.length >= 10 && genders.size >= 4, 'いろいろな年代のユーザーが10人以上');
 Object.keys(styles).forEach(st => ok(styles[st].size >= 2, `話し方「${st}」は2つ以上の年代にいる`));
 ok(Object.keys(G.SCENES).length >= 10, '場面は10以上');
+
+// 5-2. Lv1 のバリエーション：100回はじめたときの「さいしょのメッセージ」が30種類以上
+{
+  const r1 = G.seededRng('opening-test'), open = new Set();
+  for (let i = 0; i < 100; i++) { const st = G.pickStage(1, r1); open.add(G.makeSession(st.scene, 1, r1, st.user).qs[0].msg); }
+  ok(open.size >= 30, `Lv1 の最初のメッセージが100回中30種類以上 (${open.size})`);
+}
+// 最初から遊べるレベルの設定
+ok(/var FREE_LEVELS = 7;/.test(uiSrc), '最初から遊べるレベルの設定がある（Lv7）');
 
 // 6. 場面 × レベルごとに 300問以上
 const QN = 300, rng = G.seededRng('test-run-v7');
@@ -114,6 +123,7 @@ for (const id of Object.keys(G.SCENES)) {
       users[sess.user] = 1;
       ok(sc.users.includes(sess.user), `${tag} この場面に出られるユーザー`);
       let prevMemo = null;
+      ok(new Set(sess.qs.map(q => q.msg)).size === sess.qs.length, `${tag} 1つのチャットに同じメッセージがない`);
       sess.qs.forEach((q, qi) => {
         made++;
         const it = q.item, mine = myEval(m, it);
