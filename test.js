@@ -32,182 +32,120 @@ vm.runInContext(logicSrc, ctx);
 const G = ctx.module.exports;
 const T = G.T;
 
-// ---------- テスト側で独立して書いた判定（ゲームの判定関数は使わない） ----------
-function myAtom(sp, it) {
-  const k = sp.k, v = sp.v;
-  switch (sp.op) {
-    case 'eq': return it[k] === v;
-    case 'ne': return !(it[k] === v);
-    case 'in': return v.some(x => x === it[k]);
-    case 'ge': return !(it[k] < v);
-    case 'le': return !(it[k] > v);
-    case 'even': return [0, 2, 4, 6].includes(it[k]);
-    case 'sumge': return it[k[0]] + it[k[1]] >= v;
-    case 'eqk': return it[k[0]] === it[k[1]];
-    case 'nek': return it[k[0]] !== it[k[1]];
-    case 'ltk': return it[k[0]] < it[k[1]];
+// ---------- テスト側で独立して書いた判定 ----------
+// 項目（いつ・どこ・言い方…）ごとに、上から順に見て最初に当てはまったルール
+function myEval(m, it) {
+  const th = G.THEMES[m.themeId], vals = {}, hits = [];
+  for (const sid of m.slots) {
+    let found = null;
+    m.rules.forEach((r, i) => { if (!found && r.slot === sid && r.conds.every(c => it[c.k] === c.v)) found = { slot: sid, index: i, val: r.out }; });
+    if (!found) return null;
+    vals[sid] = found.val; hits.push(found);
   }
-  throw new Error('unknown op ' + sp.op);
+  for (const d of th.defaults) if (!m.slots.includes(d.slot)) { if (!d.conds.every(c => it[c.k] === c.v)) return null; vals[d.slot] = d.out; }
+  return { vals, hits };
 }
-function myEval(rules, it) {
-  for (let i = 0; i < rules.length; i++) {
-    const r = rules[i];
-    if (r.fallback || r.conds.every(c => myAtom(c, it))) {
-      if (r.exc && myAtom(r.exc.cond, it)) return { index: i, branch: 1, answer: r.exc.out };
-      return { index: i, branch: 0, answer: r.out };
-    }
-  }
-  return null;
-}
-// 表：条件に合う行の中で、いちばん小さい／大きい値を持つ行を「全部」数える
-function myRows(rows, ins, it) {
-  let cand = rows.map((r, i) => i);
-  for (const [col, op, raw] of ins.f || []) {
-    if (op === 'ismin') { const m = Math.min(...cand.map(i => rows[i][col])); cand = cand.filter(i => rows[i][col] === m); continue; }
-    const v = typeof raw === 'string' && raw.startsWith('@') ? it[raw.slice(1)] : raw;
-    const test = { eq: (a, b) => a === b, ne: (a, b) => a !== b, le: (a, b) => a <= b, ge: (a, b) => a >= b, lt: (a, b) => a < b, gt: (a, b) => a > b }[op];
-    cand = cand.filter(i => test(rows[i][col], v));
-  }
-  if (!cand.length) return [];
-  const [col, dir] = ins.pick;
-  const best = dir === 'min' ? Math.min(...cand.map(i => rows[i][col])) : Math.max(...cand.map(i => rows[i][col]));
-  return cand.filter(i => rows[i][col] === best);
-}
-// 文章：画面に出る文から、もう一度 情報を読み取る
-function md(s) { const m = /(\d+)月(\d+)日/.exec(s); return Date.UTC(2026, +m[1] - 1, +m[2]); }
-function daysBetween(a, b) { return Math.round((md(b) - md(a)) / 86400000); }
-function only(text, words) { const hit = words.map((w, i) => text.includes(w) ? i : -1).filter(i => i >= 0); return hit.length === 1 ? hit[0] : -1; }
-const READERS = {
-  letter(lines) {
-    const all = lines.join('\n'), last = lines[lines.length - 1];
-    const has1 = all.includes('あした'), has2 = all.includes('にちようび');
-    return {
-      from: last.startsWith('ともだちの') ? 0 : last === 'せんせいより' ? 1 : last === 'おばあちゃんより' ? 2 : -1,
-      word: only(all, ['あそぼう', 'おまつり', 'ありがとう', 'こいぬ']),
-      when: has1 && has2 ? -1 : has1 ? 1 : has2 ? 2 : 0,
-      ask: all.includes('？') ? 1 : 0, draw: all.includes('えも かいたよ') ? 1 : 0, bang: (all.match(/！/g) || []).length
-    };
-  },
-  memo(lines) {
-    const all = lines.join('\n');
-    const t = /(?:あつまる じかんは|集まる時間は) (\S+) です/.exec(all), w = /(?:てんきよほうは|天気予ほうは) (\S+) です/.exec(all);
-    return {
-      place: only(all, ['こうえん', 'プール', 'きょうしつ', 'たいいくかん']),
-      weather: w ? ['はれ', 'あめ', 'くもり'].indexOf(w[1]) : -1,
-      lunch: /(きゅうしょく|給食)は ありません/.test(all) ? 1 : /(きゅうしょく|給食)は あります/.test(all) ? 0 : -1,
-      time: t ? ['7じ', '7じはん', '8じ', '8じはん'].indexOf(t[1]) : -1,
-      shoes: all.includes('うわばき') ? 1 : 0
-    };
-  },
-  mail(lines, it) {
-    const all = lines.join('\n'), d = /(\d+月\d+日)までに/.exec(all);
-    const left = d ? daysBetween(it.todayText, d[1]) : null;
-    return {
-      topic: only(lines[0], ['見積もり', '請求書', 'ログイン', '住所変更', '解約']),
-      corp: all.includes('株式会社') ? 1 : 0, urgent: lines[0].includes('【至急】') ? 1 : 0, contract: all.includes('契約番号') ? 1 : 0,
-      angry: all.includes('困っています') ? 1 : 0, deadline: left === null ? 0 : left <= 3 ? 1 : 2
-    };
-  },
-  expense(lines, it) {
-    const all = lines.join('\n'), a = /([\d,]+)円の精算/.exec(all), d = /(\d+月\d+日)に/.exec(all);
-    const el = daysBetween(d[1], it.todayText);
-    return {
-      cat: only(all, ['交通費', '会議費', '書籍代', '宿泊費']),
-      amount: [2800, 9500, 18000, 42000, 85000].indexOf(+a[1].replace(/,/g, '')),
-      receipt: all.includes('領収書を添付します') ? 1 : 0, pre: all.includes('事前に承認をいただいています') ? 1 : 0,
-      elapsed: el < 10 ? 0 : el < 30 ? 1 : 2
-    };
-  }
-};
 
-// こども／おとなの ルール数（レベル1〜3）
-const COUNTS = {
-  kids:   { easy: [2, 3, 3], normal: [3, 4, 5], hard: [4, 5, 6] },
-  adults: { easy: [4, 5, 6], normal: [6, 7, 8], hard: [8, 9, 10] }
-};
-for (const d of ['easy', 'normal', 'hard']) for (let i = 0; i < 3; i++) ok(COUNTS.adults[d][i] > COUNTS.kids[d][i], `おとなの${d}はこどもより ルールが多い (レベル${i + 1})`);
+// 3. 機嫌メーターの設定どおりに動くか
+for (const aud of ['kids', 'adults']) for (const d of ['easy', 'normal', 'hard']) {
+  const s = G.MOOD[aud][d];
+  ok(G.moodStep(s.max, 'perfect', aud, d) === s.max, `${aud}/${d} 機嫌は最大より上がらない`);
+  ok(G.moodStep(2, 'perfect', aud, d) === Math.min(s.max, 2 + s.perfect), `${aud}/${d} 正解で +${s.perfect}`);
+  ok(G.moodStep(s.max, 'tone', aud, d) === s.max - s.tone, `${aud}/${d} 言い方ミスで -${s.tone}`);
+  ok(G.moodStep(s.max, 'content', aud, d) === s.max - s.content, `${aud}/${d} 内容ミスで -${s.content}`);
+  ok(G.moodStep(1, 'content', aud, d) === 0, `${aud}/${d} 0 より下がらない`);
+  ok(s.content >= s.tone, `${aud}/${d} 内容ミスのほうが重い`);
+}
+ok(G.MOOD.kids.easy.max >= G.MOOD.kids.hard.max && G.MOOD.kids.easy.content <= G.MOOD.adults.hard.content, 'かんたんほど機嫌に余裕がある');
+
+// 4. ルール数：おとなは同じむずかしさのこどもより多い
+for (const d of ['easy', 'normal', 'hard']) for (let i = 0; i < 3; i++) ok(G.LEVELS.adults[d].counts[i] > G.LEVELS.kids[d].counts[i], `おとなの${d}はこどもより ルールが多い (レベル${i + 1})`);
 
 const N = 500;
-const rng = G.seededRng('test-run-v2');
-const summary = [];
+const rng = G.seededRng('test-run-v4');
 const KANJI = /[一-鿿]/;
-const WEEKDAY_KANJI = /[月火水木金曜日]/g;
+const summary = [];
 let total = 0;
 
 for (const aud of ['kids', 'adults']) for (const diff of ['easy', 'normal', 'hard']) for (const genre of ['pic', 'text', 'table']) for (const t of G.ORDER[aud][genre]) {
-  const th = G.THEMES[t];
+  const th = G.THEMES[t], cfg = G.LEVELS[aud][diff];
   ok(th.aud === aud && th.genre === genre, `${t} の分類`);
-  const kanji = G.LEVELS[aud][diff].kanji;
-  let prevRules = null;
+  let prev = null;
   for (let lv = 1; lv <= 3; lv++) {
     const tag = `${aud}/${diff}/${genre}/${t}/Lv${lv}`;
     const m = G.getManual(t, diff, lv), rules = m.rules;
-    ok(rules.length === COUNTS[aud][diff][lv - 1], `${tag} ルール数 ${rules.length}`);
-    ok(rules[rules.length - 1].fallback && rules.filter(r => r.fallback).length === 1, `${tag} さいごは「どれにも当てはまらない」`);
-    ok(JSON.stringify(G.getManual(t, diff, lv).rules) === JSON.stringify(rules), `${tag} 同じ指示書`);
+    const spec = rules.filter(r => !r.def).length;
+    ok(spec === cfg.counts[lv - 1], `${tag} とくべつなルールの数 ${spec}`);
+    ok(rules.length === spec + m.slots.length, `${tag} 各項目に「ふだんの読み方」が1つずつ`);
+    ok(m.slots.includes('tone'), `${tag} 言い方のルールがある`);
+    ok(JSON.stringify(G.getManual(t, diff, lv).rules) === JSON.stringify(rules), `${tag} 同じ指示書（ふたりモード用）`);
     rules.forEach(r => {
-      const p = G.ruleParts(t, r, kanji);
-      const s = p.cond + (p.exc || '') + T(th.outText(r.out), kanji) + (r.exc ? T(th.outText(r.exc.out), kanji) : '');
+      const p = G.ruleParts(t, r, cfg.kanji), s = p.cond + p.out;
       ok(!/[{}|]|undefined|NaN|null/.test(s), `${tag} 文章がきれい: ${s}`);
-      if (aud === 'kids' && diff === 'easy') ok(!KANJI.test(s.replace(WEEKDAY_KANJI, '')), `${tag} こども かんたんは 漢字なし: ${s}`);
+      if (aud === 'kids' && diff === 'easy') ok(!KANJI.test(s), `${tag} こども かんたんは 漢字なし: ${s}`);
     });
-    const kinds = rules.map(r => r.kind);
-    G.LEVELS[aud][diff].req.forEach(k => ok(kinds.includes(k), `${tag} ${k} のルールがある`));
-    if (prevRules) {
-      const sig = r => JSON.stringify(r.conds) + JSON.stringify(r.exc) + r.out;
-      const added = rules.map(sig).filter(s => !prevRules.map(sig).includes(s));
+    if (prev) {
+      const sig = r => JSON.stringify([r.slot, r.conds, r.out]);
+      const added = rules.filter(r => !r.def).map(sig).filter(s => !prev.filter(r => !r.def).map(sig).includes(s));
       ok(m.newIndex >= 0 && added.length === 1 && added[0] === sig(rules[m.newIndex]), `${tag} 新しいルールは1つだけ`);
     } else ok(m.newIndex === -1, `${tag} レベル1は新ルールなし`);
-    prevRules = rules;
+    prev = rules;
 
-    const hits = new Array(rules.length).fill(0), excHits = new Array(rules.length).fill(0), ans = {}, rowAns = {};
-    let made = 0;
+    const hits = new Array(rules.length).fill(0), ans = {}, kinds = { tone: 0 };
+    let made = 0, follow = 0, sessions = 0, withNew = 0;
     while (made < N) {
-      const qs = G.makeQuestions(t, diff, lv, 5, rng);
-      if (m.newIndex >= 0) ok(qs.some(q => q.ruleIndex === m.newIndex), `${tag} ステージに新ルールの問題`);
-      for (const q of qs) {
+      const sess = G.makeSession(t, diff, lv, rng);
+      ok(sess.qs.length === cfg.n, `${tag} 1回の会話は${cfg.n}問`);
+      sessions++; if (m.newIndex >= 0 && sess.qs.some(q => q.hits.some(h => h.index === m.newIndex))) withNew++;
+      let prevMemo = null;
+      sess.qs.forEach((q, qi) => {
         made++;
-        let item = q.item;
-        // 文章：画面の文から読み取った情報で判定しなおす
-        if (genre === 'text') {
-          const lines = item.lines.map(l => T(l, kanji));
-          lines.forEach(l => ok(!/[{}|]|undefined|NaN/.test(l), `${tag} 文章がきれい: ${l}`));
-          if (aud === 'kids' && diff === 'easy') lines.forEach(l => ok(!KANJI.test(l), `${tag} かんたんの文章に漢字なし: ${l}`));
-          const read = READERS[t](lines, item);
-          Object.keys(read).forEach(k => ok(read[k] === item[k], `${tag} 文章から ${k} が読み取れる (${read[k]} / ${item[k]}) ${lines.join(' ')}`));
-          item = Object.assign({}, item, read);
-          ok(new Set(th.outcomes).size === th.outcomes.length && th.outcomes.includes(q.answer), `${tag} 答えのボタンは1つだけ正解`);
+        const it = q.item, mine = myEval(m, it);
+        ok(mine && JSON.stringify(mine.vals) === JSON.stringify(q.vals) && JSON.stringify(mine.hits.map(h => h.index)) === JSON.stringify(q.hits.map(h => h.index)), `${tag} 解釈の再計算`);
+        mine && mine.hits.forEach(h => hits[h.index]++);
+        if (it.follow) { follow++; ok(qi > 0, `${tag} 「さっきの／じゃあ」は2問目以降`); }
+        // 正解はちょうど1つ・候補はすべてちがう
+        const okc = q.cands.filter(c => c.ok);
+        ok(okc.length === 1 && okc[0].key === q.answer, `${tag} 完全な正解はちょうど1つ`);
+        ok(new Set(q.cands.map(c => c.key)).size === q.cands.length && new Set(q.cands.map(c => c.text)).size === q.cands.length, `${tag} 候補はすべてちがう`);
+        ok(q.cands.length >= 3, `${tag} 候補は3つ以上`);
+        // 正しい内容は、解釈した結果からデータで計算したもの
+        const tObj = Object.create(th); tObj.S = sess.S; tObj.persona = sess.persona; tObj.m = m;
+        const right = tObj.content(q.vals, it, sess.S, prevMemo, q.x);
+        ok(right && right.key + '#' + q.vals.tone === q.answer, `${tag} 正解＝データから計算した答え`);
+        // 言い方だけちがう候補がある
+        ok(q.cands.some(c => c.toneWrong && c.content.key === right.key && c.tone !== q.vals.tone), `${tag} 言い方だけちがう候補がある`);
+        // まちがいの候補は「よくある読みちがい」：1つの項目だけ別の読み方にしたもの
+        q.cands.filter(c => c.wrong).forEach(c => {
+          const w = c.wrong, outs = th.lib.concat(th.defaults).filter(r => r.slot === w.slot).map(r => r.out);
+          ok(w.slot !== 'tone' && outs.includes(w.val) && w.val !== q.vals[w.slot], `${tag} 読みちがいは別の読み方: ${w.slot}=${w.val}`);
+          const v2 = Object.assign({}, q.vals); v2[w.slot] = w.val;
+          const c2 = tObj.content(v2, it, sess.S, prevMemo, q.x);
+          ok(c2 && c2.key === c.content.key && c2.key !== right.key, `${tag} 読みちがいの答えを再計算できる`);
+        });
+        // 判定と機嫌
+        q.cands.forEach(c => { const j = G.judge(q, c.key); ok(j === (c.ok ? 'perfect' : c.toneWrong ? 'tone' : 'content'), `${tag} 判定`); });
+        // 表示する文に漢字なし（こども かんたん）
+        if (aud === 'kids' && diff === 'easy') {
+          [q.msg].concat(q.cands.map(c => c.text)).forEach(s => ok(!KANJI.test(s), `${tag} かんたんの文に漢字なし: ${s}`));
         }
-        if (t === 'delivery') ok(item.late === ([13, 15, 17][item.time] > [16, 15, 14, 13][item.region] ? 1 : 0), `${tag} 締切の判定`);
-        if (t === 'lost') ok(daysBetween(item.foundText, item.todayText) === [0, 3, 7, 14][item.days], `${tag} 拾った日`);
-        if (t === 'clinic') ok([...item.name].length === item.nameLen, `${tag} 名前の文字数`);
-        if (t === 'sweets') ok(q.candidates.length === 4 && new Set(q.candidates).size === 4 && q.candidates.includes(q.answer), `${tag} 候補4つ・正解あり`);
-        const mine = myEval(rules, item);
-        ok(mine && mine.answer === q.ruleAnswer && mine.index === q.ruleIndex && mine.branch === q.branch, `${tag} 正解の再計算`);
-        if (genre === 'table') {
-          const rowsOk = myRows(q.rows, th.instr[mine.answer], item);
-          ok(rowsOk.length === 1 && rowsOk[0] === q.answer, `${tag} 表の正解はちょうど1行 (${rowsOk})`);
-          if (aud === 'kids' && diff === 'easy') {
-            const shown = th.ctx(item).flat().concat(th.cols.map(c => c[1])).concat(q.rows.flatMap(r => th.cols.map(c => String(th.fmt(c[0], r[c[0]])))));
-            shown.forEach(s => ok(!KANJI.test(T(s, false)), `${tag} かんたんの表に漢字なし: ${T(s, false)}`));
-          }
-          rowAns[q.answer] = (rowAns[q.answer] || 0) + 1;
-        }
-        hits[q.ruleIndex]++; if (q.branch) excHits[q.ruleIndex]++;
-        ans[q.ruleAnswer] = (ans[q.ruleAnswer] || 0) + 1;
+        ok(!/[{}|]|undefined|NaN|null/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 表示の文がきれい`);
+        ans[q.answer] = (ans[q.answer] || 0) + 1;
+        if (q.vals.tone === 'kind') kinds.tone++;
+        prevMemo = q.memo;
+      });
+      if (aud === 'kids' && diff === 'easy') {
+        const c = sess.ctx;
+        const shown = [].concat(c.info ? c.info.flat() : [], c.table ? c.table.cols.concat(c.table.rows.flat()) : [], c.log ? c.log.flat() : [], c.list ? c.list.rows.flat() : [], c.grid ? [c.grid.cap].concat(c.grid.rows.map(r => r[0])) : []);
+        shown.forEach(s => ok(!KANJI.test(String(s)), `${tag} かんたんの参照情報に漢字なし: ${s}`));
       }
     }
     total += made;
-    rules.forEach((r, i) => {
-      ok(hits[i] > 0, `${tag} ルール${i + 1}が出題される`);
-      if (r.exc) ok(excHits[i] > 0 && excHits[i] < hits[i], `${tag} ルール${i + 1}の「ただし」も出題される`);
-    });
+    rules.forEach((r, i) => ok(hits[i] > 0, `${tag} ルール${i + 1}が使われる`));
+    if (m.newIndex >= 0) ok(withNew / sessions >= 0.6, `${tag} 新しいルールがほとんどの会話に出る (${Math.round(withNew / sessions * 100)}%)`);
     const vals = Object.values(ans), maxShare = Math.max(...vals) / made;
-    ok(vals.length >= 2, `${tag} 答えが2種類以上`);
-    ok(maxShare <= 0.75, `${tag} 答えがかたよらない (最大 ${(maxShare * 100).toFixed(0)}%)`);
-    let rowInfo = '';
-    if (genre === 'table') { const rs = Math.max(...Object.values(rowAns)) / made; ok(rs <= 0.7, `${tag} 正解の行がかたよらない (${(rs * 100).toFixed(0)}%)`); rowInfo = `, 正解の行 最大${(rs * 100).toFixed(0)}%`; }
-    summary.push(`${tag}: ルール${rules.length}こ, 出題${made}, 答え最大${(maxShare * 100).toFixed(0)}%${rowInfo}`);
+    ok(maxShare <= 0.7, `${tag} 答えがかたよらない (最大 ${(maxShare * 100).toFixed(0)}%)`);
+    summary.push(`${tag}: ルール${rules.length}（とくべつ${spec}）, 出題${made}, 親身が正解${Math.round(kinds.tone / made * 100)}%, 続きの質問${follow}, 答え最大${(maxShare * 100).toFixed(0)}%`);
   }
 }
 
