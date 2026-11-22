@@ -33,6 +33,12 @@ vm.runInContext(logicSrc, ctx);
 const G = ctx.module.exports;
 const T = G.T;
 const KANJI = /[一-鿿]/, WEEKDAY = /[月火水木金土日曜]/g;
+// Lv1〜3（小学校低学年）：使ってよい漢字は1年生の漢字だけ（曜日の「曜」も可）
+const GRADE1 = '一右雨円王音下火花貝学気九休玉金空月犬見五口校左三山子四糸字耳七車手十出女小上森人水正生青夕石赤千川先早草足村大男竹中虫町天田土二日入年白八百文木本名目立力林六曜';
+function kidsKanjiOk(s) { return [...String(s)].every(ch => !KANJI.test(ch) || GRADE1.includes(ch)); }
+// Lv1〜3 で使わない むずかしい ことば（やさしいことば変換表で 言いかえたもの）
+const HARD_WORDS = /ようてん|要点|たんたん|淡々|しんみ|親身|さんしょう|参照|がいとう|該当|きそく|規則|ゆうせん|優先|かくにん|確認|かいとう|回答|といあわせ|問い合わせ|プロフィール|りれき|履歴|こうもく|項目|ばくぜん|かいしゃく|解釈|ていきょう|しゅうりょう|終了/;
+function kidsText(s, tag) { ok(kidsKanjiOk(s), `${tag} 1年生の漢字だけ: ${s}`); ok(!HARD_WORDS.test(s), `${tag} むずかしい ことばを使わない: ${s}`); }
 
 // 独立して書いた判定：項目ごとに上から見て、最初に当てはまったルール
 function myEval(m, it) {
@@ -79,7 +85,7 @@ for (let lv = 1; lv <= 10; lv++) {
   ok(maxU <= 0.2, `Lv${lv} どのユーザーも20%以下 (最大 ${(maxU * 100).toFixed(0)}%)`);
   ok(Object.keys(cu).length >= 6, `Lv${lv} ユーザーは6人以上`);
   ok(Object.keys(cs).length >= 8, `Lv${lv} 場面は8つ以上 (${Object.keys(cs).length})`);
-  if (lv <= 2) Object.keys(cs).forEach(id => ok(G.SCENES[id].kana, `Lv${lv} はひらがなの場面だけ: ${id}`));
+  if (lv <= 3) Object.keys(cs).forEach(id => ok(G.SCENES[id].kana, `Lv${lv} はひらがなの場面だけ: ${id}`));
 }
 const genders = new Set(G.USERS.map(u => u.age)), styles = {};
 G.USERS.forEach(u => { styles[u.style] = styles[u.style] || new Set(); styles[u.style].add(u.age); });
@@ -107,6 +113,18 @@ ok(Object.keys(G.SCENES).length >= 10, '場面は10以上');
     ok(G.moodStart(lv, 'zakkuri') === G.L(lv).mood.max, `Lv${lv} ふつうの人は最大からスタート`);
     ok(G.moodStep(5, 'tone', lv, 'iraira') === Math.max(0, 5 - G.L(lv).mood.tone - G.STYLE_MOOD.iraira.tone), `Lv${lv} イライラさんの言い方ミス`);
   }
+}
+// 画面のことば（ひらがな版）にも むずかしい ことばがない
+{
+  const kanaUI = [];
+  (uiSrc.match(/U\('([^']*)'/g) || []).forEach(x => kanaUI.push(x.slice(3, -1)));
+  (uiSrc.match(/T\('\{([^|]*)\|/g) || []).forEach(x => kanaUI.push(x.slice(4, -1)));
+  (uiSrc.match(/\b(?:k|fk|ik): \[[^\]]*\]/g) || []).forEach(x => kanaUI.push(x));
+  (uiSrc.match(/k: '[^']*'/g) || []).forEach(x => kanaUI.push(x));
+  kanaUI.forEach(t => kidsText(t, '画面のことば（かな）'));
+  ok(G.L(1).fit === '小学校 低学年' && G.L(2).fit === '小学校 低学年' && G.L(3).fit === '小学校 低学年', 'Lv1〜3 は小学校低学年');
+  ok(/images\/tutorial\/step1\.webp/.test(uiSrc), 'チュートリアルの画像を使う');
+  for (let i = 1; i <= 5; i++) { const f = path.join(__dirname, 'images/tutorial/step' + i + '.webp'); ok(fs.existsSync(f) && fs.statSync(f).size < 150 * 1024, `チュートリアル画像 step${i}.webp（150KB未満）`); }
 }
 // 最初から遊べるレベルの設定
 ok(/var FREE_LEVELS = 7;/.test(uiSrc), '最初から遊べるレベルの設定がある（Lv7）');
@@ -154,7 +172,7 @@ for (const id of Object.keys(G.SCENES)) {
     rules.forEach(r => {
       const p = G.ruleParts(id, r, m.kanji), s = p.cond + p.out;
       ok(!/[{}|]|undefined|NaN|null/.test(s), `${tag} 文章がきれい: ${s}`);
-      if (lv <= 2) ok(!KANJI.test(s.replace(WEEKDAY, '')), `${tag} Lv${lv}の指示書に漢字なし: ${s}`);
+      if (lv <= 3) kidsText(s, tag + ' 指示書');
       if (lv >= 4) ok(KANJI.test(s), `${tag} Lv4〜の指示書のルールに漢字: ${s}`);
     });
     m.slots.forEach(sid => ok(!KANJI.test(G.slotTitle(id, sid, m.kanji)) || m.kanji, `${tag} 項目名`));
@@ -222,17 +240,18 @@ for (const id of Object.keys(G.SCENES)) {
           if (u.age !== 'child') ok(KANJI.test(q.msg), `${tag} Lv4〜のユーザーのメッセージに漢字: ${q.msg}`);
           q.cands.forEach(c => ok(KANJI.test(c.text), `${tag} Lv4〜の返事に漢字: ${c.text}`));
         }
-        if (lv >= 3) ok(!/^[ぁ-んー\s、。！？〜🎵✨💦😢😭]+$/.test(q.msg), `${tag} Lv3〜のメッセージがひらがなだけでない: ${q.msg}`);
+        if (lv >= 4) ok(!/^[ぁ-んー\s、。！？〜🎵✨💦😢😭]+$/.test(q.msg), `${tag} Lv4〜のメッセージがひらがなだけでない: ${q.msg}`);
         if (lv >= 6) q.cands.forEach(c => ok(!/[ぁ-ん]{15,}/.test(c.text.replace(/\s/g, '')), `${tag} Lv6〜の返事に長いひらがなの続きがない: ${c.text}`));
-        if (sess.kana) [q.msg].concat(q.cands.map(c => c.text)).forEach(s => ok(lv > 2 || !KANJI.test(s.replace(WEEKDAY, '')), `${tag} Lv1〜2の文に漢字なし: ${s}`));
+        if (lv <= 3) [q.msg, q.pre ? q.pre.join(' ') : ''].concat(q.cands.map(c => c.text)).forEach(t => kidsText(t, tag + ' 文'));
         ok(!/[{}|]|undefined|NaN|null/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 表示の文がきれい`);
         ok(!/。。|、、|？？/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 句読点が重ならない: ${q.msg}`);
         prevMemo = q.memo;
       });
-      if (lv <= 2) {
+      if (lv <= 3) {
         const c = sess.ctx;
-        [].concat(c.info ? c.info.flat() : [], c.table ? c.table.cols.concat(c.table.rows.flat()) : [], c.log ? c.log.flat() : [], c.list ? c.list.rows.flat() : [], c.profile ? c.profile.flat() : [], c.past || [])
-          .forEach(s => ok(!KANJI.test(String(s).replace(WEEKDAY, '')), `${tag} Lv1〜2の参照情報に漢字なし: ${s}`));
+        [].concat(c.info ? c.info.flat() : [], c.table ? [c.table.cap].concat(c.table.cols, c.table.rows.flat()) : [], c.log ? c.log.flat() : [], c.list ? [c.list.cap].concat(c.list.rows.flat()) : [], c.profile ? c.profile.flat() : [], c.past || [], c.grid ? [c.grid.cap].concat(c.grid.rows.map(r => r[0])) : [])
+          .forEach(t => kidsText(String(t), tag + ' わかっていること'));
+        m.slots.forEach(sid => kidsText(G.slotTitle(id, sid, m.kanji), tag + ' 見出し'));
       }
     }
     total += made;

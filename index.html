@@ -201,6 +201,64 @@ ruby rt{font-size:.5em;color:var(--ink2)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes popUp{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== ゲーム画面（タブ式） ===== */
+.gbody{grid-template-rows:auto auto minmax(0,1fr) auto!important;grid-template-areas:"n" "t" "p" "a"!important;gap:6px!important}
+.nowq{grid-area:n;background:#FBFAF7;border:1px solid var(--line);border-radius:var(--r);padding:6px 10px 8px;max-height:32vh;overflow-y:auto}
+.nowl{display:block;font-size:11.5px;font-weight:700;color:var(--accent);margin-bottom:3px}
+.nowq .msg{max-width:100%}
+.nowq .bb{font-size:15.5px;font-weight:600}
+.tabs{grid-area:t;display:flex;gap:4px}
+.tabs button{flex:1;min-height:42px;border-radius:var(--rs);font-size:14px;font-weight:700;color:var(--ink2);border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.tabs button.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pane{grid-area:p;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:none;border-radius:var(--r)}
+.tab-ctx .pctx,.tab-chat .pchat,.tab-man .pman{display:block}
+.pchat{background:#FBFAF7;border:1px solid var(--line)}
+.pchat.thread{display:none;flex-direction:column}
+.tab-chat .pchat{display:flex;flex-direction:column}
+.gbody.two{grid-template-rows:auto auto minmax(0,1fr) auto!important}
+.ptag{white-space:nowrap}
+@media (min-width:700px){
+  #app.wide .gbody{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:auto auto minmax(0,1fr) auto!important;grid-template-areas:"n m" "t m" "p m" "a m"!important;gap:10px 14px!important}
+  #app.wide .pman{grid-area:m;display:block}
+  #app.wide .tabs .t-man{display:none}
+  #app.wide .tab-man .pctx{display:block}
+  #app.wide .gbody.two{grid-template-columns:minmax(0,640px)!important;grid-template-areas:"n" "t" "p" "a"!important}
+}
+/* わかっていること パネル（ひろく 見やすく） */
+.pctx{padding:0;display:none;flex-direction:column;gap:8px;font-size:14px}
+.tab-ctx .pctx{display:flex}
+.csec{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.csec h4{margin:0 0 6px;font-size:14px;color:var(--accent);display:flex;align-items:center;gap:6px}
+.csec .ci{font-size:16px}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:0;margin:0;font-size:14.5px}
+.kv dt{color:var(--ink2);padding:6px 14px 6px 0;border-bottom:1px dotted var(--line);font-size:13.5px}
+.kv dd{margin:0;padding:6px 0;border-bottom:1px dotted var(--line);font-weight:700;color:var(--ink)}
+.csec .cap{font-size:13.5px;font-weight:700;color:var(--ink2);margin:6px 0 4px}
+.note{margin:6px 0 0;font-size:14px;background:var(--warnSoft);border-radius:6px;padding:5px 8px}
+.logs{list-style:none;margin:0;padding:0}
+.logs li{font-size:14.5px;line-height:1.5;padding:6px 0;border-bottom:1px dotted var(--line)}
+.logs li span{display:block;font-size:12.5px;color:var(--ink2)}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tscroll .tbl{font-size:14.5px;width:auto;min-width:100%;border-collapse:collapse}
+.tscroll .tbl th{font-size:13px;padding:7px 12px;white-space:nowrap;background:#F1EEE7;text-align:left}
+.tscroll .tbl td{padding:8px 12px;white-space:nowrap;text-align:left}
+.tscroll .tbl tr:nth-child(even) td{background:#FAF8F3}
+.csec .grow span{width:84px;font-size:13.5px}
+.csec .grow .gi{width:32px;height:28px}
+/* チュートリアル */
+.tut{padding:12px}
+.tut-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:16px}
+.tut-img{background:#EDE9E1;border-radius:10px;overflow:hidden;display:flex;justify-content:center;max-height:52vh}
+.tut-img img{max-width:100%;max-height:52vh;object-fit:contain;display:block}
+.tut-img.noimg{display:none}
+.tut-k{font-size:16px;line-height:1.7;margin:10px 0 4px;font-weight:600}
+.tut-j{font-size:13.5px;line-height:1.6;color:var(--ink2);margin:4px 0;background:var(--accentSoft);border-radius:8px;padding:6px 10px}
+.linkish{font-size:13px;color:var(--accent);text-decoration:underline;padding:6px 0;min-height:36px}
+.tut-dots{display:flex;gap:6px;justify-content:center;margin:6px 0 10px}
+.tut-dots i{width:8px;height:8px;border-radius:50%;background:var(--line);display:block}
+.tut-dots i.on{background:var(--accent)}
+.btn[disabled]{opacity:.4}
 </style>
 </head>
 <body>
@@ -273,12 +331,12 @@ var AIGame = (function () {
   ================================================================= */
   var LEVELS = [
     { lv: 1,  fit: '小学校 低学年',   counts: 2, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 1, tone: 0, ask: 1, perfect: 1 } },
-    { lv: 2,  fit: '小学校 中学年',   counts: 3, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 3,  fit: '小学校 高学年',   counts: 3, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 4,  fit: '中学生',          counts: 3, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 5,  fit: '高校生',          counts: 4, tier: 2, kanji: true,  n: 6, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 6,  fit: '大学生',          counts: 5, tier: 3, kanji: true,  n: 6, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 7,  fit: '社会人1年目',     counts: 6, tier: 3, kanji: true,  n: 6, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 2,  fit: '小学校 低学年',   counts: 3, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 3,  fit: '小学校 低学年',   counts: 3, tier: 2, kanji: false, n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 4,  fit: '小学校 中学年',   counts: 3, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 5,  fit: '小学校 高学年',   counts: 4, tier: 2, kanji: true,  n: 6, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 6,  fit: '中学生',          counts: 5, tier: 3, kanji: true,  n: 6, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 7,  fit: '高校生',          counts: 6, tier: 3, kanji: true,  n: 6, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
     { lv: 8,  fit: '社会人',          counts: 7, tier: 3, kanji: true,  n: 7, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
     { lv: 9,  fit: 'ベテラン社会人',  counts: 8, tier: 3, kanji: true,  n: 7, mood: { max: 3, content: 2, tone: 1, ask: 2, perfect: 1 } },
     { lv: 10, fit: '達人',            counts: 9, tier: 3, kanji: true,  n: 8, mood: { max: 3, content: 2, tone: 1, ask: 2, perfect: 0 } }
@@ -303,10 +361,10 @@ var AIGame = (function () {
     { id: 'mimi',    name: 'ミミ',             age: 'child',   who: '小学1年生',             style: 'yurufuwa', pref: 0, kana: true,  color: '#EF7FA4' },
     { id: 'haru',    name: 'ハル',             age: 'child',   who: '小学5年生',             style: 'iraira',   pref: 0, kana: true,  color: '#F2A43A' },
     { id: 'riko',    name: 'りこ',             age: 'child',   who: '小学3年生',             style: 'sekkachi', pref: 1, kana: true,  color: '#57B38A' },
-    { id: 'kazuko',  name: 'かずこ おばあちゃん', age: 'senior', who: '70だい',              style: 'teinei',   pref: 2, kana: true,  color: '#B07CD8' },
-    { id: 'masao',   name: 'まさお おじいちゃん', age: 'senior', who: '70だい',              style: 'tanpaku',  pref: 1, kana: true,  color: '#6C9A73' },
-    { id: 'mayu',    name: 'まゆ',             age: 'adult',   who: 'こそだて ちゅうの ママ', style: 'sekkachi', pref: 0, kana: true,  color: '#E0775C' },
-    { id: 'takuya',  name: 'たくや',           age: 'adult',   who: 'しゅふの パパ',         style: 'yurufuwa', pref: 2, kana: true,  color: '#4AA6A6' },
+    { id: 'kazuko',  name: 'かずこ おばあちゃん', age: 'senior', who: '70だい', whoJ: '70代', style: 'teinei',   pref: 2, kana: true,  color: '#B07CD8' },
+    { id: 'masao',   name: 'まさお おじいちゃん', age: 'senior', who: '70だい', whoJ: '70代', style: 'tanpaku',  pref: 1, kana: true,  color: '#6C9A73' },
+    { id: 'mayu',    name: 'まゆ',             age: 'adult',   who: 'こそだて ちゅうの ママ', whoJ: '子育て中のママ', style: 'sekkachi', pref: 0, kana: true,  color: '#E0775C' },
+    { id: 'takuya',  name: 'たくや',           age: 'adult',   who: 'しゅふの パパ', whoJ: '主夫のパパ',         style: 'yurufuwa', pref: 2, kana: true,  color: '#4AA6A6' },
     { id: 'sakura',  name: 'さくら',           age: 'teen',    who: '中学2年生',             style: 'tanpaku',  pref: 0, kana: false, color: '#D46A8C' },
     { id: 'sota',    name: 'そうた',           age: 'teen',    who: '高校1年生',             style: 'yurufuwa', pref: 2, kana: false, color: '#5C9FDB' },
     { id: 'sho',     name: '翔',               age: 'adult',   who: '大学生・料理初心者',    style: 'zakkuri',  pref: 0, kana: false, color: '#8E7CC3' },
@@ -354,13 +412,13 @@ var AIGame = (function () {
     irr: [null, V('「さっきから」「もう いい」「まだ？」など {イライラした ことばが ある|イライラした言葉がある}', '{イライラした ことばが あって|イライラした言葉があって}', '{イライラした ことばが あれば|イライラした言葉があれば}')],
     emo: [null, V('「どうしよう」「{しんぱい|不安}」「💦」など {きもちの ことばが ある|気持ちの言葉がある}', '{きもちの ことばが あって|気持ちの言葉があって}', '{きもちの ことばが あれば|気持ちの言葉があれば}')],
     hurry: [null, V('「{いそいでる|急いでる}」「{はやく|早く}」「{てみじかに|手短に}」が ある', '「{いそいでる|急いでる}」などが あって', '「{いそいでる|急いでる}」などが あれば')],
-    pref: [null, V('{プロフィールの へんじの このみが「みじかめ」|プロフィールの返事の好みが「短め」}', '{へんじの このみが「みじかめ」で|返事の好みが「短め」で}', '{へんじの このみが「みじかめ」なら|返事の好みが「短め」なら}'),
-      V('{プロフィールの へんじの このみが「ていねい」|プロフィールの返事の好みが「ていねい」}', '{へんじの このみが「ていねい」で|返事の好みが「ていねい」で}', '{へんじの このみが「ていねい」なら|返事の好みが「ていねい」なら}')],
+    pref: [null, V('{「すきな へんじ」が「みじかめ」|プロフィールの返事の好みが「短め」}', '{「すきな へんじ」が「みじかめ」で|返事の好みが「短め」で}', '{「すきな へんじ」が「みじかめ」なら|返事の好みが「短め」なら}'),
+      V('{「すきな へんじ」が「ていねい」|プロフィールの返事の好みが「ていねい」}', '{「すきな へんじ」が「ていねい」で|返事の好みが「ていねい」で}', '{「すきな へんじ」が「ていねい」なら|返事の好みが「ていねい」なら}')],
     late: [null, V('{よる 0じ〜4じの メッセージ|深夜0〜4時のメッセージ}である', '{よる 0じ〜4じの メッセージで|深夜0〜4時のメッセージで}', '{よる 0じ〜4じなら|深夜0〜4時なら}')],
     fb: [null, V('{まえに「へんじが ながい」と いわれて いる|前に「返事が長い」と言われている}', '{まえに「ながい」と いわれて いて|前に「長い」と言われていて}', '{まえに「ながい」と いわれて いれば|前に「長い」と言われていれば}')]
   };
   var TONE_DEF_TXT = '{うえの どれにも あてはまらない|上のどれにも当てはまらない}';
-  var TONE_OUT = { sorry: '{ひとこと あやまってから ようてんだけ こたえる|謝罪をひと言そえて要点だけ答える}', plain: '{ようてんだけ こたえる（たんたんと）|要点だけ答える（淡々と）}', kind: '{まず きもちに よりそってから こたえる（しんみに）|まず気持ちに寄り添ってから答える（親身に）}' };
+  var TONE_OUT = { sorry: '{「ごめんね」と いってから みじかく こたえる|謝罪をひと言そえて要点だけ答える}', plain: '{みじかく こたえる|要点だけ答える（淡々と）}', kind: '{やさしく こたえる（「だいじょうぶ」「ありがとう」を つける）|まず気持ちに寄り添ってから答える（親身に）}' };
   var EMO = { k: ['どうしよう〜💦', 'しんぱいだよ〜😢', 'こまった〜😭'], j: ['どうしよう〜💦', '不安…😢', '困った〜😭'] };
   var EMO_PLAIN = { k: ['どうしよう。', 'しんぱいだな。', 'こまったな。'], j: ['どうしよう。', '不安だな。', '困ったな。'] };
   var IRR = { k: ['もう！ さっきから きいてるんだけど、', 'もう いいから、', 'ちょっと、まだ？ '], j: ['さっきから聞いてるんだけど、', 'もういい、', 'まだ？ いい加減にしてほしいんだけど、'] };
@@ -451,7 +509,7 @@ var AIGame = (function () {
     },
     outs: {
       ask: '{ききかえす（「Aと B、どっち？」と 1つだけ きく）|聞き返す（「AとB、どちら？」と1つだけ聞く）}',
-      last: '{かいわで いちばん さいごに でた もの（アイの へんじは のぞく）|会話でいちばん最後に出た物（アイの返事は除く）}', before: '{その ひとつ まえに でた もの（たべものは とれないから）|その1つ前に出た物（食べ物は取れないため）}', fav: '{プロフィールの「おきにいり」|プロフィールの「お気に入り」}', yday: '{きのうの かいわに でた もの|昨日の会話に出た物}', mama: '{ママが さいごに いった もの|ママが最後に言った物}', prevQ: '{まえの しつもんで こたえた もの|前の質問で答えた物}',
+      last: '{かいわで いちばん さいごに でた もの（アイの へんじは のぞく）|会話でいちばん最後に出た物（アイの返事は除く）}', before: '{その ひとつ まえに でた もの（たべものは とれないから）|その1つ前に出た物（食べ物は取れないため）}', fav: '{「おきにいり」の もの|プロフィールの「お気に入り」}', yday: '{きのうの かいわに でた もの|昨日の会話に出た物}', mama: '{ママが さいごに いった もの|ママが最後に言った物}', prevQ: '{まえの しつもんで こたえた もの|前の質問で答えた物}',
       bring: '{もってくる|持ってくる}', where: '{おいてある ばしょを おしえる|置いてある場所を教える}'
     },
     session: function (rng) {
@@ -599,7 +657,7 @@ var AIGame = (function () {
   // =====================================================================
   var LK = ['傘', '財布', '手袋', '本'], STAFF = ['佐藤', '鈴木', '高橋', '伊藤', '渡辺', '山本', '中村'];
   SCENES.lost = {
-    id: 'lost', kind: 'photo', timeMatters: true, kana: false, minLv: 3, title: '「これ、誰の？」', users: ['kenta', 'haruka', 'koharu', 'sota', 'sho'], noLate: true,
+    id: 'lost', kind: 'photo', timeMatters: true, kana: false, minLv: 4, title: '「これ、誰の？」', users: ['kenta', 'haruka', 'koharu', 'sota', 'sho'], noLate: true,
     slots: [{ id: 'who', t: '持ち主の推定' }, { id: 'handle', t: '品物ごとの扱い' }],
     space: function () { return facts({ when: 4, kind: 4, tag: 2 }); },
     lib: [R('who', 3, [E('tag', 1)], 'tagged'), R('who', 1, [E('when', 1)], 'morning'), R('who', 2, [E('when', 2)], 'noon'), R('who', 2, [E('when', 3)], 'yday'),
@@ -695,7 +753,7 @@ var AIGame = (function () {
   // =====================================================================
   var CITIES = ['東京', '大阪', '名古屋'], SKY_A = ['晴れ', 'くもり', '雨'];
   SCENES.aweather = {
-    id: 'aweather', kind: 'table', kana: false, minLv: 3, title: '「明日の天気は？」', users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'mayu', 'takuya'],
+    id: 'aweather', kind: 'table', kana: false, minLv: 4, title: '「明日の天気は？」', users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'mayu', 'takuya'],
     slots: [{ id: 'day', t: '日付の解釈' }, { id: 'place', t: '地域の解釈' }, { id: 'ans', t: '答える内容' }],
     space: function () { return facts({ when: 4, place: 3, trip: 2, ask: 3, follow: 2, nohome: 2 }).filter(function (f) { return !(f.follow && (f.place || f.ask || f.trip)) && !(f.trip && f.place) && !(f.nohome && (f.place || f.trip || f.follow)); }); },
     lib: [
@@ -765,7 +823,7 @@ var AIGame = (function () {
   // =====================================================================
   var SHOPS = [['カフェ木もれ日', 'カフェ'], ['らーめん大地', 'ラーメン'], ['ベーカリー麦', 'パン'], ['定食こまち', '定食'], ['スパイス屋', 'カレー']];
   SCENES.shop = {
-    id: 'shop', kind: 'table', timeMatters: true, kana: false, minLv: 3, title: '「いつもの店、今から行ける？」', followNeedsAns: true, users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'takuya', 'mayu'], noLate: true,
+    id: 'shop', kind: 'table', timeMatters: true, kana: false, minLv: 4, title: '「いつもの店、今から行ける？」', followNeedsAns: true, users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'takuya', 'mayu'], noLate: true,
     slots: [{ id: 'which', t: 'どの店か' }, { id: 'ans', t: '答える内容' }],
     space: function () { return facts({ word: 4, ask: 3, closed: 2 }); },
     lib: [R('which', 1, [E('word', 1)], 'near'), R('which', 2, [E('word', 2)], 'cheap'), core(R('which', 2, [E('word', 3)], 'prevQ')), R('ans', 1, [E('ask', 1)], 'until'), R('ans', 2, [E('ask', 2)], 'walk'), R('ans', 3, [E('closed', 1)], 'holiday')],
@@ -820,7 +878,7 @@ var AIGame = (function () {
   // 9. 乗り換え「何時の電車に乗ればいい？」（表）
   // =====================================================================
   SCENES.train = {
-    id: 'train', kind: 'table', timeMatters: true, kana: false, minLv: 3, title: '「何時の電車に乗ればいい？」', users: ['sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'kazuko'], noLate: true,
+    id: 'train', kind: 'table', timeMatters: true, kana: false, minLv: 4, title: '「何時の電車に乗ればいい？」', users: ['sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'kazuko'], noLate: true,
     slots: [{ id: 'goal', t: '「いつまでに」の解釈' }, { id: 'pick', t: 'どの電車を選ぶか' }],
     space: function () { return facts({ word: 4, safe: 2 }); },
     lib: [R('goal', 1, [E('word', 1)], 'plan'), R('goal', 2, [E('word', 2)], 'first'), R('goal', 3, [E('word', 3)], 'now'), R('pick', 2, [E('safe', 1)], 'early')],
@@ -869,7 +927,7 @@ var AIGame = (function () {
   var EVENTS = ['歯医者', '美容院', '友だちとランチ', '習い事', '健康診断', '映画', '面談'];
   var FAMILY = [['母', 0], ['弟', 0], ['祖父', 0]];
   SCENES.remind = {
-    id: 'remind', kind: 'text', kana: false, minLv: 3, title: '「あれ、いつだっけ？」', users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'mayu', 'takuya', 'masao'],
+    id: 'remind', kind: 'text', kana: false, minLv: 4, title: '「あれ、いつだっけ？」', users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'mayu', 'takuya', 'masao'],
     slots: [{ id: 'which', t: 'どの予定か' }, { id: 'form', t: '答え方' }],
     space: function () { return facts({ word: 4, ask: 2, follow: 2, tie: 2 }).filter(function (f) { return !(f.follow && f.word) && !(f.tie && (f.word || f.follow)); }); },
     lib: [core(R('which', 3, [E('follow', 1)], 'prevQ')), R('which', 1, [E('word', 1)], 'next'), R('which', 2, [E('word', 2)], 'bday'), R('which', 3, [E('word', 3)], 'nextweek'), R('which', 2, [E('tie', 1)], 'ask'), R('form', 1, [E('ask', 1)], 'days')],
@@ -1086,7 +1144,7 @@ var AIGame = (function () {
       return { rows: rows, now: now, fav: pick(rng, fut) };
     },
     words: [
-      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], sayJ: ['いつもの番組', 'いつものテレビ番組', 'いつものやつ'], out: 'fav', text: '{プロフィールの「すきな ばんぐみ」（いまより あとに はじまる もの）|プロフィールの「好きな番組」（今より後に始まるもの）}', pick: function (S) { return S.rows[S.fav].s > S.now ? S.fav : -1; } },
+      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], sayJ: ['いつもの番組', 'いつものテレビ番組', 'いつものやつ'], out: 'fav', text: '{「すきな ばんぐみ」（いまより あとに はじまる もの）|プロフィールの「好きな番組」（今より後に始まるもの）}', pick: function (S) { return S.rows[S.fav].s > S.now ? S.fav : -1; } },
       { kw: '{つぎの|次の}', say: ['つぎの ばんぐみ', 'つぎの テレビ', 'つぎの やつ'], sayJ: ['次の番組', '次のテレビ', '次の放送'], out: 'next', tier: 1, text: '{いまの じかんより あとに はじまる さいしょの ばんぐみ|今の時刻より後に始まる最初の番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.s > S.now; }); } },
       { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], sayJ: ['アニメ', 'アニメの番組', 'アニメのやつ'], out: 'anime', tier: 2, text: '{いまより あとに はじまる アニメの なかで、いちばん はやい ばんぐみ|今の時刻より後に始まるアニメの中で、いちばん早く始まる番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime && r.s > S.now; }); } }
     ],
@@ -1181,11 +1239,11 @@ var AIGame = (function () {
     id: 'pet', follow: { kw: '{その こ|その子}', say: ['じゃあ その こ', 'その こって', 'さっきの こ'], sayJ: ['じゃあ、その子', 'その子って', 'さっきの子'] }, title: '{うちの こ ごはん いつ？|うちの子のごはん、いつ？}', whichT: '{どの ペット？|どのペット？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var ks = [0].concat(shuffle(rng, [1, 2, 3, 4]).slice(0, 3)), years = shuffle(rng, [1, 2, 3, 4, 5, 6]).slice(0, 4);
-      var rows = shuffle(rng, ks).map(function (k, i) { var h1 = pick(rng, [7, 8, 12]), h2 = pick(rng, [5, 6, 7]); return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: J('あさ ' + h1 + 'じと よる ' + h2 + 'じ', '朝' + h1 + '時と夜' + h2 + '時'), y: years[i] }; });
+      var rows = shuffle(rng, ks).map(function (k, i) { var h1 = pick(rng, [7, 8, 9]), h2 = pick(rng, [5, 6, 7]); return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: J('あさ ' + h1 + 'じと よる ' + h2 + 'じ', '朝' + h1 + '時と夜' + h2 + '時'), y: years[i] }; });
       return { rows: rows, fav: ri(rng, 0, 3) };
     },
     words: [
-      { kw: '{うちの こ|うちの子}', say: ['うちの こ', 'うちの こって', 'うちの こ、'], sayJ: ['うちの子', 'うちの子って', 'うちの子さ'], out: 'fav', text: '{プロフィールの「いちばん なかよしの ペット」|プロフィールの「いちばん仲良しのペット」}', pick: function (S) { return S.fav; } },
+      { kw: '{うちの こ|うちの子}', say: ['うちの こ', 'うちの こって', 'うちの こ、'], sayJ: ['うちの子', 'うちの子って', 'うちの子さ'], out: 'fav', text: '{「いちばん なかよし」の ペット|プロフィールの「いちばん仲良しのペット」}', pick: function (S) { return S.fav; } },
       { kw: '{いぬ|犬}', say: ['いぬ', 'いぬの こ', 'うちの いぬ'], sayJ: ['犬', '犬の子', 'うちの犬'], out: 'dog', tier: 1, text: '{いぬ|犬}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.kind === PETS[0][0]; }); } },
       { kw: '{あたらしい|新しい}', say: ['あたらしい こ', 'あたらしい ペット', 'あたらしい こって'], sayJ: ['新しい子', '新しいペット', '新しい子って'], out: 'new', tier: 2, text: '{いちばん さいきん うちに きた ペット|いちばん最近うちに来たペット}', pick: function (S) { var b = 0; S.rows.forEach(function (r, i) { if (r.y < S.rows[b].y) b = i; }); return b; } }
     ],
@@ -1364,7 +1422,7 @@ var AIGame = (function () {
 
   // ---------- ステージのえらび方：ユーザーを先に（かたよらないように）、次に場面 ----------
   function scenesFor(lv, userId) {
-    return Object.keys(SCENES).filter(function (id) { var sc = SCENES[id]; return sc.minLv <= lv && (lv > 2 || sc.kana) && sc.users.indexOf(userId) >= 0; });
+    return Object.keys(SCENES).filter(function (id) { var sc = SCENES[id]; return sc.minLv <= lv && (lv > 3 || sc.kana) && sc.users.indexOf(userId) >= 0; });
   }
   function usersFor(lv) { return USERS.filter(function (u) { return scenesFor(lv, u.id).length > 0; }); }
   function pickStage(lv, rng) {
@@ -1454,7 +1512,7 @@ var AIGame = (function () {
       }
       if (ok) {
         var ctx = th.context(S);
-        ctx.profile = [[kana ? 'へんじの このみ' : '返事の好み', kana ? ['とくに なし', 'みじかめ', 'ていねい'][S.pref] : ['とくになし', '短め', 'ていねい'][S.pref]]];
+        ctx.profile = [[kana ? 'すきな へんじ' : '返事の好み', kana ? ['とくに なし', 'みじかめ', 'ていねい'][S.pref] : ['とくになし', '短め', 'ていねい'][S.pref]]];
         if (S.fb) ctx.past = kana ? 'まえの かいわで「へんじ ながいよ」と いわれた' : '前回の会話で「返事、長いよ」と言われた';
         var fix = function (v) { return typeof v === 'string' ? T(v, cfg.kanji) : Array.isArray(v) ? v.map(fix) : v && typeof v === 'object' && !(v instanceof Date) ? Object.keys(v).reduce(function (o, k) { o[k] = fix(v[k]); return o; }, {}) : v; };
         ctx = fix(ctx);
@@ -1799,8 +1857,8 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   function manualHtml(m, opts) {
     opts = opts || {};
     var sc = G.SCENES[m.scene], h = '<div class="paper">';
-    if (!opts.compact) h += '<h3>' + G.T('{AIアシスタント たいおう マニュアル|AIアシスタント対応マニュアル}', m.kanji) + '</h3><div class="sub">' + G.T(sc.title, m.kanji) + ' ／ Lv' + m.level + '（コード：lv' + m.level + '-' + m.scene + '）</div>';
-    h += '<div class="how">' + G.T('{こうもくごとに うえから よんで、さいしょに あてはまった ものを つかう。ないようと いいかたが りょうほう あう へんじが せいかい。|項目ごとに上から読み、最初に当てはまったものを使う。内容と言い方の両方が合う返事が正解。}', m.kanji) + '</div>';
+    if (!opts.compact) h += '<h3>' + G.T('{AIの しじしょ|AIアシスタント対応マニュアル}', m.kanji) + '</h3><div class="sub">' + G.T(sc.title, m.kanji) + ' ／ Lv' + m.level + '（コード：lv' + m.level + '-' + m.scene + '）</div>';
+    h += '<div class="how">' + G.T('{みだしごとに うえから よんで、さいしょに あう ものを つかおう。こたえと いいかたの どちらも あう へんじが せいかい。|項目ごとに上から読み、最初に当てはまったものを使う。内容と言い方の両方が合う返事が正解。}', m.kanji) + '</div>';
     var cur = null;
     m.rules.forEach(function (r, i) {
       if (r.slot !== cur) { if (cur !== null) h += '</ol>'; cur = r.slot; h += '<div class="sec">' + G.slotTitle(m.scene, cur, m.kanji) + '</div><ol class="rules">'; }
@@ -1822,12 +1880,27 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     h += '</div></div>';
     $('scr-title').innerHTML = h;
   }
-  function howto() {
-    showOvl('<div class="card"><h2>遊びかた</h2>' +
-      '<p style="line-height:1.7;margin:0 0 6px;font-size:14px">あなたはAIアシスタント「アイ」。いろいろな人から<b>ざっくりした質問</b>がチャットで届きます。</p>' +
-      '<ol class="how-list"><li>上のチャットで質問を読み、「参照情報」で日付・予定・表などを確かめます</li><li>下の<b>指示書（対応マニュアル）</b>で、「明日」「あれ」「いつもの」などの意味を決めます</li><li>言い方のルールも確認します（困っている人には親身に、急いでいる人には要点だけ）</li><li>4つの返事から、<b>内容も言い方も合っている</b>ものを選びます</li></ol>' +
-      '<p class="muted" style="line-height:1.6">まちがえると相手の機嫌が下がり、なくなると会話を終えてしまいます。レベルが上がるほどルールが増えます。</p>' +
-      '<button class="btn primary" style="width:100%" data-act="hideOvl">閉じる</button></div>');
+  // ---------- 遊びかた（スクリーンショットつき チュートリアル） ----------
+  // 画像は images/tutorial/ にあります。読みこめないときは、文だけでわかるようにしています。
+  var TUTORIAL = [
+    { img: 'images/tutorial/step1.webp', k: '① 「いまの しつもん」を よもう。<br>② 「わかっていること」には、あいての ことや きょうの ひにちが かいてあるよ。', j: '画面の上に今の質問が出ます。「わかっていること」タブには、相手（ユーザー）について・いまの日時・メモや記録・資料（表など）がまとめてあります。' },
+    { img: 'images/tutorial/step2.webp', k: '③ 「しじしょ」を ひらこう。<br>みだしごとに うえから よんで、さいしょに あう ものを つかうよ。', j: '「指示書」タブを開きます。項目（見出し）ごとに上から読み、最初に当てはまったルールで「明日」「あれ」などの意味を決めます。' },
+    { img: 'images/tutorial/step3.webp', k: '④ 4つの へんじから 1つ えらぼう。<br>こたえと いいかたの どちらも あう ものが せいかい。', j: '下の4つの返事から選びます。内容と言い方（やさしく／みじかく）の両方が指示書に合うものが正解です。' },
+    { img: 'images/tutorial/step4.webp', k: '⑤ まちがえると、あいての きげんが さがるよ。<br>しじしょの どこを みれば よかったか、いろで おしえて くれるよ。', j: '間違えると相手の機嫌メーターが下がり、0になると会話が終わります。指示書の当てはまるルールに色がつきます。' },
+    { img: 'images/tutorial/step5.webp', k: '⑥ わからない ときは「Aと B、どっち？」と ききかえすのが せいかいの ことも あるよ。', j: 'わかっていることでも決められないときは、選択肢つきで1つだけ聞き返すのが正解です。相手が答えたら、次のターンで本当の答えを選びます。' }
+  ];
+  function howto(i) {
+    i = i || 0; var t = TUTORIAL[i], last = i === TUTORIAL.length - 1;
+    var dots = TUTORIAL.map(function (x, k) { return '<i class="' + (k === i ? 'on' : '') + '"></i>'; }).join('');
+    showOvl('<div class="card tut"><div class="tut-head"><b>あそびかた</b><span class="muted">' + (i + 1) + ' / ' + TUTORIAL.length + '</span></div>' +
+      '<div class="tut-img"><img src="' + t.img + '" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"></div>' +
+      '<p class="tut-k">' + t.k + '</p>' + (save.tutAdult ? '<p class="tut-j">' + t.j + '</p>' : '') +
+      '<button class="linkish" data-act="tutAdult">' + (save.tutAdult ? 'おとなむけの せつめいを とじる' : 'おとなむけの せつめいを みる') + '</button>' +
+      '<div class="tut-dots">' + dots + '</div>' +
+      '<div class="row"><button class="btn" data-act="tutGo" data-v="' + (i - 1) + '"' + (i === 0 ? ' disabled' : '') + '>← まえ</button>' +
+      (last ? '<button class="btn primary" data-act="tutEnd">はじめる！</button>' : '<button class="btn primary" data-act="tutGo" data-v="' + (i + 1) + '">つぎ →</button>') + '</div></div>');
+    S.tut = i;
+    var box = document.querySelector('.tut'); if (box) { var x0 = null; box.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true }); box.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) { var n = S.tut + (dx < 0 ? 1 : -1); if (n >= 0 && n < TUTORIAL.length) howto(n); } x0 = null; }); }
   }
 
   // ---------- レベルえらび ----------
@@ -1861,14 +1934,14 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     clearTimers();
     var st = forced || G.pickStage(lv), cfg = G.L(lv);
     var sess = G.makeSession(st.scene, lv, Math.random, st.user);
-    S.game = { lv: lv, scene: st.scene, manual: G.getManual(st.scene, lv), sess: sess, user: G.userById(st.user), qs: sess.qs, idx: 0, mood: G.moodStart(lv, G.userById(st.user).style), moodMax: cfg.mood.max, results: [], busy: false, two: save.two, t0: 0, thread: [], ctxOpen: false };
+    S.game = { lv: lv, scene: st.scene, manual: G.getManual(st.scene, lv), sess: sess, user: G.userById(st.user), qs: sess.qs, idx: 0, mood: G.moodStart(lv, G.userById(st.user).style), moodMax: cfg.mood.max, results: [], busy: false, two: save.two, t0: 0, thread: [], tab: 'ctx' };
     show('scr-game');
     renderGame();
     intro();
   }
   function intro() {
     var g = S.game, m = g.manual, u = g.user;
-    var h = '<div class="card"><div class="intro-p">' + avatar(u, false) + '<div><div class="muted">' + U('きょうの あいて', '今回の相手') + '</div><b style="font-size:17px">' + u.name + '</b> <span class="ptag">' + G.STYLE_NAME[u.style] + '</span><div class="muted">' + u.who + '</div>' + (u.style === 'iraira' ? '<div class="muted">' + U('さいしょから ちょっと きげんが わるいみたい…', '最初から少し機嫌が悪いようです…') + '</div>' : '') + '</div></div>';
+    var h = '<div class="card"><div class="intro-p">' + avatar(u, false) + '<div><div class="muted">' + U('きょうの あいて', '今回の相手') + '</div><b style="font-size:17px">' + u.name + '</b> <span class="ptag">' + G.STYLE_NAME[u.style] + '</span><div class="muted">' + (kana() ? u.who : (u.whoJ || u.who)) + '</div>' + (u.style === 'iraira' ? '<div class="muted">' + U('さいしょから ちょっと きげんが わるいみたい…', '最初から少し機嫌が悪いようです…') + '</div>' : '') + '</div></div>';
     h += '<p class="muted" style="margin:10px 0 0">' + U('ばめん：', '場面：') + G.T(G.SCENES[g.scene].title, m.kanji) + '　コード：lv' + g.lv + '-' + g.scene + '</p>';
     if (m.newIndex >= 0) h += '<div class="newrule"><b>' + (m.kanji ? 'Lv' + g.lv + 'で追加されたルール' : 'あたらしい ルール') + '</b>' + (g.two ? '' : '<ol class="rules">' + ruleLi(m, m.newIndex, {}) + '</ol>') + '</div>';
     h += '<p style="line-height:1.6;margin:10px 0;font-size:14px">' + U('しつもんは ' + g.qs.length + 'こ。ないようと いいかたが あう へんじを えらんでね。', '質問は' + g.qs.length + '件。内容と言い方の両方が合う返事を選んでください。') + '</p>';
@@ -1881,16 +1954,23 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     for (var i = 0; i < g.qs.length; i++) { var r = g.results[i]; h += '<i class="' + (r ? (r === 'perfect' ? 'ok' : r === 'tone' ? 'wait' : 'ng') : i === g.idx ? 'cur' : '') + '"></i>'; }
     return h;
   }
-  function ctxSummary(c) { return (c.info || []).slice(0, 3).map(function (r) { return r[1]; }).join('・'); }
-  function ctxHtml(c) {
-    var h = '';
-    var info = (c.profile || []).concat(c.info || []);
-    if (info.length) h += '<div class="fields">' + info.map(function (r) { return '<span>' + r[0] + '</span><b>' + esc(r[1]) + '</b>'; }).join('') + '</div>';
-    if (c.past) h += '<div class="logl"><span>' + U('まえの かいわ', '前回') + '</span>' + esc(c.past) + '</div>';
-    if (c.table) h += '<div class="cap">' + c.table.cap + '</div><table class="tbl"><tr>' + c.table.cols.map(function (x) { return '<th>' + x + '</th>'; }).join('') + '</tr>' + c.table.rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + esc(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
-    if (c.grid) h += '<div class="cap">' + c.grid.cap + '</div>' + c.grid.rows.map(function (r) { return '<div class="grow"><span>' + r[0] + '</span>' + r[1].map(function (x) { return sweetsPic(x, 'gi'); }).join('') + '</div>'; }).join('');
-    if (c.log) h += '<div class="cap">' + U('まえの かいわ', 'これまでのやりとり') + '</div>' + c.log.map(function (r) { return '<div class="logl"><span>' + r[0] + '・' + r[1] + '</span>' + esc(r[2]) + '</div>'; }).join('');
-    if (c.list) h += '<div class="cap">' + c.list.cap + '</div><div class="fields">' + c.list.rows.map(function (r) { return '<span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b>'; }).join('') + '</div>';
+  // 「わかっていること」パネル：あいて／いま／メモ・きろく／しりょう の4つに分けて見やすく
+  var NOW_KEY = /^(きょう|今日|いま|今|今の時刻|場所|だす じかん|出す時間|駅まで)$/;
+  function sec(icon, title, body) { return body ? '<section class="csec"><h4><span class="ci">' + icon + '</span>' + title + '</h4>' + body + '</section>' : ''; }
+  function rowsHtml(rows) { return rows.length ? '<dl class="kv">' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' : ''; }
+  function ctxHtml(c, u, g) {
+    var info = c.info || [], now = info.filter(function (r) { return NOW_KEY.test(r[0]); }), about = info.filter(function (r) { return !NOW_KEY.test(r[0]); });
+    var who = [[U('なまえ', '名前'), u.name + '（' + (kana() ? u.who : (u.whoJ || u.who)) + '）'], [U('はなしかた', '話し方'), G.STYLE_NAME[u.style]]].concat(c.profile || [], about);
+    var h = sec('👤', U('あいて について', '相手（ユーザー）について'), rowsHtml(who) + (c.past ? '<p class="note">' + esc(c.past) + '</p>' : ''));
+    h += sec('🕒', U('いま', 'いま'), rowsHtml(now));
+    var memo = '';
+    if (c.log) memo += '<ul class="logs">' + c.log.map(function (r) { return '<li><span>' + esc(r[0]) + '・' + esc(r[1]) + '</span>' + esc(r[2]) + '</li>'; }).join('') + '</ul>';
+    if (c.list) memo += '<div class="cap">' + esc(c.list.cap) + '</div>' + rowsHtml(c.list.rows);
+    h += sec('📝', U('メモ・きろく', 'メモ・記録'), memo);
+    var doc = '';
+    if (c.table) doc += '<div class="cap">' + esc(c.table.cap) + '</div><div class="tscroll"><table class="tbl"><tr>' + c.table.cols.map(function (x) { return '<th>' + esc(x) + '</th>'; }).join('') + '</tr>' + c.table.rows.map(function (r) { return '<tr>' + r.map(function (x) { return '<td>' + esc(x) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></div>';
+    if (c.grid) doc += '<div class="cap">' + esc(c.grid.cap) + '</div>' + c.grid.rows.map(function (r) { return '<div class="grow"><span>' + esc(r[0]) + '</span>' + r[1].map(function (x) { return sweetsPic(x, 'gi'); }).join('') + '</div>'; }).join('');
+    h += sec('📊', U('しりょう', '資料'), doc);
     return h;
   }
   function msgHtml(q) {
@@ -1911,19 +1991,30 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   function renderGame() {
     var g = S.game, q = g.qs[g.idx], u = g.user;
     if (!g.thread.length || g.thread[g.thread.length - 1].q !== q) g.thread.push({ type: 'u', q: q });
-    var split = save.split || 'b';
     var h = '<div class="gtop' + (g.sess.kana ? ' low' : '') + '">' + backBtn('quit') + avatar(u, moodIdx(g) <= 1) + '<div class="ttl"><b>' + u.name + '</b><span class="ptag">' + G.STYLE_NAME[u.style] + '</span><div id="mood">' + moodHtml(g) + '</div></div><div class="gnum"><b>Lv' + g.lv + '　' + (g.idx + 1) + '/' + g.qs.length + '</b><div class="prog" id="prog">' + progHtml() + '</div></div></div>';
-    h += '<div class="gbody' + (g.two ? ' two' : '') + (g.sess.kana ? ' low' : '') + ' split-' + split + '" id="gbody">';
-    h += '<div class="qpane" id="qpane"><div class="ctxbar"><button data-act="ctx"><b>' + (g.ctxOpen ? '▲' : '▼') + ' ' + U('わかっていること', '参照情報') + '</b><span class="sum">' + esc(ctxSummary(g.sess.ctx)) + '</span></button><div class="ctxv"' + (g.ctxOpen ? '' : ' hidden') + ' id="ctxv">' + ctxHtml(g.sess.ctx) + '</div></div>';
-    h += '<div class="thread" id="thread">' + threadHtml(g) + '</div></div>';
-    if (!g.two) {
-      h += '<div class="splitbar">' + [['q', U('チャットを ひろく', 'チャットを広く')], ['b', U('はんぶん', '半々')], ['m', U('しじしょを ひろく', '指示書を広く')]].map(function (x) { return '<button class="' + (split === x[0] ? 'sel' : '') + '" data-act="split" data-v="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
-      h += '<div class="mpane" id="mpane">' + manualHtml(g.manual, { compact: true }) + '</div>';
-    }
+    // スマホ：いまの しつもん（いつも見える）→ タブ3つ（わかっていること／チャット／しじしょ）→ 返事（いつも下）
+    // ひろい画面：左に しつもん・わかっていること・チャット、右に しじしょ
+    var tabs = [['ctx', '📋', U('わかっていること', 'わかっていること')], ['chat', '💬', U('チャット', 'チャット')]];
+    if (!g.two) tabs.push(['man', '📖', U('しじしょ', '指示書')]);
+    if (g.two && g.tab === 'man') g.tab = 'ctx';
+    h += '<div class="gbody' + (g.two ? ' two' : '') + (g.sess.kana ? ' low' : '') + ' tab-' + g.tab + '" id="gbody">';
+    h += '<div class="nowq" id="nowq"><span class="nowl">' + U('いまの しつもん', 'いまの質問') + '</span>' + msgHtml(q) + '</div>';
+    h += '<div class="tabs" role="tablist">' + tabs.map(function (t) { return '<button class="t-' + t[0] + (g.tab === t[0] ? ' sel' : '') + '" data-act="tab" data-v="' + t[0] + '">' + t[1] + ' ' + t[2] + '</button>'; }).join('') + '</div>';
+    h += '<div class="pane pctx" id="ctxv">' + ctxHtml(g.sess.ctx, u, g) + '</div>';
+    h += '<div class="pane pchat" id="thread">' + threadHtml(g) + '</div>';
+    if (!g.two) h += '<div class="pane pman mpane" id="mpane">' + manualHtml(g.manual, { compact: true }) + '</div>';
     h += '<div class="abar" id="abar">' + (g.two ? '<div class="two-note" style="margin-bottom:5px">' + U('しじしょは もう ひとりが よんでね（コード lv' + g.lv + '-' + g.scene + '）', '指示書はもう一人が読みます（コード lv' + g.lv + '-' + g.scene + '）') + '</div>' : '') + answersHtml(q) + '</div></div>';
     $('scr-game').innerHTML = h;
-    var qp = $('qpane'); qp.scrollTop = qp.scrollHeight;
+    setTab(g.tab);
     g.busy = false;
+  }
+  function setTab(t) {
+    var g = S.game; if (!g) return;
+    if (t === 'man' && g.two) t = 'ctx';
+    g.tab = t;
+    var gb = $('gbody'); if (gb) gb.className = gb.className.replace(/tab-\w+/, 'tab-' + t);
+    var bs = document.querySelectorAll('.tabs button'); for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('sel', bs[i].dataset.v === t);
+    var th = $('thread'); if (th) th.scrollTop = th.scrollHeight;
   }
   function answersHtml(q) {
     return '<div class="replies">' + q.cands.map(function (c, i) {
@@ -1954,7 +2045,8 @@ if (typeof module !== 'undefined') module.exports = AIGame;
       var el = $('rule-' + first); if (el) mp.scrollTop = Math.max(0, el.offsetTop - 10);
     }
     $('thread').innerHTML = threadHtml(g);
-    var qp = $('qpane'); qp.scrollTop = qp.scrollHeight;
+    // まちがえたら しじしょ（あてはまる ルールに いろ）、あっていたら チャット（あいての はんのう）を見せる
+    setTab(res === 'perfect' || g.two ? 'chat' : 'man');
     $('mood').innerHTML = moodHtml(g); $('prog').innerHTML = progHtml();
     $('abar').innerHTML = banner(q, res, chosen, correct, before);
     if (res === 'perfect' && !g.two) later(function () { if (S.game === g && g.qs[g.idx] === q) next(); }, q.askCorrect ? 900 : 1300);
@@ -1965,7 +2057,7 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     var cHits = q.hits.filter(function (h) { return h.slot !== 'tone'; }).map(function (h) { return pad2(h.index + 1); }).join('・');
     var cOk = res === 'perfect' || res === 'tone', tOk = res === 'perfect', d = g.mood - before;
     var h = '<div class="banner ' + (tOk ? 'ok' : res === 'tone' ? 'warn' : 'ng') + '"><div class="bt">';
-    h += '<div class="bh">' + (tOk ? aiPic('happy') + (q.askCorrect ? U('じょうずに ききかえせた！', '適切な聞き返しです') : U('ばっちり！', '適切な返事です')) : res === 'askBad' ? aiPic('think') + (chosen.askBad === 'needless' ? U('ききかえさなくても わかったよ', '聞き返さなくても分かる内容でした') : U('ききかたが ばくぜんと しすぎ', '聞き返し方があいまいです')) : res === 'tone' ? aiPic('think') + U('ないようは あってる！', '内容は正しく、言い方が合っていません') : aiPic('oops') + U('おしい！', '内容が違います')) + '<span class="dm">' + U('きげん ', '機嫌 ') + (d > 0 ? '+' + d : d === 0 ? '±0' : d) + '</span></div>';
+    h += '<div class="bh">' + (tOk ? aiPic('happy') + (q.askCorrect ? U('じょうずに ききかえせた！', '適切な聞き返しです') : U('ばっちり！', '適切な返事です')) : res === 'askBad' ? aiPic('think') + (chosen.askBad === 'needless' ? U('ききかえさなくても わかったよ', '聞き返さなくても分かる内容でした') : U('いっぺんに ききすぎ', '聞き返し方があいまいです')) : res === 'tone' ? aiPic('think') + U('ないようは あってる！', '内容は正しく、言い方が合っていません') : aiPic('oops') + U('おしい！', '内容が違います')) + '<span class="dm">' + U('きげん ', '機嫌 ') + (d > 0 ? '+' + d : d === 0 ? '±0' : d) + '</span></div>';
     h += '<div class="judge"><span class="' + (cOk ? 'o' : 'x') + '">' + U('ないよう', '内容') + (cOk ? '○' : '×') + '</span> ' + U('ルール', '規則') + cHits + '　<span class="' + (tOk ? 'o' : 'x') + '">' + U('いいかた', '言い方') + (tOk ? '○' : '×') + '</span> ' + (toneHit ? U('ルール', '規則') + pad2(toneHit.index + 1) : '') + '</div>';
     if (!tOk) h += '<div class="muted">' + U('こたえ：', '正解：') + esc(correct.text) + '</div>';
     if (!tOk && chosen.wrong) h += '<div class="muted">' + U('「' + G.slotTitle(g.scene, chosen.wrong.slot, m.kanji) + '」の よみかたが ちがったよ。', '「' + G.slotTitle(g.scene, chosen.wrong.slot, m.kanji) + '」の解釈が違います。') + '</div>';
@@ -2001,7 +2093,7 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   }
   function gameOver() {
     var g = S.game, u = g.user, k = g.sess.kana ? 'k' : 'j'; clearTimers();
-    var body = '<div class="center-col">' + avatar(u, true).replace('class="who"', 'class="who big"') + '<div class="muted">' + U('かいわ しゅうりょう', '会話終了') + '</div><h2>' + u.name + U('は ' + rnd(LEAVE.k), 'が会話を終了しました') + '</h2><p style="line-height:1.7;font-size:14px">' + (k === 'j' ? rnd(LEAVE.j) + '<br>' : '') + '<span class="muted">' + U('しじしょを こうもくごとに よんで、もういちど やってみよう。', 'マニュアルを項目ごとに確認して、もう一度どうぞ。') + '</span></p></div>';
+    var body = '<div class="center-col">' + avatar(u, true).replace('class="who"', 'class="who big"') + '<div class="muted">' + U('おはなし おしまい', '会話終了') + '</div><h2>' + u.name + U('は ' + rnd(LEAVE.k), 'が会話を終了しました') + '</h2><p style="line-height:1.7;font-size:14px">' + (k === 'j' ? rnd(LEAVE.j) + '<br>' : '') + '<span class="muted">' + U('しじしょを うえから よんで、もういちど やってみよう。', 'マニュアルを項目ごとに確認して、もう一度どうぞ。') + '</span></p></div>';
     $('scr-retry').innerHTML = '<div class="narrow">' + body + '<div style="display:grid;gap:8px"><button class="btn primary big" data-act="start" data-l="' + g.lv + '">' + U('もういちど', 'もう一度') + '</button><button class="btn" data-act="toLevels">' + U('レベル えらび', 'レベル選択') + '</button></div></div>';
     show('scr-retry');
   }
@@ -2031,6 +2123,7 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     }
     if (h === '#levels') { renderLevels(); show('scr-select'); return; }
     renderTitle(); show('scr-title');
+    if (!save.tutSeen) howto(0);
   }
   function goHash(h) { if (location.hash === h) route(); else location.hash = h; }
   function toTitle() { try { history.pushState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; } route(); }
@@ -2041,19 +2134,17 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     toTitle: toTitle,
     two: function () { save.two = !save.two; persist(); renderTitle(); },
     sound: function () { save.sound = !save.sound; persist(); Snd.unlock(); renderTitle(); if (save.sound) Snd.chime(); },
-    howto: howto, hideOvl: hideOvl,
+    howto: function () { howto(0); }, hideOvl: hideOvl,
+    tutGo: function (b) { howto(+b.dataset.v); },
+    tutAdult: function () { save.tutAdult = !save.tutAdult; persist(); howto(S.tut || 0); },
+    tutEnd: function () { save.tutSeen = true; persist(); hideOvl(); },
     toManual: function () { goHash('#manual'); },
     mvLv: function (b) { S.mv.lv = +b.dataset.v; renderManualView(); setManualHash(); },
     mvScene: function (b) { S.mv.scene = b.dataset.v; renderManualView(); setManualHash(); },
     start: function (b) { startStage(+b.dataset.l); },
     locked: function () { toast('前のレベルをクリアしてください'); },
     begin: function () { hideOvl(); if (S.game) S.game.t0 = Date.now(); },
-    ctx: function () { var g = S.game; if (!g) return; g.ctxOpen = !g.ctxOpen; $('ctxv').hidden = !g.ctxOpen; document.querySelector('.ctxbar b').textContent = (g.ctxOpen ? '▲' : '▼') + ' ' + U('わかっていること', '参照情報'); if (!g.ctxOpen) { var qp = $('qpane'); qp.scrollTop = qp.scrollHeight; } },
-    split: function (b) {
-      save.split = b.dataset.v; persist();
-      var gb = $('gbody'); if (gb) gb.className = gb.className.replace(/split-\w/, 'split-' + save.split);
-      var bs = document.querySelectorAll('.splitbar button'); for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('sel', bs[i].dataset.v === save.split);
-    },
+    tab: function (b) { setTab(b.dataset.v); },
     answer: function (b) { answer(b.dataset.v); },
     afterFb: function () { next(); },
     resume: function () { var g = S.game; hideOvl(); if (!g) return; g.quitOpen = false; if (g.pendingNext) { g.pendingNext = false; next(); } },
