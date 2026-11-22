@@ -21,7 +21,7 @@
 html,body{margin:0;height:100%;background:#F6EBD7;color:var(--ink);font-family:var(--font);font-size:17px;touch-action:manipulation;-webkit-text-size-adjust:100%}
 body{display:flex;justify-content:center;overscroll-behavior:none}
 button{font-family:inherit;color:inherit;font-size:17px;touch-action:manipulation;cursor:pointer;border:none;-webkit-user-select:none;user-select:none}
-#app{position:relative;width:100%;max-width:440px;height:100vh;height:100dvh;background:var(--cream);overflow:hidden;box-shadow:0 0 40px rgba(91,74,63,.12)}
+#app{position:relative;width:100%;max-width:440px;height:100vh;height:100dvh;background:var(--cream);overflow:hidden;overflow:clip;box-shadow:0 0 40px rgba(91,74,63,.12)}
 ruby rt{font-size:.5em;color:var(--ink2)}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 14px)}
 .scr.on{display:flex;animation:fadeIn .35s ease}
@@ -98,6 +98,9 @@ h2{margin:4px 0 10px;font-size:22px;text-align:center}
 .mini-ai{position:absolute;right:0;bottom:0;width:58px;height:64px;pointer-events:none}
 .bottom{flex:none}
 .manual-btn{width:100%;margin-bottom:10px;background:var(--butter)}
+.compact .manual-btn{min-height:48px;margin-bottom:8px}
+.compact .bubble{font-size:15px;padding:6px 12px}
+.compact .req-ava{width:46px;height:46px;font-size:28px}
 .two-note{background:var(--sky);border-radius:18px;padding:8px 12px;text-align:center;margin-bottom:10px;font-size:16px;line-height:1.5}
 .answers{display:grid;gap:10px}
 .answers.a3{grid-template-columns:repeat(3,1fr)}
@@ -226,13 +229,73 @@ h2{margin:4px 0 10px;font-size:22px;text-align:center}
 @keyframes shrink{0%{transform:scale(1.4)}100%{transform:scale(1)}}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-@media (max-height:700px){.vface{width:68px;height:68px;font-size:42px}.vtable div{padding:2px 0}.ans.cand{min-height:78px}.ans.cand .pic{width:62px;height:46px}.manual-btn{min-height:50px;margin-bottom:8px}.bubble{font-size:15px}}
+@media (max-height:700px){.pkg{width:min(160px,44vw)}.letter{line-height:30px;background-image:repeating-linear-gradient(transparent 0 28px,#F6E6D6 28px 30px)}.vface{width:68px;height:68px;font-size:42px}.vtable div{padding:2px 0}.ans.cand{min-height:78px}.ans.cand .pic{width:62px;height:46px}.manual-btn{min-height:50px;margin-bottom:8px}.bubble{font-size:15px}}
 @media (max-height:640px){.req-ava{width:46px;height:46px;font-size:28px}.ans{min-height:62px}.belt{width:min(190px,52vw)}.hero .pic{width:100px;height:108px}.logo .l2{font-size:38px}}
+
+/* ===== round 2 additions ===== */
+.aud-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.aud{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:150px;border-radius:26px;box-shadow:0 5px 0 rgba(91,74,63,.14);padding:12px 8px;transition:transform .08s}
+.aud:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(91,74,63,.14)}
+.aud .em{font-size:50px;line-height:1.1}
+.aud b{font-size:26px}
+.aud small{font-size:13px;color:var(--ink2)}
+.aud.kids{background:var(--mint)} .aud.adults{background:var(--sky)}
+.big-cards{display:grid;gap:12px;margin:6px 0 10px}
+.big-card{display:flex;align-items:center;gap:14px;min-height:84px;padding:12px 16px;border-radius:22px;background:#fff;box-shadow:0 4px 0 rgba(91,74,63,.12);text-align:left;width:100%}
+.big-card:active{transform:translateY(3px)}
+.big-card .ic{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;flex:none}
+.big-card b{font-size:20px;display:block}
+.big-card small{display:block;font-size:14px;color:var(--ink2);line-height:1.4}
+.big-card .stars-mini{margin-left:auto;font-size:13px;color:var(--butterD);flex:none}
+.crumb{text-align:center;margin:-2px 0 8px}
+.lead{text-align:center;font-size:18px;font-weight:700;margin:2px 0 10px}
+.chip.long{white-space:normal;border-radius:12px;padding:3px 10px;display:inline-block;line-height:1.45}
+/* text genre */
+.letter{width:min(340px,90vw);background:#FFFDF7;border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;border:3px solid var(--peach);background-image:repeating-linear-gradient(transparent 0 31px,#F6E6D6 31px 33px);line-height:33px;font-size:17px;animation:slideIn .5s cubic-bezier(.3,1.4,.5,1)}
+.letter p{margin:0}
+.letter .to{font-weight:700}
+.letter .sig{text-align:right;font-weight:700}
+.letter.memo{border-color:var(--butter)}
+.mailbox{width:min(350px,92vw);background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:12px 14px;border:2px solid #DCE7F2;font-size:15.5px;line-height:1.7;animation:slideIn .4s ease}
+.mailbox .subj{font-weight:800;border-bottom:2px solid #EEF2F7;padding-bottom:6px;margin-bottom:6px}
+.mailbox p{margin:0 0 4px}
+/* table genre */
+.ctx{width:min(350px,92vw);background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:6px 10px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.ctx div{display:flex;flex-direction:column;padding:2px 0;border-bottom:2px dotted #EADFCF;line-height:1.3}
+.ctx span{color:var(--ink2);font-size:12.5px}
+.ctx b{font-size:15.5px}
+.tbl{width:min(350px,92vw);display:grid;gap:6px}
+.tbl .th,.tbl .trow{display:grid;align-items:center;text-align:center;gap:2px;padding:0 6px}
+.tbl .th{font-size:13px;color:var(--ink2);font-weight:700}
+.tbl .trow{min-height:48px;background:#fff;border-radius:14px;box-shadow:0 3px 0 rgba(91,74,63,.12);font-size:16px;font-weight:700}
+.tbl .trow:active{transform:translateY(2px)}
+.tbl .trow.picked{background:var(--butter)}
+.tbl .trow.right{box-shadow:0 0 0 3px var(--mintD)}
+.tap-hint{text-align:center;font-size:15px;color:var(--ink2);margin-bottom:4px}
+.answers.alist{grid-template-columns:1fr 1fr}
+.answers.alist .ans{min-height:58px;font-size:16px;background:#fff;padding:4px 8px}
+.answers.alist .ans:nth-child(5n+1){background:var(--mint)} .answers.alist .ans:nth-child(5n+2){background:var(--sky)} .answers.alist .ans:nth-child(5n+3){background:var(--peach)} .answers.alist .ans:nth-child(5n+4){background:var(--butter)} .answers.alist .ans:nth-child(5n+5){background:var(--lav)}
+.answers.alist .ans:last-child:nth-child(odd){grid-column:1 / -1}
+/* adult pictures */
+.pkg{position:relative;width:min(210px,56vw);aspect-ratio:1;animation:slideIn .5s cubic-bezier(.3,1.4,.5,1)}
+.pkg .pic{width:100%;height:100%}
+.pkg .ov{position:absolute;inset:0;width:100%;height:100%}
+.info{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;max-width:350px}
+.info span{background:#fff;border-radius:999px;padding:3px 12px;font-size:15px;box-shadow:0 2px 0 rgba(91,74,63,.1)}
+.board.small{font-size:14px;font-weight:700;text-align:center;line-height:1.5}
+/* adults: calmer */
+#app.adult{--cream:#FBF7F0}
+#app.adult .logo .ai-tag{animation:none}
+#app.adult .hero .pic{animation:none}
+#app.adult .bubble{font-size:15px}
+#app.adult .praise .txt{font-size:24px}
 </style>
 </head>
 <body>
 <div id="app">
   <section class="scr" id="scr-title"></section>
+  <section class="scr" id="scr-diff"></section>
+  <section class="scr" id="scr-genre"></section>
   <section class="scr" id="scr-select"></section>
   <section class="scr" id="scr-game"></section>
   <section class="scr" id="scr-result"></section>
@@ -268,8 +331,10 @@ var AIGame = (function () {
     return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
   function seededRng(str) { return mulberry32(xmur3(str)()); }
-  function pick(rng, a) { return a[Math.floor(rng() * a.length)]; }
+  function pick(rng, a) { return a.length ? a[Math.floor(rng() * a.length)] : null; }
+  function ri(rng, lo, hi) { return lo + Math.floor(rng() * (hi - lo + 1)); }
   function shuffle(rng, a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function range(n) { var r = []; for (var i = 0; i < n; i++) r.push(i); return r; }
 
   // {かな|漢字} → むずかしさに合わせてどちらかを使う
   function T(s, kanji) { return String(s).replace(/\{([^|{}]*)\|([^|{}]*)\}/g, function (m, k, j) { return kanji ? j : k; }); }
@@ -278,16 +343,42 @@ var AIGame = (function () {
   function N(subj, val) { return { a: subj + 'が「' + val + '」の', t: subj + 'が「' + val + '」で', c: subj + 'が「' + val + '」なら' }; }
   function NN(subj, val) { return { a: subj + 'が「' + val + '」では ない', t: subj + 'が「' + val + '」では なく', c: subj + 'が「' + val + '」で なければ' }; }
   function NI(subj, vals) { var v = vals.map(function (x) { return '「' + x + '」'; }).join('か'); return { a: subj + 'が' + v + 'の', t: subj + 'が' + v + 'で', c: subj + 'が' + v + 'なら' }; }
+  function NX(subj, names, a) { return a.op === 'eq' ? N(subj, names[a.v]) : a.op === 'ne' ? NN(subj, names[a.v]) : NI(subj, a.v.map(function (i) { return names[i]; })); }
   function P(ph) { return { a: ph + 'の', t: ph + 'で', c: ph + 'なら' }; }
   function V(a, t, c) { return { a: a, t: t, c: c }; }
   function aru(s) { return V(s + 'が ある', s + 'が あって', s + 'が あれば'); }
   function nai(s) { return V(s + 'が ない', s + 'が なくて', s + 'が なければ'); }
+  function E(k, op, v, tier, tags) { var o = { k: k, op: op, v: v, tier: tier }; if (tags) for (var t in tags) o[t] = tags[t]; return o; }
+  function eqne(L, k, n, neTier) { for (var v = 0; v < n; v++) { L.push(E(k, 'eq', v, 1)); if (neTier) L.push(E(k, 'ne', v, neTier, { neg: 1 })); } }
 
-  var DIFFS = {
-    easy:   { id: 'easy',   label: 'かんたん',   hint: '小学校低学年から', counts: [2, 3, 3], kanji: false, maxTier: 1 },
-    normal: { id: 'normal', label: 'ふつう',     hint: '小学校高学年から', counts: [4, 5, 5], kanji: true,  maxTier: 2 },
-    hard:   { id: 'hard',   label: 'むずかしい', hint: '中学生〜おとな',   counts: [6, 7, 8], kanji: true,  maxTier: 3 }
+  // ---------- こども／おとな × むずかしさ ----------
+  var LEVELS = {
+    kids: {
+      easy:   { id: 'easy',   label: 'かんたん',   hint: '1・2年生から', counts: [2, 3, 3], maxTier: 1, kinds: ['single'], req: [], kanji: false },
+      normal: { id: 'normal', label: 'ふつう',     hint: '3・4年生から', counts: [3, 4, 5], maxTier: 2, kinds: ['single', 'neg', 'and'], req: ['neg', 'and'], kanji: true },
+      hard:   { id: 'hard',   label: 'むずかしい', hint: '5・6年生から', counts: [4, 5, 6], maxTier: 3, kinds: ['single', 'neg', 'and', 'or', 'count', 'exc'], req: ['and', 'exc'], kanji: true }
+    },
+    adults: {
+      easy:   { id: 'easy',   label: 'かんたん',   hint: 'はじめての方に',       counts: [4, 5, 6],  maxTier: 2, kinds: ['single', 'neg', 'and'], req: ['neg', 'and'], kanji: true },
+      normal: { id: 'normal', label: 'ふつう',     hint: '慣れてきた方に',       counts: [6, 7, 8],  maxTier: 3, kinds: ['single', 'neg', 'and', 'or', 'count', 'exc'], req: ['neg', 'and', 'count', 'exc'], kanji: true },
+      hard:   { id: 'hard',   label: 'むずかしい', hint: 'じっくり考えたい方に', counts: [8, 9, 10], maxTier: 3, kinds: ['single', 'neg', 'and', 'and3', 'or', 'count', 'exc'], req: ['neg', 'and', 'and3', 'count', 'exc', 'or'], kanji: true, batch: true }
+    }
   };
+  var AUDS = { kids: { id: 'kids', label: 'こども', sub: 'しょうがくせい むけ' }, adults: { id: 'adults', label: 'おとな', sub: '中学生・大人向け' } };
+  var GENRES = {
+    pic:   { id: 'pic',   icon: '🖼️', kids: 'えを みて はんだん', adults: '絵を見て判断', kidsSub: 'にもつや カードの えを よく みよう', adultsSub: '絵と書かれた情報を見て判断します' },
+    text:  { id: 'text',  icon: '✉️', kids: 'ぶんしょうを よむ', adults: '文章を読む',   kidsSub: 'てがみや おしらせを よもう',       adultsSub: 'メールやメモを読んで判断します' },
+    table: { id: 'table', icon: '📋', kids: 'ひょうを よむ',     adults: '表を読む',     kidsSub: 'じこくひょうや ねだんひょうを よもう', adultsSub: '時刻表や料金表から選びます' }
+  };
+  var ORDER = {
+    kids:   { pic: ['parcel', 'clinic', 'sweets'], text: ['letter', 'memo'], table: ['bus', 'shop'] },
+    adults: { pic: ['delivery', 'lost'], text: ['mail', 'expense'], table: ['train', 'plan'] }
+  };
+
+  function hm(m) { var h = Math.floor(m / 60), mm = m % 60; return h + ':' + (mm < 10 ? '0' : '') + mm; }
+  function yen(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function dateOf(base, plusDays) { var d = new Date(base.getTime() + plusDays * 86400000); return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'; }
+  function randomToday(rng) { return new Date(Date.UTC(2026, 10, 5 + ri(rng, 0, 40))); }
 
   var COLORS = ['あか', 'あお', 'きいろ', 'みどり'];
   var SHAPES = ['まる', 'さんかく', 'しかく'];
@@ -299,23 +390,26 @@ var AIGame = (function () {
     { id: 'donut', name: 'ドーナツ' }, { id: 'cookie', name: 'クッキー' }, { id: 'macaron', name: 'マカロン' },
     { id: 'roll', name: 'ロールケーキ' }, { id: 'candy', name: 'キャンディ' }
   ];
-  // 名前（小さい「ッャュョ」や「ー」は使わない → 文字数が数えやすい）
   var NAMES = {
     2: ['ポポ', 'ミミ', 'ココ', 'ララ', 'モモ', 'ルル', 'ナナ', 'ピノ'],
     3: ['ポンタ', 'ミルク', 'ココア', 'マロン', 'ハルカ', 'ソラタ', 'コハル', 'ピコタ'],
     4: ['マカロン', 'クルミン', 'ピコリン', 'ハナマル', 'ムギマル', 'モコタロ'],
     5: ['マシマロン', 'コロコロン', 'ポンポコタ', 'ピコピコン', 'モモタロウ', 'ミルクパン']
   };
+  var CUSTOMERS = 6;
 
-  function E(k, op, v, tier, tags) { var o = { k: k, op: op, v: v, tier: tier }; if (tags) for (var t in tags) o[t] = tags[t]; return o; }
+  // 各テーマの共通の形
+  function outsFrom(map) { return Object.keys(map); }
+  function labelOf(map) { return function (o) { return map[o]; }; }
 
   var THEMES = {};
 
-  // ===== 指示書A：おとどけもの仕分け =====
-  THEMES.A = {
-    id: 'A', icon: '📦', title: '{おとどけもの しわけ|おとどけもの仕分け}',
-    noun: '{この にもつ|この荷物}', outcomes: ['A', 'B', 'C'],
-    outText: function (o) { return o; },
+  // =====================================================================
+  // こども ① 絵を見て判断
+  // =====================================================================
+  THEMES.parcel = {
+    id: 'parcel', aud: 'kids', genre: 'pic', code: 'A', icon: '📦', title: '{おとどけもの しわけ|おとどけもの仕分け}',
+    noun: '{この にもつ|この荷物}', outcomes: ['A', 'B', 'C'], outText: function (o) { return o; },
     space: function () {
       var r = [];
       for (var c = 0; c < 4; c++) for (var s = 0; s < 3; s++) for (var z = 0; z < 2; z++)
@@ -324,13 +418,10 @@ var AIGame = (function () {
       return r;
     },
     atoms: function () {
-      var L = [], v;
-      for (v = 0; v < 4; v++) { L.push(E('color', 'eq', v, 1)); L.push(E('color', 'ne', v, 2, { neg: 1 })); }
-      for (v = 0; v < 3; v++) { L.push(E('shape', 'eq', v, 1)); L.push(E('shape', 'ne', v, 2, { neg: 1 })); }
+      var L = [];
+      eqne(L, 'color', 4, 2); eqne(L, 'shape', 3, 2);
       L.push(E('size', 'eq', 1, 1), E('size', 'eq', 0, 1), E('snow', 'eq', 1, 1), E('snow', 'eq', 0, 1));
-      ['hearts', 'stars'].forEach(function (k) {
-        L.push(E(k, 'ge', 1, 1), E(k, 'ge', 2, 2), E(k, 'ge', 3, 2), E(k, 'le', 0, 2), E(k, 'le', 1, 2));
-      });
+      ['hearts', 'stars'].forEach(function (k) { L.push(E(k, 'ge', 1, 1), E(k, 'ge', 2, 2), E(k, 'ge', 3, 2), E(k, 'le', 0, 2), E(k, 'le', 1, 2)); });
       [3, 4, 5].forEach(function (n) { L.push(E(['hearts', 'stars'], 'sumge', n, 3, { count: 1 })); });
       L.push(E(['hearts', 'stars'], 'eqk', 0, 3, { count: 1 }));
       [[0, 1], [0, 2], [1, 3], [2, 3]].forEach(function (p) { L.push(E('color', 'in', p, 3, { or: 1 })); });
@@ -339,10 +430,8 @@ var AIGame = (function () {
     },
     say: function (a) {
       var k = a.k, op = a.op, v = a.v, S;
-      if (k === 'color' || k === 'shape') {
-        S = k === 'color' ? '{いろ|色}' : '{かたち|形}'; var names = k === 'color' ? COLORS : SHAPES;
-        return op === 'eq' ? N(S, names[v]) : op === 'ne' ? NN(S, names[v]) : NI(S, v.map(function (i) { return names[i]; }));
-      }
+      if (k === 'color') return NX('{いろ|色}', COLORS, a);
+      if (k === 'shape') return NX('{かたち|形}', SHAPES, a);
       if (k === 'size') return v ? V('{にもつが おおきい|荷物が 大きい}', '{にもつが おおきくて|荷物が 大きくて}', '{にもつが おおきければ|荷物が 大きければ}')
                                  : V('{にもつが ちいさい|荷物が 小さい}', '{にもつが ちいさくて|荷物が 小さくて}', '{にもつが ちいさければ|荷物が 小さければ}');
       if (k === 'snow') return v ? aru('❄マーク') : nai('❄マーク');
@@ -355,14 +444,12 @@ var AIGame = (function () {
       }
       if (op === 'sumge') return P('ハートと {ほし|星}の シールが {あわせて|合わせて} ' + v + 'まい {いじょう|以上}');
       if (op === 'eqk') return P('ハートと {ほし|星}の シールが {おなじ かず|同じ数}');
-      throw new Error('say A ' + JSON.stringify(a));
     },
     decorate: function (it) { return it; }
   };
 
-  // ===== 指示書B：どうぶつ病院の受付 =====
-  THEMES.B = {
-    id: 'B', icon: '🏥', title: '{どうぶつびょういんの うけつけ|どうぶつ病院の受付}',
+  THEMES.clinic = {
+    id: 'clinic', aud: 'kids', genre: 'pic', code: 'B', icon: '🏥', title: '{どうぶつびょういんの うけつけ|どうぶつ病院の受付}',
     noun: 'この {どうぶつさん|動物さん}', outcomes: ['yes', 'no'],
     outText: function (o) { return o === 'yes' ? 'はい（とおす）' : 'いいえ（まってもらう）'; },
     space: function () {
@@ -373,11 +460,10 @@ var AIGame = (function () {
       return r;
     },
     atoms: function () {
-      var L = [], v;
-      for (v = 0; v < 6; v++) { L.push(E('animal', 'eq', v, 1)); L.push(E('animal', 'ne', v, 2, { neg: 1 })); }
-      for (v = 0; v < 4; v++) { L.push(E('ticket', 'eq', v, 1)); L.push(E('ticket', 'ne', v, 2, { neg: 1 })); }
+      var L = [];
+      eqne(L, 'animal', 6, 2); eqne(L, 'ticket', 4, 2);
       L.push(E('stamp', 'eq', 1, 1), E('stamp', 'eq', 0, 1), E(['day', 'today'], 'eqk', 0, 1), E(['day', 'today'], 'nek', 0, 2, { neg: 1 }));
-      for (v = 0; v < 5; v++) L.push(E('day', 'eq', v, 2));
+      for (var v = 0; v < 5; v++) L.push(E('day', 'eq', v, 2));
       [3, 4, 5].forEach(function (n) { L.push(E('nameLen', 'ge', n, 3, { count: 1 })); });
       [2, 3].forEach(function (n) { L.push(E('nameLen', 'le', n, 3, { count: 1 })); });
       L.push(E(['day', 'today'], 'ltk', 0, 3, { count: 1 }));
@@ -386,26 +472,22 @@ var AIGame = (function () {
       return L;
     },
     say: function (a) {
-      var k = a.k, op = a.op, v = a.v, S;
-      if (k === 'animal' || k === 'ticket') {
-        S = k === 'animal' ? '{いきもの|動物}' : '{けんの いろ|券の色}'; var names = k === 'animal' ? ANIMALS : COLORS;
-        return op === 'eq' ? N(S, names[v]) : op === 'ne' ? NN(S, names[v]) : NI(S, v.map(function (i) { return names[i]; }));
-      }
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'animal') return NX('{いきもの|動物}', ANIMALS, a);
+      if (k === 'ticket') return NX('{けんの いろ|券の色}', COLORS, a);
       if (k === 'stamp') return v ? aru('はんこ') : nai('はんこ');
       if (k === 'day') return N('{よやくの ひ|予約の日}', DAYS[v]);
       if (op === 'eqk') return P('{よやくの ひが きょう|予約の日が 今日}');
       if (op === 'nek') return V('{よやくの ひが きょうでは ない|予約の日が 今日では ない}', '{よやくの ひが きょうでは なく|予約の日が 今日では なく}', '{よやくの ひが きょうで なければ|予約の日が 今日で なければ}');
       if (op === 'ltk') return P('{よやくの ひが きょうより まえ|予約の日が 今日より 前}');
       if (k === 'nameLen') return op === 'ge' ? P('{なまえが|名前が} ' + v + '{もじ いじょう|文字以上}') : P('{なまえが|名前が} ' + v + '{もじ いか|文字以下}');
-      throw new Error('say B ' + JSON.stringify(a));
     },
     decorate: function (it, rng) { it.name = pick(rng, NAMES[it.nameLen]); return it; }
   };
 
-  // ===== 指示書C：おかしやさんの注文 =====
-  THEMES.C = {
-    id: 'C', icon: '🍰', title: '{おかしやさんの ちゅうもん|おかしやさんの注文}',
-    noun: '{この ちゅうもん|この注文}', outcomes: PRODUCTS.map(function (p) { return p.id; }),
+  THEMES.sweets = {
+    id: 'sweets', aud: 'kids', genre: 'pic', code: 'C', icon: '🍰', title: '{おかしやさんの ちゅうもん|おかしやさんの注文}',
+    noun: '{この ちゅうもん|この注文}', outcomes: PRODUCTS.map(function (p) { return p.id; }), candidates: true,
     outText: function (o) { for (var i = 0; i < PRODUCTS.length; i++) if (PRODUCTS[i].id === o) return PRODUCTS[i].name; return o; },
     space: function () {
       var r = [];
@@ -414,8 +496,8 @@ var AIGame = (function () {
       return r;
     },
     atoms: function () {
-      var L = [], v;
-      for (v = 0; v < 3; v++) { L.push(E('flavor', 'eq', v, 1)); L.push(E('flavor', 'ne', v, 2, { neg: 1 })); }
+      var L = [];
+      eqne(L, 'flavor', 3, 2);
       L.push(E('people', 'eq', 1, 1), E('bday', 'eq', 1, 1), E('bday', 'eq', 0, 1), E('takeout', 'eq', 1, 1), E('takeout', 'eq', 0, 1), E('kid', 'eq', 1, 1), E('kid', 'eq', 0, 1));
       [3, 4, 5].forEach(function (n) { L.push(E('people', 'ge', n, 2)); });
       [2, 3].forEach(function (n) { L.push(E('people', 'le', n, 2)); });
@@ -425,8 +507,8 @@ var AIGame = (function () {
       return L;
     },
     say: function (a) {
-      var k = a.k, op = a.op, v = a.v, S;
-      if (k === 'flavor') { S = '{すきな あじ|好きな味}'; return op === 'eq' ? N(S, FLAVORS[v]) : op === 'ne' ? NN(S, FLAVORS[v]) : NI(S, v.map(function (i) { return FLAVORS[i]; })); }
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'flavor') return NX('{すきな あじ|好きな味}', FLAVORS, a);
       if (k === 'people') {
         if (op === 'eq') return N('{にんずう|人数}', v + '{にん|人}');
         if (op === 'ge') return P('{にんずうが|人数が} ' + v + '{にん いじょう|人以上}');
@@ -436,13 +518,507 @@ var AIGame = (function () {
       if (k === 'bday') return v ? aru('🎂マーク') : nai('🎂マーク');
       if (k === 'takeout') return N('{たべる ばしょ|食べる場所}', v ? '{おうち|お家}' : '{おみせ|お店}');
       if (k === 'kid') return N('{おきゃくさん|お客さん}', v ? '{こども|子ども}' : '{おとな|大人}');
-      throw new Error('say C ' + JSON.stringify(a));
     },
     decorate: function (it, rng) { it.customer = Math.floor(rng() * CUSTOMERS); return it; }
   };
-  var CUSTOMERS = 6; // お客さんの絵の数（画面側の表と合わせる）
 
-  // ---------- ルールの判定 ----------
+  // =====================================================================
+  // こども ② 文章を読む
+  // =====================================================================
+  var L_FROM = ['ともだち', 'せんせい', 'おばあちゃん'];
+  var L_WORD = ['あそぼう', 'おまつり', 'ありがとう', 'こいぬ'];
+  var L_OUT = { reply: '{へんじを かく|返事を書く}', show: '{おうちの ひとに みせる|おうちの人に見せる}', cal: '{カレンダーに かく|カレンダーに書く}', keep: '{たからばこに しまう|宝箱にしまう}' };
+  function lit(w) { return V('{てがみに|手紙に}「' + w + '」と {かいてある|書いてある}', '{てがみに|手紙に}「' + w + '」と {かいてあって|書いてあって}', '{てがみに|手紙に}「' + w + '」と {かいてあれば|書いてあれば}'); }
+  function litNo(w) { return V('{てがみに|手紙に}「' + w + '」と {かいてない|書いてない}', '{てがみに|手紙に}「' + w + '」と {かいてなくて|書いてなくて}', '{てがみに|手紙に}「' + w + '」と {かいてなければ|書いてなければ}'); }
+  THEMES.letter = {
+    id: 'letter', aud: 'kids', genre: 'text', code: 'D', icon: '💌', title: '{おてがみを よもう|お手紙を読もう}',
+    noun: '{この てがみ|この手紙}', outcomes: outsFrom(L_OUT), outText: labelOf(L_OUT),
+    space: function () {
+      var r = [];
+      for (var f = 0; f < 3; f++) for (var w = 0; w < 4; w++) for (var d = 0; d < 3; d++) for (var q = 0; q < 2; q++) for (var p = 0; p < 2; p++) for (var b = 0; b < 4; b++)
+        r.push({ from: f, word: w, when: d, ask: q, draw: p, bang: b });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'from', 3, 2); eqne(L, 'word', 4, 2);
+      L.push(E('when', 'eq', 1, 1), E('when', 'eq', 2, 1), E('when', 'eq', 0, 2), E('ask', 'eq', 1, 1), E('ask', 'eq', 0, 2), E('draw', 'eq', 1, 1), E('draw', 'eq', 0, 2));
+      L.push(E('bang', 'ge', 2, 3, { count: 1 }), E('bang', 'ge', 3, 3, { count: 1 }), E('bang', 'eq', 0, 3, { count: 1 }));
+      [[0, 1], [2, 3], [0, 3]].forEach(function (p) { L.push(E('word', 'in', p, 3, { or: 1 })); });
+      L.push(E('from', 'in', [1, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'from') return NX('{てがみを くれた ひと|手紙をくれた人}', L_FROM, a);
+      if (k === 'word') {
+        if (op === 'eq') return lit(L_WORD[v]);
+        if (op === 'ne') return litNo(L_WORD[v]);
+        return V('{てがみに|手紙に}「' + L_WORD[v[0]] + '」か「' + L_WORD[v[1]] + '」と {かいてある|書いてある}', '{てがみに|手紙に}「' + L_WORD[v[0]] + '」か「' + L_WORD[v[1]] + '」と {かいてあって|書いてあって}', '{てがみに|手紙に}「' + L_WORD[v[0]] + '」か「' + L_WORD[v[1]] + '」と {かいてあれば|書いてあれば}');
+      }
+      if (k === 'when') return v === 1 ? lit('あした') : v === 2 ? lit('にちようび') : V('{てがみに|手紙に}「あした」も「にちようび」も {かいてない|書いてない}', '{てがみに|手紙に}「あした」も「にちようび」も {かいてなくて|書いてなくて}', '{てがみに|手紙に}「あした」も「にちようび」も {かいてなければ|書いてなければ}');
+      if (k === 'ask') return v ? aru('{てがみに|手紙に}「？」') : nai('{てがみに|手紙に}「？」');
+      if (k === 'draw') return v ? lit('えも かいたよ') : litNo('えも かいたよ');
+      if (k === 'bang') return op === 'eq' ? nai('{てがみに|手紙に}「！」') : P('{てがみの|手紙の}「！」が ' + v + 'こ {いじょう|以上}');
+    },
+    decorate: function (it, rng) {
+      var decl = [pick(rng, ['こんにちは', 'やっほー', 'ひさしぶり'])];
+      var when = ['', 'あした', 'にちようびに'][it.when];
+      if (it.word === 0) decl.push((it.when === 0 ? 'こんど' : when) + ' いっしょに あそぼう');
+      else if (it.word === 1) decl.push((it.when === 0 ? 'もうすぐ' : when) + ' おまつりが あるよ');
+      else if (it.word === 2) { decl.push('このまえは ほんを かしてくれて ありがとう'); if (it.when) decl.push(when + ' かえすね'); }
+      else { decl.push('うちに こいぬが きたよ'); if (it.when) decl.push(when + ' みに きてね'); }
+      if (it.draw) decl.push('えも かいたよ');
+      decl.push(pick(rng, ['またね', 'げんきでね', 'おへんじ まってるね']));
+      var bangs = shuffle(rng, range(decl.length)).slice(0, it.bang);
+      var body = decl.map(function (s, i) { return s + (bangs.indexOf(i) >= 0 ? '！' : '。'); });
+      if (it.ask) body.splice(body.length - 1, 0, pick(rng, ['げんき？', 'なにが すき？', 'いっしょに いける？']));
+      var sig = it.from === 0 ? 'ともだちの ' + pick(rng, ['ハナ', 'ソラ', 'ユウ', 'リン', 'ケン']) + 'より' : it.from === 1 ? 'せんせいより' : 'おばあちゃんより';
+      it.lines = ['ミミちゃんへ'].concat(body).concat([sig]);
+      return it;
+    }
+  };
+
+  var M_PLACE = ['こうえん', 'プール', 'きょうしつ', 'たいいくかん'];
+  var M_WEATHER = ['はれ', 'あめ', 'くもり'];
+  var M_TIME = ['7じ', '7じはん', '8じ', '8じはん'];
+  var M_OUT = { bottle: 'すいとう', umbrella: 'かさ', bento: 'おべんとう', swim: '{みずぎ|水着}', gym: 'たいそうふく' };
+  THEMES.memo = {
+    id: 'memo', aud: 'kids', genre: 'text', code: 'E', icon: '📒', title: '{あしたの もちもの|明日の持ち物}',
+    noun: '{この おしらせ|このお知らせ}', outcomes: outsFrom(M_OUT), outText: labelOf(M_OUT),
+    space: function () {
+      var r = [];
+      for (var p = 0; p < 4; p++) for (var w = 0; w < 3; w++) for (var l = 0; l < 2; l++) for (var t = 0; t < 4; t++) for (var s = 0; s < 2; s++)
+        r.push({ place: p, weather: w, lunch: l, time: t, shoes: s });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'place', 4, 2); eqne(L, 'weather', 3, 2);
+      L.push(E('lunch', 'eq', 0, 1), E('lunch', 'eq', 1, 1), E('shoes', 'eq', 1, 1), E('shoes', 'eq', 0, 2));
+      L.push(E('time', 'eq', 0, 2), E('time', 'eq', 3, 2));
+      L.push(E('time', 'le', 1, 3, { count: 1 }), E('time', 'ge', 2, 3, { count: 1 }));
+      [[0, 1], [2, 3], [0, 3]].forEach(function (p) { L.push(E('place', 'in', p, 3, { or: 1 })); });
+      L.push(E('weather', 'in', [1, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'place') return NX('{いく ばしょ|行く場所}', M_PLACE, a);
+      if (k === 'weather') return NX('{てんきよほう|天気予ほう}', M_WEATHER, a);
+      if (k === 'lunch') return v ? nai('{きゅうしょく|給食}') : aru('{きゅうしょく|給食}');
+      if (k === 'shoes') {
+        var o = '{おしらせに|お知らせに}「うわばき」と ';
+        return v ? V(o + '{かいてある|書いてある}', o + '{かいてあって|書いてあって}', o + '{かいてあれば|書いてあれば}') : V(o + '{かいてない|書いてない}', o + '{かいてなくて|書いてなくて}', o + '{かいてなければ|書いてなければ}');
+      }
+      if (k === 'time') {
+        if (op === 'eq') return N('{あつまる じかん|集まる時間}', M_TIME[v]);
+        if (op === 'le') return P('{あつまる じかんが|集まる時間が} 8じより まえ');
+        return P('{あつまる じかんが|集まる時間が} 8じ {いこう|以こう}');
+      }
+    },
+    decorate: function (it, rng) {
+      var place = ['{あしたは|明日は} こうえんに {いきます|行きます}。', '{あしたは|明日は} プールに はいります。', '{あしたは|明日は} きょうしつで {べんきょうします|勉強します}。', '{あしたは|明日は} たいいくかんで {うんどうします|運動します}。'][it.place];
+      var mid = ['{あつまる じかんは|集まる時間は} ' + M_TIME[it.time] + ' です。', '{てんきよほうは|天気予ほうは} ' + M_WEATHER[it.weather] + ' です。', '{きゅうしょくは|給食は} ' + (it.lunch ? 'ありません' : 'あります') + '。'];
+      if (it.shoes) mid.push('うわばきを {もってかえって|持って帰って} あらいましょう。');
+      it.lines = ['{おうちの かたへ|おうちの方へ}', place].concat(shuffle(rng, mid)).concat(['よろしく おねがいします。', '{せんせいより|先生より}']);
+      return it;
+    }
+  };
+
+  // =====================================================================
+  // こども ③ 表を読む
+  // =====================================================================
+  var B_WEATHER = ['はれ', 'あめ'], B_GOAL = ['こうえん', 'としょかん', 'どうぶつえん'], B_DAY = ['へいじつ', 'どようび'];
+  var B_WHO = ['ひとりで', 'おばあちゃんと', 'ともだちと'];
+  THEMES.bus = {
+    id: 'bus', aud: 'kids', genre: 'table', code: 'F', icon: '🚌', title: '{バスの じこくひょう|バスの時こく表}',
+    noun: '{この じょうけん|この条件}',
+    instr: {
+      first:   { l: '{いちばん はやく でる バス|いちばん早く出るバス}', f: [], pick: ['dep', 'min'] },
+      arrive:  { l: '{いちばん はやく つく バス|いちばん早く着くバス}', f: [], pick: ['arr', 'min'] },
+      express: { l: '{きゅうこうの なかで いちばん はやく でる バス|きゅうこうの中で いちばん早く出るバス}', f: [['type', 'eq', 1]], pick: ['dep', 'min'] },
+      local:   { l: '{ふつうの バスの なかで いちばん はやく つく バス|ふつうのバスの中で いちばん早く着くバス}', f: [['type', 'eq', 0]], pick: ['arr', 'min'] },
+      nostep:  { l: '{かいだんが ない バスの なかで いちばん はやく でる バス|かいだんがないバスの中で いちばん早く出るバス}', f: [['step', 'eq', 0]], pick: ['dep', 'min'] },
+      last:    { l: '{いちばん おそく でる バス|いちばんおそく出るバス}', f: [], pick: ['dep', 'max'] }
+    },
+    cols: [['dep', '{でる|出る}'], ['arr', '{つく|着く}'], ['type', 'しゅるい'], ['step', 'かいだん']],
+    fmt: function (c, v) { return c === 'dep' || c === 'arr' ? hm(v) : c === 'type' ? (v ? 'きゅうこう' : 'ふつう') : (v ? 'ある' : 'ない'); },
+    rowLabel: function (r) { return hm(r.dep) + '{に でる バス|に出るバス}'; },
+    ctx: function (it) { return [['{きょう|今日}', B_DAY[it.day]], ['{てんき|天気}', B_WEATHER[it.weather]], ['だれと', B_WHO[it.who]], ['{いきさき|行き先}', B_GOAL[it.goal]], ['{おおきい にもつ|大きいにもつ}', it.bag ? 'ある' : 'ない']]; },
+    space: function () {
+      var r = [];
+      for (var w = 0; w < 2; w++) for (var h = 0; h < 3; h++) for (var b = 0; b < 2; b++) for (var d = 0; d < 2; d++) for (var g = 0; g < 3; g++)
+        r.push({ weather: w, who: h, bag: b, day: d, goal: g });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      L.push(E('weather', 'eq', 0, 1), E('weather', 'eq', 1, 1), E('bag', 'eq', 1, 1), E('bag', 'eq', 0, 1), E('day', 'eq', 0, 1), E('day', 'eq', 1, 1));
+      eqne(L, 'who', 3, 2); eqne(L, 'goal', 3, 2);
+      [[0, 1], [1, 2], [0, 2]].forEach(function (p) { L.push(E('goal', 'in', p, 3, { or: 1 })); });
+      L.push(E('who', 'in', [1, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'weather') return N('{てんき|天気}', B_WEATHER[v]);
+      if (k === 'bag') return v ? aru('{おおきい にもつ|大きいにもつ}') : nai('{おおきい にもつ|大きいにもつ}');
+      if (k === 'day') return N('{きょう|今日}', B_DAY[v]);
+      if (k === 'goal') return NX('{いきさき|行き先}', B_GOAL, a);
+      if (k === 'who') {
+        if (op === 'in') return V('おばあちゃんか ともだちと {いく|行く}', 'おばあちゃんか ともだちと {いって|行って}', 'おばあちゃんか ともだちと {いくなら|行くなら}');
+        var w = B_WHO[v];
+        return op === 'eq' ? V(w + ' {いく|行く}', w + ' {いって|行って}', w + ' {いくなら|行くなら}') : V(w + ' {いかない|行かない}', w + ' {いかなくて|行かなくて}', w + ' {いかないなら|行かないなら}');
+      }
+    },
+    genRows: function (it, rng) {
+      for (;;) {
+        var t = 7 * 60 + 45 + ri(rng, 0, 15), rows = [];
+        for (var i = 0; i < 4; i++) {
+          t += ri(rng, 6, 16);
+          var type = rng() < 0.5 ? 1 : 0;
+          rows.push({ dep: t, arr: t + (type ? ri(rng, 10, 16) : ri(rng, 20, 34)), type: type, step: rng() < 0.5 ? 1 : 0 });
+        }
+        var ty = rows.map(function (r) { return r.type; }), st = rows.map(function (r) { return r.step; });
+        if (ty.indexOf(0) >= 0 && ty.indexOf(1) >= 0 && st.indexOf(0) >= 0 && st.indexOf(1) >= 0) return rows;
+      }
+    }
+  };
+
+  var S_MONEY = [100, 200, 300], S_FOR = ['じぶん', 'いもうと', 'おじいちゃん', 'ともだち'], S_SEASON = ['あつい ひ', 'さむい ひ'], S_TIME = ['あさ', 'ゆうがた'];
+  var SNACKS = [['アイス', 0], ['クッキー', 0], ['チョコ', 0], ['おだんご', 0], ['ゼリー', 0], ['キャンディ', 0], ['おせんべい', 1], ['ポテトチップス', 1], ['おにぎり', 1], ['からあげ', 1], ['のりまき', 1]];
+  THEMES.shop = {
+    id: 'shop', aud: 'kids', genre: 'table', code: 'G', icon: '🛒', title: '{おかいもの ねだんひょう|おかいもの ねだん表}',
+    noun: '{この じょうけん|この条件}',
+    instr: {
+      cheap:     { l: '{いちばん やすい もの|いちばん安いもの}', f: [], pick: ['price', 'min'] },
+      best:      { l: '{もっている おかねで かえる なかで いちばん たかい もの|持っているお金で買える中で いちばん高いもの}', f: [['price', 'le', '@yen']], pick: ['price', 'max'] },
+      sweet:     { l: '{あまい ものの なかで いちばん やすい もの|あまいものの中で いちばん安いもの}', f: [['taste', 'eq', 0]], pick: ['price', 'min'] },
+      salty:     { l: '{しょっぱい ものの なかで いちばん やすい もの|しょっぱいものの中で いちばん安いもの}', f: [['taste', 'eq', 1]], pick: ['price', 'min'] },
+      sweetbest: { l: '{かえる あまい ものの なかで いちばん たかい もの|買える あまいものの中で いちばん高いもの}', f: [['taste', 'eq', 0], ['price', 'le', '@yen']], pick: ['price', 'max'] }
+    },
+    cols: [['name', 'なまえ'], ['price', 'ねだん'], ['taste', 'あじ']],
+    fmt: function (c, v) { return c === 'price' ? v + '{えん|円}' : c === 'taste' ? (v ? 'しょっぱい' : 'あまい') : v; },
+    rowLabel: function (r) { return r.name + '（' + r.price + '{えん|円}）'; },
+    ctx: function (it) { return [['{もっている おかね|持っているお金}', S_MONEY[it.money] + '{えん|円}'], ['{だれの ぶん|だれの分}', S_FOR[it.forWho]], ['{きょう|今日}', S_SEASON[it.season]], ['{かいに いく じかん|買いに行く時間}', S_TIME[it.time]]]; },
+    space: function () {
+      var r = [];
+      for (var m = 0; m < 3; m++) for (var f = 0; f < 4; f++) for (var s = 0; s < 2; s++) for (var t = 0; t < 2; t++)
+        r.push({ money: m, yen: S_MONEY[m], forWho: f, season: s, time: t });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'money', 3, 2); eqne(L, 'forWho', 4, 2);
+      L.push(E('season', 'eq', 0, 1), E('season', 'eq', 1, 1), E('time', 'eq', 0, 1), E('time', 'eq', 1, 1));
+      L.push(E('money', 'ge', 1, 3, { count: 1 }), E('money', 'le', 1, 3, { count: 1 }));
+      [[1, 2], [0, 3], [1, 3]].forEach(function (p) { L.push(E('forWho', 'in', p, 3, { or: 1 })); });
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'money') {
+        if (op === 'ge') return P('{もっている おかねが|持っているお金が} 200{えん いじょう|円以上}');
+        if (op === 'le') return P('{もっている おかねが|持っているお金が} 200{えん いか|円以下}');
+        return NX('{もっている おかね|持っているお金}', S_MONEY.map(function (x) { return x + '{えん|円}'; }), a);
+      }
+      if (k === 'forWho') return NX('{だれの ぶん|だれの分}', S_FOR, a);
+      if (k === 'season') return N('{きょう|今日}', S_SEASON[v]);
+      if (k === 'time') return N('{かいに いく じかん|買いに行く時間}', S_TIME[v]);
+    },
+    genRows: function (it, rng) {
+      for (;;) {
+        var items = shuffle(rng, SNACKS).slice(0, 5), prices = shuffle(rng, range(36).map(function (i) { return 30 + i * 10; })).slice(0, 5);
+        var tastes = items.map(function (s) { return s[1]; });
+        if (tastes.filter(function (x) { return x === 0; }).length < 2 || tastes.filter(function (x) { return x === 1; }).length < 2) continue;
+        return items.map(function (s, i) { return { name: s[0], taste: s[1], price: prices[i] }; });
+      }
+    }
+  };
+
+  // =====================================================================
+  // おとな ① 絵を見て判断
+  // =====================================================================
+  var D_TYPE = ['段ボール箱', '封筒', '筒', '発泡スチロール箱'], D_REG = ['市内', '県内', '県外', '離島'], D_W = ['0.5kg', '3kg', '12kg', '22kg'], D_TIME = ['13時', '15時', '17時'];
+  var D_CUT = [16, 15, 14, 13], D_TH = [13, 15, 17];
+  var D_OUT = { normal: '通常便', express: '速達便', cool: 'クール便', large: '大型便', next: '翌日扱い' };
+  THEMES.delivery = {
+    id: 'delivery', aud: 'adults', genre: 'pic', code: 'A', icon: '🚚', title: '配送デスクの仕分け',
+    noun: 'この荷物', outcomes: outsFrom(D_OUT), outText: labelOf(D_OUT),
+    space: function () {
+      var r = [];
+      for (var t = 0; t < 4; t++) for (var f = 0; f < 2; f++) for (var w = 0; w < 4; w++) for (var g = 0; g < 4; g++) for (var h = 0; h < 3; h++)
+        r.push({ type: t, fragile: f, weight: w, region: g, time: h, late: D_TH[h] > D_CUT[g] ? 1 : 0 });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'type', 4, 2); eqne(L, 'region', 4, 2);
+      L.push(E('fragile', 'eq', 1, 1), E('fragile', 'eq', 0, 1), E('weight', 'ge', 2, 2), E('weight', 'le', 0, 2), E('time', 'eq', 2, 2), E('time', 'eq', 0, 2));
+      L.push(E('late', 'eq', 1, 3, { count: 1 }), E('late', 'eq', 0, 3, { count: 1 }), E('weight', 'ge', 3, 3, { count: 1 }));
+      L.push(E('region', 'in', [2, 3], 3, { or: 1 }), E('region', 'in', [0, 1], 3, { or: 1 }), E('type', 'in', [0, 3], 3, { or: 1 }), E('type', 'in', [1, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'type') return NX('荷物の種類', D_TYPE, a);
+      if (k === 'region') return NX('宛先', D_REG, a);
+      if (k === 'fragile') return v ? V('「ワレモノ」シールが貼ってある', '「ワレモノ」シールが貼ってあって', '「ワレモノ」シールが貼ってあれば') : V('「ワレモノ」シールが貼っていない', '「ワレモノ」シールが貼っていなくて', '「ワレモノ」シールが貼っていなければ');
+      if (k === 'weight') return op === 'le' ? P('重さが1kg未満') : P('重さが' + (v === 2 ? '10' : '20') + 'kg以上');
+      if (k === 'time') return N('受付時刻', D_TIME[v]);
+      if (k === 'late') return v ? V('受付時刻が その宛先の締切を過ぎている', '受付時刻が その宛先の締切を過ぎていて', '受付時刻が その宛先の締切を過ぎていれば') : V('受付時刻が その宛先の締切に間に合っている', '受付時刻が その宛先の締切に間に合っていて', '受付時刻が その宛先の締切に間に合っていれば');
+    },
+    decorate: function (it) { return it; }
+  };
+
+  var LO_KIND = ['傘', '財布', 'スマートフォン', '鍵', '手袋', '本'], LO_PLACE = ['駅', '公園', '店内'], LO_DAYS = [0, 3, 7, 14];
+  var LO_OUT = { shelfA: '保管棚Aへ', shelfB: '保管棚Bへ', police: '警察に届ける', call: '持ち主に連絡する' };
+  THEMES.lost = {
+    id: 'lost', aud: 'adults', genre: 'pic', code: 'B', icon: '🧤', title: '落とし物センター',
+    noun: 'この落とし物', outcomes: outsFrom(LO_OUT), outText: labelOf(LO_OUT),
+    space: function () {
+      var r = [];
+      for (var k = 0; k < 6; k++) for (var p = 0; p < 3; p++) for (var d = 0; d < 4; d++) for (var t = 0; t < 2; t++) for (var q = 0; q < 2; q++)
+        r.push({ kind: k, place: p, days: d, tag: t, inquiry: q });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'kind', 6, 2); eqne(L, 'place', 3, 2);
+      L.push(E('tag', 'eq', 1, 1), E('tag', 'eq', 0, 1), E('inquiry', 'eq', 1, 1), E('inquiry', 'eq', 0, 1));
+      L.push(E('days', 'ge', 2, 2), E('days', 'eq', 0, 2));
+      L.push(E('days', 'ge', 3, 3, { count: 1 }), E('days', 'ge', 1, 3, { count: 1 }), E('days', 'le', 1, 3, { count: 1 }));
+      L.push(E('kind', 'in', [1, 2, 3], 3, { or: 1 }), E('kind', 'in', [0, 4], 3, { or: 1 }), E('place', 'in', [0, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'kind') return NX('落とし物', LO_KIND, a);
+      if (k === 'place') return NX('拾った場所', LO_PLACE, a);
+      if (k === 'tag') return v ? V('名札（持ち主の名前）が付いている', '名札（持ち主の名前）が付いていて', '名札（持ち主の名前）が付いていれば') : V('名札が付いていない', '名札が付いていなくて', '名札が付いていなければ');
+      if (k === 'inquiry') return v ? aru('持ち主からの問い合わせ') : nai('持ち主からの問い合わせ');
+      if (k === 'days') {
+        if (op === 'eq') return V('拾ったのが今日', '拾ったのが今日で', '拾ったのが今日なら');
+        if (op === 'le') return V('拾ってから3日以内', '拾ってから3日以内で', '拾ってから3日以内なら');
+        return V('拾ってから' + LO_DAYS[v] + '日以上たっている', '拾ってから' + LO_DAYS[v] + '日以上たっていて', '拾ってから' + LO_DAYS[v] + '日以上たっていれば');
+      }
+    },
+    decorate: function (it, rng) { var td = randomToday(rng); it.todayText = dateOf(td, 0); it.foundText = dateOf(td, -LO_DAYS[it.days]); return it; }
+  };
+
+  // =====================================================================
+  // おとな ② 文章を読む
+  // =====================================================================
+  var ML_TOPIC = ['見積もり', '請求書', 'ログイン', '住所変更', '解約'];
+  var ML_SUBJ = ['見積もりのお願い', '請求書の再発行について', 'ログインできません', '住所変更の手続きについて', '解約について'];
+  var ML_BODY = ['新しく導入を検討しているため、見積もりをお送りいただけますでしょうか。', '先月分の請求書を紛失してしまったため、再発行をお願いできますか。', '昨日からアプリにログインできなくなりました。', '引っ越しをしたので、登録している住所変更をお願いしたいです。', 'サービスの解約を考えています。手続きの方法を教えてください。'];
+  var ML_OUT = { sales: '営業部', billing: '経理部', support: '技術サポート', general: '総務部', escalate: '責任者に相談' };
+  THEMES.mail = {
+    id: 'mail', aud: 'adults', genre: 'text', code: 'C', icon: '📧', title: '問い合わせメールの振り分け',
+    noun: 'このメール', outcomes: outsFrom(ML_OUT), outText: labelOf(ML_OUT),
+    space: function () {
+      var r = [];
+      for (var t = 0; t < 5; t++) for (var c = 0; c < 2; c++) for (var u = 0; u < 2; u++) for (var n = 0; n < 2; n++) for (var d = 0; d < 3; d++) for (var g = 0; g < 2; g++)
+        r.push({ topic: t, corp: c, urgent: u, contract: n, deadline: d, angry: g });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'topic', 5, 2);
+      L.push(E('corp', 'eq', 1, 1), E('corp', 'eq', 0, 1), E('urgent', 'eq', 1, 1), E('urgent', 'eq', 0, 1), E('contract', 'eq', 1, 1), E('contract', 'eq', 0, 1));
+      L.push(E('angry', 'eq', 1, 2), E('angry', 'eq', 0, 2), E('deadline', 'eq', 0, 2));
+      L.push(E('deadline', 'eq', 1, 3, { count: 1 }), E('deadline', 'eq', 2, 3, { count: 1 }));
+      [[0, 1], [2, 4], [3, 4], [1, 3]].forEach(function (p) { L.push(E('topic', 'in', p, 3, { or: 1 })); });
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'topic') return NX('用件', ML_TOPIC, a);
+      if (k === 'corp') return v ? V('会社名が書かれている', '会社名が書かれていて', '会社名が書かれていれば') : V('会社名が書かれていない', '会社名が書かれていなくて', '会社名が書かれていなければ');
+      if (k === 'urgent') return v ? V('件名に「至急」が入っている', '件名に「至急」が入っていて', '件名に「至急」が入っていれば') : V('件名に「至急」が入っていない', '件名に「至急」が入っていなくて', '件名に「至急」が入っていなければ');
+      if (k === 'contract') return v ? V('契約番号が書かれている', '契約番号が書かれていて', '契約番号が書かれていれば') : V('契約番号が書かれていない', '契約番号が書かれていなくて', '契約番号が書かれていなければ');
+      if (k === 'angry') return v ? V('「困っています」と書かれている', '「困っています」と書かれていて', '「困っています」と書かれていれば') : V('「困っています」と書かれていない', '「困っています」と書かれていなくて', '「困っています」と書かれていなければ');
+      if (k === 'deadline') {
+        if (v === 0) return V('回答期限が書かれていない', '回答期限が書かれていなくて', '回答期限が書かれていなければ');
+        return v === 1 ? P('回答期限まで3日以内') : P('回答期限まで4日以上');
+      }
+    },
+    decorate: function (it, rng) {
+      var td = randomToday(rng);
+      it.todayText = dateOf(td, 0);
+      var L = ['件名：' + (it.urgent ? '【至急】' : '') + ML_SUBJ[it.topic], 'ご担当者さま'];
+      if (it.corp) L.push('いつもお世話になっております。' + pick(rng, ['株式会社みどり商事', '株式会社あおぞら食品', '株式会社ひなた工房']) + 'の' + pick(rng, ['佐藤', '鈴木', '高橋']) + 'です。');
+      else L.push(pick(rng, ['山田', '中村', '小林']) + 'と申します。');
+      L.push(ML_BODY[it.topic]);
+      if (it.angry) L.push('以前も問い合わせましたが、まだ解決しておらず大変困っています。');
+      if (it.contract) L.push('契約番号：KM-' + ri(rng, 1000, 9999));
+      if (it.deadline) L.push('恐れ入りますが、' + dateOf(td, it.deadline === 1 ? ri(rng, 1, 3) : ri(rng, 4, 9)) + 'までにご回答をお願いいたします。');
+      L.push('よろしくお願いいたします。');
+      it.lines = L;
+      return it;
+    }
+  };
+
+  var EX_CAT = ['交通費', '会議費', '書籍代', '宿泊費'], EX_AMT = [2800, 9500, 18000, 42000, 85000], EX_ELAPSED = [5, 25, 45];
+  var EX_WHY = ['取引先へ訪問した際の', '取引先と打ち合わせをした際の', '業務で使う参考書を購入した際の', '出張で宿泊した際の'];
+  var EX_OUT = { approve: '承認する', back: '差し戻す', manager: '部長の確認に回す', account: '経理課に相談する' };
+  THEMES.expense = {
+    id: 'expense', aud: 'adults', genre: 'text', code: 'D', icon: '🧾', title: '経費精算の承認',
+    noun: 'この申請', outcomes: outsFrom(EX_OUT), outText: labelOf(EX_OUT),
+    space: function () {
+      var r = [];
+      for (var c = 0; c < 4; c++) for (var m = 0; m < 5; m++) for (var rc = 0; rc < 2; rc++) for (var e = 0; e < 3; e++) for (var p = 0; p < 2; p++)
+        r.push({ cat: c, amount: m, receipt: rc, elapsed: e, pre: p });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'cat', 4, 2);
+      L.push(E('receipt', 'eq', 1, 1), E('receipt', 'eq', 0, 1), E('pre', 'eq', 1, 1), E('pre', 'eq', 0, 1));
+      L.push(E('amount', 'ge', 2, 2), E('amount', 'le', 0, 2));
+      L.push(E('amount', 'ge', 4, 3, { count: 1 }), E('amount', 'ge', 3, 3, { count: 1 }), E('elapsed', 'ge', 1, 3, { count: 1 }), E('elapsed', 'ge', 2, 3, { count: 1 }), E('elapsed', 'eq', 0, 3, { count: 1 }));
+      [[0, 3], [1, 2], [0, 1]].forEach(function (p) { L.push(E('cat', 'in', p, 3, { or: 1 })); });
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'cat') return NX('費目', EX_CAT, a);
+      if (k === 'receipt') return v ? V('領収書が添付されている', '領収書が添付されていて', '領収書が添付されていれば') : V('領収書が添付されていない', '領収書が添付されていなくて', '領収書が添付されていなければ');
+      if (k === 'pre') return v ? V('事前承認を受けている', '事前承認を受けていて', '事前承認を受けていれば') : V('事前承認を受けていない', '事前承認を受けていなくて', '事前承認を受けていなければ');
+      if (k === 'amount') return op === 'le' ? P('金額が5,000円未満') : P('金額が' + ['', '', '1万', '3万', '5万'][v] + '円以上');
+      if (k === 'elapsed') {
+        if (op === 'eq') return V('利用日から10日以内に申請している', '利用日から10日以内に申請していて', '利用日から10日以内に申請していれば');
+        return v === 1 ? V('利用日から20日以上たっている', '利用日から20日以上たっていて', '利用日から20日以上たっていれば') : V('利用日から30日を過ぎている', '利用日から30日を過ぎていて', '利用日から30日を過ぎていれば');
+      }
+    },
+    decorate: function (it, rng) {
+      var td = randomToday(rng);
+      it.todayText = dateOf(td, 0);
+      it.lines = ['件名：経費精算のお願い', 'お疲れさまです。' + pick(rng, ['営業部', '企画部', '開発部']) + 'の' + pick(rng, ['田中', '伊藤', '渡辺']) + 'です。',
+        dateOf(td, -EX_ELAPSED[it.elapsed]) + 'に' + EX_WHY[it.cat].replace(/の$/, '') + 'の' + EX_CAT[it.cat] + '、' + yen(EX_AMT[it.amount]) + '円の精算をお願いします。',
+        it.receipt ? '領収書を添付します。' : '領収書は紛失してしまいました。',
+        it.pre ? '上長から事前に承認をいただいています。' : '事前の承認はいただいていません。',
+        'よろしくお願いいたします。'];
+      return it;
+    }
+  };
+
+  // =====================================================================
+  // おとな ③ 表を読む
+  // =====================================================================
+  var TR_PUR = ['会議', '観光', '帰宅'], TR_COMP = ['なし', '子ども', '高齢の方'], TR_DL = [540, 570, 600], TR_DAY = ['平日', '休日'];
+  THEMES.train = {
+    id: 'train', aud: 'adults', genre: 'table', code: 'E', icon: '🚃', title: '乗り換え案内',
+    noun: 'この条件',
+    instr: {
+      fast:     { l: '到着が最も早いルート', f: [], pick: ['arr', 'min'] },
+      late:     { l: '到着期限に間に合うルートの中で、出発が最も遅いもの', f: [['arr', 'le', '@dl']], pick: ['dep', 'max'] },
+      few:      { l: '乗り換えが最も少ないルートの中で、到着が最も早いもの', f: [['tr', 'ismin']], pick: ['arr', 'min'] },
+      cheap:    { l: '到着期限に間に合うルートの中で、運賃が最も安いもの', f: [['arr', 'le', '@dl']], pick: ['fare', 'min'] },
+      direct:   { l: '乗り換えなしのルートの中で、到着が最も早いもの', f: [['tr', 'eq', 0]], pick: ['arr', 'min'] },
+      cheapest: { l: '運賃が最も安いルート', f: [], pick: ['fare', 'min'] }
+    },
+    cols: [['dep', '出発'], ['arr', '到着'], ['tr', '乗換'], ['fare', '運賃']],
+    fmt: function (c, v) { return c === 'dep' || c === 'arr' ? hm(v) : c === 'tr' ? v + '回' : yen(v) + '円'; },
+    rowLabel: function (r) { return hm(r.dep) + '発のルート'; },
+    ctx: function (it) { return [['目的', TR_PUR[it.purpose]], ['同行者', TR_COMP[it.comp]], ['大きな荷物', it.luggage ? 'あり' : 'なし'], ['利用日', TR_DAY[it.day]], ['到着期限', hm(TR_DL[it.deadline]) + 'までに']]; },
+    space: function () {
+      var r = [];
+      for (var p = 0; p < 3; p++) for (var c = 0; c < 3; c++) for (var l = 0; l < 2; l++) for (var d = 0; d < 3; d++) for (var y = 0; y < 2; y++)
+        r.push({ purpose: p, comp: c, luggage: l, deadline: d, dl: TR_DL[d], day: y });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'purpose', 3, 2); eqne(L, 'comp', 3, 2);
+      L.push(E('luggage', 'eq', 1, 1), E('luggage', 'eq', 0, 1), E('day', 'eq', 0, 1), E('day', 'eq', 1, 1));
+      L.push(E('deadline', 'eq', 0, 2), E('deadline', 'eq', 2, 2));
+      L.push(E('deadline', 'le', 1, 3, { count: 1 }), E('deadline', 'ge', 1, 3, { count: 1 }));
+      L.push(E('purpose', 'in', [0, 2], 3, { or: 1 }), E('comp', 'in', [1, 2], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'purpose') return NX('目的', TR_PUR, a);
+      if (k === 'comp') return NX('同行者', TR_COMP, a);
+      if (k === 'luggage') return v ? aru('大きな荷物') : nai('大きな荷物');
+      if (k === 'day') return N('利用日', TR_DAY[v]);
+      if (k === 'deadline') {
+        if (op === 'eq') return N('到着期限', hm(TR_DL[v]));
+        return op === 'le' ? P('到着期限が9:30以前') : P('到着期限が9:30以降');
+      }
+    },
+    genRows: function (it, rng) {
+      var t = 8 * 60 + ri(rng, 0, 8), rows = [], fares = shuffle(rng, range(60).map(function (i) { return 280 + i * 10; }));
+      for (var i = 0; i < 5; i++) {
+        t += ri(rng, 5, 14);
+        var tr = ri(rng, 0, 2);
+        rows.push({ dep: t, arr: t + 24 + tr * 6 + ri(rng, 0, 40), tr: tr, fare: fares[i] });
+      }
+      return rows;
+    }
+  };
+
+  var PL_NEED = [3, 10, 20, 30], PL_PAY = ['クレジットカード', '口座振替'], PL_CALL = ['少なめ', '多め'], PL_AGE = ['一般', '学生', '65歳以上'], PL_FAM = ['1人', '家族と一緒'], PL_KIND = ['新規', '機種変更'];
+  var PL_DATA = [1, 3, 5, 7, 10, 15, 20, 30, 50];
+  THEMES.plan = {
+    id: 'plan', aud: 'adults', genre: 'table', code: 'F', icon: '📱', title: 'スマホ料金プランの案内',
+    noun: 'この条件',
+    instr: {
+      fit:      { l: '必要なデータ量を満たすプランの中で、月額が最も安いもの', f: [['data', 'ge', '@gb']], pick: ['price', 'min'] },
+      call:     { l: 'かけ放題付きのプランの中で、月額が最も安いもの', f: [['call', 'eq', 1]], pick: ['price', 'min'] },
+      free:     { l: '契約期間の縛りがないプランの中で、月額が最も安いもの', f: [['bind', 'eq', 0]], pick: ['price', 'min'] },
+      fitfree:  { l: '必要なデータ量を満たし、縛りもないプランの中で、月額が最も安いもの', f: [['data', 'ge', '@gb'], ['bind', 'eq', 0]], pick: ['price', 'min'] },
+      maxdata:  { l: 'データ量が最も多いプラン', f: [], pick: ['data', 'max'] },
+      cheapest: { l: '月額が最も安いプラン', f: [], pick: ['price', 'min'] }
+    },
+    cols: [['name', 'プラン'], ['price', '月額'], ['data', 'データ'], ['call', 'かけ放題'], ['bind', '縛り']],
+    fmt: function (c, v) { return c === 'price' ? yen(v) + '円' : c === 'data' ? v + 'GB' : c === 'call' ? (v ? 'あり' : 'なし') : c === 'bind' ? (v ? '2年' : 'なし') : v; },
+    rowLabel: function (r) { return r.name; },
+    ctx: function (it) { return [['必要なデータ量', '毎月' + PL_NEED[it.need] + 'GBほど'], ['通話', PL_CALL[it.calls]], ['お客さま', PL_AGE[it.age]], ['契約期間', it.bind ? 'こだわらない' : '縛りは避けたい'], ['契約人数', PL_FAM[it.family]], ['申し込み', PL_KIND[it.kind]], ['支払い方法', PL_PAY[it.pay]]]; },
+    space: function () {
+      var r = [];
+      for (var n = 0; n < 4; n++) for (var c = 0; c < 2; c++) for (var a = 0; a < 3; a++) for (var b = 0; b < 2; b++) for (var f = 0; f < 2; f++) for (var k = 0; k < 2; k++) for (var y = 0; y < 2; y++)
+        r.push({ need: n, gb: PL_NEED[n], calls: c, age: a, bind: b, family: f, kind: k, pay: y });
+      return r;
+    },
+    atoms: function () {
+      var L = [];
+      eqne(L, 'need', 4, 2); eqne(L, 'age', 3, 2);
+      L.push(E('pay', 'eq', 0, 1), E('pay', 'eq', 1, 1));
+      L.push(E('calls', 'eq', 0, 1), E('calls', 'eq', 1, 1), E('bind', 'eq', 0, 1), E('bind', 'eq', 1, 1), E('family', 'eq', 0, 1), E('family', 'eq', 1, 1), E('kind', 'eq', 0, 1), E('kind', 'eq', 1, 1));
+      L.push(E('need', 'ge', 1, 3, { count: 1 }), E('need', 'ge', 2, 3, { count: 1 }), E('need', 'le', 1, 3, { count: 1 }));
+      L.push(E('age', 'in', [1, 2], 3, { or: 1 }), E('age', 'in', [0, 1], 3, { or: 1 }));
+      return L;
+    },
+    say: function (a) {
+      var k = a.k, op = a.op, v = a.v;
+      if (k === 'need') {
+        if (op === 'ge') return P('必要なデータ量が' + PL_NEED[v] + 'GB以上');
+        if (op === 'le') return P('必要なデータ量が' + PL_NEED[v] + 'GB以下');
+        return NX('必要なデータ量', PL_NEED.map(function (x) { return x + 'GB'; }), a);
+      }
+      if (k === 'age') return NX('お客さま', PL_AGE, a);
+      if (k === 'calls') return N('通話', PL_CALL[v]);
+      if (k === 'bind') return v ? V('契約期間にこだわらない', '契約期間にこだわらなくて', '契約期間にこだわらないなら') : V('契約期間の縛りを避けたい', '契約期間の縛りを避けたくて', '契約期間の縛りを避けたいなら');
+      if (k === 'family') return N('契約人数', PL_FAM[v]);
+      if (k === 'kind') return N('申し込み', PL_KIND[v]);
+      if (k === 'pay') return N('支払い方法', PL_PAY[v]);
+    },
+    genRows: function (it, rng) {
+      var names = ['プランA', 'プランB', 'プランC', 'プランD', 'プランE'], rows = [];
+      for (var i = 0; i < 5; i++) {
+        var data = pick(rng, PL_DATA), call = rng() < 0.4 ? 1 : 0, bind = rng() < 0.5 ? 1 : 0;
+        rows.push({ name: names[i], data: data, call: call, bind: bind, price: 980 + data * 80 + call * 1100 - bind * 400 + ri(rng, 0, 40) * 10 });
+      }
+      return rows;
+    }
+  };
+
+  // =====================================================================
+  // ルールの判定
+  // =====================================================================
   function evalAtom(sp, it) {
     switch (sp.op) {
       case 'eq': return it[sp.k] === sp.v;
@@ -471,10 +1047,32 @@ var AIGame = (function () {
     return null;
   }
 
+  // 表から1行を選ぶ（見つからない: -1、同点で決まらない: -2）
+  function cmp(a, op, b) { return op === 'eq' ? a === b : op === 'ne' ? a !== b : op === 'le' ? a <= b : op === 'ge' ? a >= b : op === 'lt' ? a < b : a > b; }
+  function resolve(rows, ins, it) {
+    var idx = rows.map(function (r, i) { return i; });
+    (ins.f || []).forEach(function (f) {
+      if (f[1] === 'ismin') { var m = Math.min.apply(null, idx.map(function (i) { return rows[i][f[0]]; })); idx = idx.filter(function (i) { return rows[i][f[0]] === m; }); return; }
+      var v = typeof f[2] === 'string' && f[2].charAt(0) === '@' ? it[f[2].slice(1)] : f[2];
+      idx = idx.filter(function (i) { return cmp(rows[i][f[0]], f[1], v); });
+    });
+    if (!idx.length) return -1;
+    var col = ins.pick[0], best = idx[0];
+    idx.forEach(function (i) { if (ins.pick[1] === 'min' ? rows[i][col] < rows[best][col] : rows[i][col] > rows[best][col]) best = i; });
+    var ties = idx.filter(function (i) { return rows[i][col] === rows[best][col]; });
+    return ties.length > 1 ? -2 : best;
+  }
+
+  // 表のテーマは「答え＝選び方」
+  Object.keys(THEMES).forEach(function (id) {
+    var th = THEMES[id];
+    if (th.genre === 'table') { th.outcomes = outsFrom(th.instr); th.outText = function (o) { return th.instr[o].l; }; th.decorate = function (it) { return it; }; }
+  });
+
   // ---------- 指示書の文章 ----------
+  function cfgOf(themeId, diff) { return LEVELS[THEMES[themeId].aud][diff]; }
   function ruleParts(themeId, rule, kanji) {
-    var th = THEMES[themeId];
-    var cond, exc = null;
+    var th = THEMES[themeId], cond, exc = null;
     if (rule.fallback) cond = '{どれにも あてはまらない|どれにも 当てはまらない} とき';
     else {
       var f = rule.conds.map(function (c) { return th.say(c); });
@@ -493,35 +1091,44 @@ var AIGame = (function () {
   function keysOf(a) { return Array.isArray(a.k) ? a.k : [a.k]; }
   function disjoint(a, b) { var ka = keysOf(a), kb = keysOf(b); for (var i = 0; i < ka.length; i++) if (kb.indexOf(ka[i]) >= 0) return false; return true; }
   function clean(a) { return { k: a.k, op: a.op, v: a.v }; }
-  var spaceCache = {};
-  function spaceOf(themeId) { return spaceCache[themeId] || (spaceCache[themeId] = THEMES[themeId].space()); }
+  var spaceCache = {}, atomCache = {};
+  function spaceOf(id) { return spaceCache[id] || (spaceCache[id] = THEMES[id].space()); }
+  function atomsOf(id) { return atomCache[id] || (atomCache[id] = THEMES[id].atoms()); }
 
-  function makeRule(th, diff, kind, rng, born) {
-    var pool = th.atoms().filter(function (a) { return a.tier <= DIFFS[diff].maxTier; });
+  function makeRule(th, cfg, kind, rng, born) {
+    var pool = atomsOf(th.id).filter(function (a) { return a.tier <= cfg.maxTier; });
     var plain = pool.filter(function (a) { return !a.neg && !a.or && !a.count; });
-    var conds, exc = null, c;
+    var base = pool.filter(function (x) { return !x.or && !x.count; });
+    var conds, exc = null, a, b, c;
     if (kind === 'single') conds = [pick(rng, plain)];
-    else if (kind === 'neg') conds = [pick(rng, pool.filter(function (a) { return a.neg; }))];
-    else if (kind === 'count') conds = [pick(rng, pool.filter(function (a) { return a.count; }))];
-    else if (kind === 'or') conds = [pick(rng, pool.filter(function (a) { return a.or; }))];
-    else if (kind === 'and') {
-      var base = pool.filter(function (x) { return !x.or && !x.count; });
-      var a = pick(rng, base);
-      c = base.filter(function (x) { return disjoint(x, a) && !(x.neg && a.neg); });
-      if (!c.length) return null;
-      var b = pick(rng, c);
-      conds = a.neg ? [a, b] : [b, a];
+    else if (kind === 'neg') conds = [pick(rng, pool.filter(function (x) { return x.neg; }))];
+    else if (kind === 'count') conds = [pick(rng, pool.filter(function (x) { return x.count; }))];
+    else if (kind === 'or') conds = [pick(rng, pool.filter(function (x) { return x.or; }))];
+    else if (kind === 'and' || kind === 'and3') {
+      a = pick(rng, kind === 'and3' ? pool.filter(function (x) { return !x.or; }) : base);
+      if (!a) return null;
+      b = pick(rng, base.filter(function (x) { return disjoint(x, a) && !(x.neg && a.neg); }));
+      if (!b) return null;
+      conds = [a, b];
+      if (kind === 'and3') {
+        c = pick(rng, base.filter(function (x) { return disjoint(x, a) && disjoint(x, b) && !x.neg; }));
+        if (!c) return null;
+        conds.push(c);
+      }
+      conds.sort(function (x, y) { return (y.neg ? 1 : 0) - (x.neg ? 1 : 0); });
     } else if (kind === 'exc') {
-      var m = pick(rng, plain);
-      c = pool.filter(function (x) { return !x.or && !x.neg && disjoint(x, m); });
-      if (!c.length) return null;
-      conds = [m]; exc = { cond: clean(pick(rng, c)), out: null };
+      a = pick(rng, plain);
+      if (!a) return null;
+      c = pick(rng, pool.filter(function (x) { return !x.or && !x.neg && disjoint(x, a); }));
+      if (!c) return null;
+      conds = [a]; exc = { cond: clean(c), out: null };
     }
+    if (!conds || conds.some(function (x) { return !x; })) return null;
     return { kind: kind, conds: conds.map(clean), out: null, exc: exc, born: born };
   }
   function chooseOut(th, rng, avoid, used) {
     var opts = th.outcomes.filter(function (o) { return avoid.indexOf(o) < 0; });
-    if (th.outcomes.length > 3) { var fresh = opts.filter(function (o) { return used.indexOf(o) < 0; }); if (fresh.length) opts = fresh; }
+    if (th.outcomes.length > 3) { var fresh = opts.filter(function (o) { return used.indexOf(o) < 0; }); if (fresh.length && rng() < 0.7) opts = fresh; }
     if (rng() < 0.2 && avoid.length <= 1) opts = th.outcomes.filter(function (o) { return o !== avoid[1]; });
     return pick(rng, opts.length ? opts : th.outcomes);
   }
@@ -530,16 +1137,13 @@ var AIGame = (function () {
     if (r.exc) { r.exc.out = chooseOut(th, rng, [r.out, r.out], used); if (r.exc.out === r.out) return false; used.push(r.exc.out); }
     return true;
   }
-  var KINDS = { easy: ['single'], normal: ['single', 'neg', 'and'], hard: ['single', 'neg', 'and', 'count', 'exc', 'or'] };
-  var REQUIRED = { easy: [], normal: ['neg', 'and'], hard: ['exc', 'count', 'and', 'neg'] };
-
-  function makeBase(th, diff, rng, n) {
+  function makeBase(th, cfg, rng, n) {
     var fbOut = pick(rng, th.outcomes), used = [fbOut];
-    var kinds = REQUIRED[diff].slice();
-    while (kinds.length < n - 1) kinds.push(pick(rng, KINDS[diff]));
+    var kinds = cfg.req.slice();
+    while (kinds.length < n - 1) kinds.push(pick(rng, cfg.kinds));
     var rules = [];
     for (var i = 0; i < kinds.length; i++) {
-      var r = makeRule(th, diff, kinds[i], rng, 1);
+      var r = makeRule(th, cfg, kinds[i], rng, 1);
       if (!r || !fillOut(th, rng, r, fbOut, used)) return null;
       rules.push(r);
     }
@@ -548,33 +1152,27 @@ var AIGame = (function () {
     return rules;
   }
 
-  // すべての荷物（来た人・注文）を調べて、どのルールにも意味があるかを確かめる
+  // すべての場合を調べて、どのルールにも意味があるかを確かめる
   function analyze(themeId, rules) {
-    var space = spaceOf(themeId);
-    var buckets = rules.map(function () { return [[], []]; });
+    var space = spaceOf(themeId), buckets = rules.map(function () { return [[], []]; });
     for (var i = 0; i < space.length; i++) { var e = evaluate(rules, space[i]); buckets[e.index][e.branch].push(space[i]); }
     return buckets;
   }
   function validate(themeId, rules, diff) {
-    var sigs = {}, i;
+    var th = THEMES[themeId], cfg = cfgOf(themeId, diff), sigs = {}, i;
     for (i = 0; i < rules.length; i++) { var s = ruleSig(rules[i]); if (sigs[s]) return false; sigs[s] = 1; }
-    var req = REQUIRED[diff];
-    for (i = 0; i < req.length; i++) if (!rules.some(function (r) { return r.kind === req[i]; })) return false;
+    for (i = 0; i < cfg.req.length; i++) if (!rules.some(function (r) { return r.kind === cfg.req[i]; })) return false;
     var outs = {}; rules.forEach(function (r) { outs[r.out] = 1; if (r.exc) outs[r.exc.out] = 1; });
-    var th = THEMES[themeId], needOuts = Math.min(th.outcomes.length, rules.length >= 4 ? 3 : 2);
-    if (Object.keys(outs).length < needOuts) return false;
+    if (Object.keys(outs).length < Math.min(th.outcomes.length, rules.length >= 4 ? 3 : 2)) return false;
     var buckets = analyze(themeId, rules);
     for (i = 0; i < rules.length; i++) {
       var r = rules[i];
       if (buckets[i][0].length < 2) return false;
       if (r.exc && buckets[i][1].length < 2) return false;
-      if (!r.exc && buckets[i][1].length) return false;
       if (r.fallback) continue;
       var without = rules.slice(0, i).concat(rules.slice(i + 1));
       var all = buckets[i][0].concat(buckets[i][1]), meaningful = false;
-      for (var j = 0; j < all.length && !meaningful; j++) {
-        if (evaluate(without, all[j]).answer !== evaluate(rules, all[j]).answer) meaningful = true;
-      }
+      for (var j = 0; j < all.length && !meaningful; j++) if (evaluate(without, all[j]).answer !== evaluate(rules, all[j]).answer) meaningful = true;
       if (!meaningful) return false;
     }
     return true;
@@ -582,28 +1180,27 @@ var AIGame = (function () {
 
   // レベル1→2→3：ルールが1つずつふえる（いっぱいのときは、いちばん古いルールと入れかわる）
   function buildChain(themeId, diff) {
-    var th = THEMES[themeId], counts = DIFFS[diff].counts;
-    var rng = seededRng('anata-wa-ai|v1|' + themeId + '|' + diff);
+    var th = THEMES[themeId], cfg = cfgOf(themeId, diff), counts = cfg.counts;
+    var rng = seededRng('anata-wa-ai|v2|' + themeId + '|' + diff);
     for (var attempt = 0; attempt < 300; attempt++) {
       var L1 = null;
-      for (var t = 0; t < 400 && !L1; t++) { var b = makeBase(th, diff, rng, counts[0]); if (b && validate(themeId, b, diff)) L1 = b; }
+      for (var t = 0; t < 600 && !L1; t++) { var b = makeBase(th, cfg, rng, counts[0]); if (b && validate(themeId, b, diff)) L1 = b; }
       if (!L1) continue;
       var levels = [{ rules: L1, newIndex: -1, change: null }], ok = true;
       for (var lv = 1; lv < 3 && ok; lv++) {
         var prev = levels[lv - 1].rules, found = null;
-        for (var t2 = 0; t2 < 300 && !found; t2++) {
+        for (var t2 = 0; t2 < 400 && !found; t2++) {
           var specific = prev.slice(0, -1), fb = prev[prev.length - 1], change = 'add';
           if (prev.length >= counts[lv]) {
             var oldest = Math.min.apply(null, specific.map(function (r) { return r.born; }));
-            var ri = specific.findIndex(function (r) { return r.born === oldest; });
-            specific = specific.slice(0, ri).concat(specific.slice(ri + 1)); change = 'replace';
+            var ri2 = specific.findIndex(function (r) { return r.born === oldest; });
+            specific = specific.slice(0, ri2).concat(specific.slice(ri2 + 1)); change = 'replace';
           }
-          var nr = makeRule(th, diff, pick(rng, KINDS[diff]), rng, lv + 1);
+          var nr = makeRule(th, cfg, pick(rng, cfg.kinds), rng, lv + 1);
           if (!nr) continue;
           var nsig = ruleSig(nr);
           if (prev.some(function (r) { return ruleSig(r) === nsig; })) continue;
-          var used = prev.map(function (r) { return r.out; });
-          if (!fillOut(th, rng, nr, fb.out, used)) continue;
+          if (!fillOut(th, rng, nr, fb.out, prev.map(function (r) { return r.out; }))) continue;
           var pos = Math.floor(rng() * (specific.length + 1));
           specific.splice(pos, 0, nr);
           var rules = specific.concat([fb]);
@@ -613,7 +1210,7 @@ var AIGame = (function () {
       }
       if (ok) return levels;
     }
-    throw new Error('指示書を作れませんでした ' + themeId + diff);
+    throw new Error('指示書を作れませんでした ' + themeId + ' ' + diff);
   }
 
   var chainCache = {}, manualCache = {};
@@ -622,10 +1219,9 @@ var AIGame = (function () {
     if (manualCache[key]) return manualCache[key];
     var ck = themeId + '|' + diff;
     var chain = chainCache[ck] || (chainCache[ck] = buildChain(themeId, diff));
-    var L = chain[level - 1];
-    var buckets = analyze(themeId, L.rules), keys = [];
+    var L = chain[level - 1], buckets = analyze(themeId, L.rules), keys = [];
     buckets.forEach(function (bb, i) { bb.forEach(function (items, br) { if (items.length) keys.push({ index: i, branch: br, answer: br ? L.rules[i].exc.out : L.rules[i].out, items: items }); }); });
-    return (manualCache[key] = { themeId: themeId, diff: diff, level: level, rules: L.rules, newIndex: L.newIndex, change: L.change, keys: keys });
+    return (manualCache[key] = { themeId: themeId, aud: THEMES[themeId].aud, genre: THEMES[themeId].genre, diff: diff, level: level, rules: L.rules, newIndex: L.newIndex, change: L.change, keys: keys });
   }
 
   // ---------- 問題づくり（答えがかたよらないように） ----------
@@ -647,30 +1243,50 @@ var AIGame = (function () {
       seen[JSON.stringify(item)] = 1;
       var it = th.decorate(Object.assign({}, item), rng);
       var ev = evaluate(m.rules, it);
-      var qq = { themeId: themeId, item: it, answer: ev.answer, ruleIndex: ev.index, branch: ev.branch };
-      if (themeId === 'C') qq.candidates = makeCandidates(m, it, ev, rng);
+      var qq = { themeId: themeId, item: it, ruleAnswer: ev.answer, answer: ev.answer, ruleIndex: ev.index, branch: ev.branch };
+      if (th.candidates) qq.candidates = makeCandidates(m, it, ev, rng);
+      if (th.genre === 'table') makeTableFor(th, m, qq, rng);
       out.push(qq);
     }
     return out;
   }
-  function makeCandidates(m, it, ev, rng) {
+  function altAnswer(m, it, ev) {
     var without = m.rules.slice(0, ev.index).concat(m.rules.slice(ev.index + 1));
-    var alt = without.length ? evaluate(without, it) : null;
-    var pri = [];
-    if (alt) pri.push(alt.answer);
+    var e = without.length ? evaluate(without, it) : null;
+    return e ? e.answer : null;
+  }
+  // 正しい選び方で1行だけに決まり、ほかのルールの選び方だと別の行になる表を作る
+  function makeTableFor(th, m, q, rng) {
+    var it = q.item, alt = altAnswer(m, it, { index: q.ruleIndex }), all = [];
+    m.rules.forEach(function (r) { if (all.indexOf(r.out) < 0) all.push(r.out); if (r.exc && all.indexOf(r.exc.out) < 0) all.push(r.exc.out); });
+    for (var t = 0; t < 2000; t++) {
+      var rows = th.genRows(it, rng), r = resolve(rows, th.instr[q.ruleAnswer], it);
+      if (r < 0) continue;
+      if (t < 1500 && alt && alt !== q.ruleAnswer) { var ra = resolve(rows, th.instr[alt], it); if (ra < 0 || ra === r) continue; }
+      if (t < 800 && all.some(function (o) { return resolve(rows, th.instr[o], it) < 0; })) continue;
+      q.rows = rows; q.answer = r; q.altRow = alt ? resolve(rows, th.instr[alt], it) : -1;
+      return;
+    }
+    throw new Error('表を作れませんでした ' + th.id);
+  }
+  function makeCandidates(m, it, ev, rng) {
+    var pri = [], alt = altAnswer(m, it, ev);
+    if (alt) pri.push(alt);
     var r = m.rules[ev.index];
     if (r.exc) pri.push(ev.branch ? r.out : r.exc.out);
     shuffle(rng, m.rules.map(function (x) { return x.out; })).forEach(function (o) { pri.push(o); });
-    shuffle(rng, THEMES.C.outcomes).forEach(function (o) { pri.push(o); });
+    shuffle(rng, THEMES.sweets.outcomes).forEach(function (o) { pri.push(o); });
     var res = [ev.answer];
     for (var i = 0; i < pri.length && res.length < 4; i++) if (res.indexOf(pri[i]) < 0) res.push(pri[i]);
     return shuffle(rng, res);
   }
 
   return {
-    DIFFS: DIFFS, THEMES: THEMES, COLORS: COLORS, SHAPES: SHAPES, ANIMALS: ANIMALS, DAYS: DAYS, FLAVORS: FLAVORS, PRODUCTS: PRODUCTS, NAMES: NAMES, CUSTOMERS: CUSTOMERS,
-    T: T, evalAtom: evalAtom, evaluate: evaluate, ruleParts: ruleParts, getManual: getManual, makeQuestions: makeQuestions,
-    seededRng: seededRng, spaceOf: spaceOf, validate: validate
+    LEVELS: LEVELS, AUDS: AUDS, GENRES: GENRES, ORDER: ORDER, THEMES: THEMES,
+    COLORS: COLORS, SHAPES: SHAPES, ANIMALS: ANIMALS, DAYS: DAYS, FLAVORS: FLAVORS, PRODUCTS: PRODUCTS, NAMES: NAMES, CUSTOMERS: CUSTOMERS,
+    D_TYPE: D_TYPE, D_REG: D_REG, D_W: D_W, D_TIME: D_TIME, D_CUT: D_CUT, LO_KIND: LO_KIND, LO_PLACE: LO_PLACE,
+    T: T, hm: hm, evalAtom: evalAtom, evaluate: evaluate, resolve: resolve, ruleParts: ruleParts, getManual: getManual, makeQuestions: makeQuestions,
+    seededRng: seededRng, spaceOf: spaceOf, validate: validate, cfgOf: cfgOf
   };
 })();
 if (typeof module !== 'undefined') module.exports = AIGame;
@@ -686,6 +1302,7 @@ if (typeof module !== 'undefined') module.exports = AIGame;
      ★ イラスト一覧（ここに絵の名前とファイルを書きます）
      images/ フォルダに同じ名前の PNG を入れると、自動でその絵が使われます。
      ファイルがないときは、ゲームの中で描いた かんたんな絵 が代わりに出ます。
+     絵が必要なのは「絵を見て判断」のジャンルだけです。
      もようを ふやしたいときは、この表に1行たすだけでOKです。
   ================================================================ */
   var PICTURES = {
@@ -694,10 +1311,10 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     ai_happy:  { file: 'images/ai_happy.png',  what: 'アイ（にっこり）' },
     ai_think:  { file: 'images/ai_think.png',  what: 'アイ（かんがえ中）' },
     ai_oops:   { file: 'images/ai_oops.png',   what: 'アイ（あれれ？）' },
-    req_bear:   { file: 'images/req_bear.png',   what: 'ゆうびんやの くまさん（指示書Aの依頼人）', emoji: '🐻' },
-    req_rabbit: { file: 'images/req_rabbit.png', what: 'かんごしの うさぎさん（指示書Bの依頼人）', emoji: '🐰' },
-    req_fox:    { file: 'images/req_fox.png',    what: 'おかしやの きつねさん（指示書Cの依頼人）', emoji: '🦊' },
-    // --- 指示書A：にもつ（いろ4 × かたち3 = 12まい）---
+    req_bear:   { file: 'images/req_bear.png',   what: 'ゆうびんやの くまさん', emoji: '🐻' },
+    req_rabbit: { file: 'images/req_rabbit.png', what: 'かんごしの うさぎさん', emoji: '🐰' },
+    req_fox:    { file: 'images/req_fox.png',    what: 'おかしやの きつねさん', emoji: '🦊' },
+    // --- こども：にもつ（いろ4 × かたち3 = 12まい）---
     parcel_red_circle:      { file: 'images/parcel_red_circle.png' },
     parcel_red_triangle:    { file: 'images/parcel_red_triangle.png' },
     parcel_red_square:      { file: 'images/parcel_red_square.png' },
@@ -710,14 +1327,14 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     parcel_green_circle:    { file: 'images/parcel_green_circle.png' },
     parcel_green_triangle:  { file: 'images/parcel_green_triangle.png' },
     parcel_green_square:    { file: 'images/parcel_green_square.png' },
-    // --- 指示書B：受付に来る どうぶつ（6まい）---
+    // --- こども：受付に来る どうぶつ（6まい）---
     visitor_bear:   { file: 'images/visitor_bear.png',   emoji: '🐻' },
     visitor_rabbit: { file: 'images/visitor_rabbit.png', emoji: '🐰' },
     visitor_cat:    { file: 'images/visitor_cat.png',    emoji: '🐱' },
     visitor_fox:    { file: 'images/visitor_fox.png',    emoji: '🦊' },
     visitor_dog:    { file: 'images/visitor_dog.png',    emoji: '🐶' },
     visitor_pig:    { file: 'images/visitor_pig.png',    emoji: '🐷' },
-    // --- 指示書C：おかし（8まい）＋ お客さん（6まい）---
+    // --- こども：おかし（8まい）＋ お客さん（6まい）---
     sweets_ichigo:  { file: 'images/sweets_ichigo.png' },
     sweets_choco:   { file: 'images/sweets_choco.png' },
     sweets_pudding: { file: 'images/sweets_pudding.png' },
@@ -731,17 +1348,48 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     customer_panda: { file: 'images/customer_panda.png', emoji: '🐼' },
     customer_koala: { file: 'images/customer_koala.png', emoji: '🐨' },
     customer_hamster:{ file: 'images/customer_hamster.png', emoji: '🐹' },
-    customer_penguin:{ file: 'images/customer_penguin.png', emoji: '🐧' }
+    customer_penguin:{ file: 'images/customer_penguin.png', emoji: '🐧' },
+    // --- おとな：配送デスクの荷物（4まい）---
+    delivery_box:      { file: 'images/delivery_box.png' },
+    delivery_envelope: { file: 'images/delivery_envelope.png' },
+    delivery_tube:     { file: 'images/delivery_tube.png' },
+    delivery_cooler:   { file: 'images/delivery_cooler.png' },
+    // --- おとな：落とし物（6まい）---
+    lost_umbrella: { file: 'images/lost_umbrella.png' },
+    lost_wallet:   { file: 'images/lost_wallet.png' },
+    lost_phone:    { file: 'images/lost_phone.png' },
+    lost_key:      { file: 'images/lost_key.png' },
+    lost_glove:    { file: 'images/lost_glove.png' },
+    lost_book:     { file: 'images/lost_book.png' }
   };
   var COLOR_KEYS = ['red', 'blue', 'yellow', 'green'];
   var SHAPE_KEYS = ['circle', 'triangle', 'square'];
   var VISITOR_KEYS = ['bear', 'rabbit', 'cat', 'fox', 'dog', 'pig'];
   var CUSTOMER_KEYS = ['cat', 'dog', 'panda', 'koala', 'hamster', 'penguin'];
+  var DELIVERY_KEYS = ['box', 'envelope', 'tube', 'cooler'];
+  var LOST_KEYS = ['umbrella', 'wallet', 'phone', 'key', 'glove', 'book'];
   var COLOR_HEX = ['#F27D72', '#6DA7E0', '#F5C94A', '#7CC47F'];
   var COLOR_DARK = ['#C95A50', '#4A80B8', '#C99F22', '#4F9A55'];
 
+  // 依頼する人（「絵を見て判断」のこどもテーマだけ絵ファイルあり。ほかは絵文字）
+  var REQ = {
+    parcel:   { pic: 'req_bear', emoji: '🐻', who: 'ゆうびんやの くまさん', say: ['この にもつ、どの はこに いれる？', 'つぎの にもつ だよ。どこに はこぶ？', 'これは どの はこかな？'] },
+    clinic:   { pic: 'req_rabbit', emoji: '🐰', who: 'かんごしの うさぎさん', say: ['この かた、とおして いい？', 'うけつけに だれか 来たよ！', 'カードを 見て きめてね。'] },
+    sweets:   { pic: 'req_fox', emoji: '🦊', who: 'おかしやの きつねさん', say: ['どの おかしを わたせば いい？', 'お客さんが 来たよ！', 'どの おかしが いいかな？'] },
+    letter:   { emoji: '🐰', who: 'うさぎの ミミちゃん', say: ['おてがみが きたよ。どうしたら いい？', 'この てがみ、どうしよう？', 'また てがみが きたの！'] },
+    memo:     { emoji: '🐥', who: 'ひよこの ピヨちゃん', say: ['あしたの もちもの、なにが いるかな？', 'おしらせを よんで！', 'なにを もっていけば いい？'] },
+    bus:      { emoji: '🐶', who: 'いぬの ポチくん', say: ['どの バスに のれば いい？', 'バスで おでかけ したいな！', 'じこくひょうを 見てね。'] },
+    shop:     { emoji: '🐱', who: 'ねこの タマちゃん', say: ['どれを かえば いいかな？', 'おかいもの したいの！', 'ねだんひょうを 見てね。'] },
+    delivery: { emoji: '🦉', who: '配送センターの ふくろう主任', say: ['この荷物の扱いを決めてください。', '次の荷物です。どの便にしますか？', '荷物が届きました。'] },
+    lost:     { emoji: '🦝', who: '落とし物センターの たぬき係長', say: ['この落とし物、どう対応しましょう？', '新しい落とし物が届きました。', 'この品物の対応をお願いします。'] },
+    mail:     { emoji: '🐼', who: 'お客さま窓口の パンダさん', say: ['このメールはどこに回せばいいですか？', '新しい問い合わせが届きました。', '振り分けをお願いします。'] },
+    expense:  { emoji: '🐧', who: '経理課の ペンギン課長', say: ['この申請、どう処理しますか？', '精算の申請が届いています。', '確認をお願いします。'] },
+    train:    { emoji: '🐨', who: '駅の案内係 コアラさん', say: ['お客さまにどのルートを案内しますか？', 'この条件に合うルートは？', '時刻表から選んでください。'] },
+    plan:     { emoji: '🐿️', who: 'ショップ店員 リスさん', say: ['このお客さまにはどのプランをご案内しますか？', '条件に合うプランを選んでください。', '料金表を確認してください。'] }
+  };
+
   // 絵があれば <img>、なければ SVG の代わりの絵
-  var picState = {}; // id -> 'ok' | 'none' | 'loading'
+  var picState = {};
   function probe(id) {
     if (picState[id] || !PICTURES[id]) return;
     picState[id] = 'loading';
@@ -821,15 +1469,52 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     }
     return '<svg viewBox="0 0 100 80">' + plate + s + '</svg>';
   }
-  function sweetsPic(id, cls) { return pic('sweets_' + id, sweetsSvg(id), cls, G.THEMES.C.outText(id)); }
+  function sweetsPic(id, cls) { return pic('sweets_' + id, sweetsSvg(id), cls, G.THEMES.sweets.outText(id)); }
   function heartSvg(on) { return '<svg viewBox="0 0 24 24"><path d="M12 21 C3 14 1 9 4.5 5.5 C7 3 10.5 4 12 7 C13.5 4 17 3 19.5 5.5 C23 9 21 14 12 21 Z" fill="' + (on ? '#FF8FA8' : '#fff') + '" stroke="' + (on ? '#E9708F' : '#E3D6C3') + '" stroke-width="2"/></svg>'; }
   function starSvg(on) { return '<svg viewBox="0 0 24 24"><path d="M12 2.5 L14.9 8.6 21.5 9.4 16.6 13.9 17.9 20.5 12 17.2 6.1 20.5 7.4 13.9 2.5 9.4 9.1 8.6 Z" fill="' + (on ? '#FFD35A' : '#F1E7D8') + '" stroke="' + (on ? '#E2A92A' : '#E3D6C3') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>'; }
   var CLIP = '<svg class="clip" viewBox="0 0 28 56"><path d="M8 50 V12 a6 6 0 0 1 12 0 V44 a3 3 0 0 1 -6 0 V16" fill="none" stroke="#B9C3CF" stroke-width="3.5" stroke-linecap="round"/></svg>';
 
+  // ---------- おとな用の代わりの絵 ----------
+  function deliverySvg(t) {
+    var s;
+    if (t === 0) s = '<rect x="-70" y="-56" width="140" height="112" rx="12" fill="#E8C493" stroke="#B88A55" stroke-width="4"/><rect x="-14" y="-56" width="28" height="112" fill="#F3DDB5"/><path d="M-70 -30 H70" stroke="#C99E66" stroke-width="2" opacity=".6"/>';
+    else if (t === 1) s = '<rect x="-76" y="-44" width="152" height="96" rx="10" fill="#FFF7E8" stroke="#D9C3A0" stroke-width="4"/><path d="M-76 -40 L0 12 L76 -40" fill="none" stroke="#D9C3A0" stroke-width="4" stroke-linejoin="round"/>';
+    else if (t === 2) s = '<rect x="-82" y="-24" width="164" height="48" rx="24" fill="#CFE2F3" stroke="#7FA6C8" stroke-width="4"/><ellipse cx="-70" cy="0" rx="10" ry="24" fill="#B8D2EA" stroke="#7FA6C8" stroke-width="3"/><path d="M-30 -24 V24 M30 -24 V24" stroke="#fff" stroke-width="6" opacity=".7"/>';
+    else s = '<rect x="-68" y="-44" width="136" height="100" rx="12" fill="#F7FAFC" stroke="#AFC1D3" stroke-width="4"/><rect x="-76" y="-62" width="152" height="26" rx="10" fill="#EAF1F8" stroke="#AFC1D3" stroke-width="4"/><path d="M-50 -10 H50 M-50 12 H50" stroke="#DCE6F0" stroke-width="3"/>';
+    return '<svg viewBox="-100 -100 200 200"><ellipse cx="0" cy="78" rx="70" ry="8" fill="#5B4A3F" opacity=".08"/>' + s + '</svg>';
+  }
+  function deliveryOverlay(it) {
+    var g = '<g transform="translate(-58 -88)"><rect width="96" height="34" rx="8" fill="#fff" stroke="#C9BBA8" stroke-width="2"/><text x="48" y="23" font-size="17" font-weight="700" text-anchor="middle" fill="#5B4A3F">宛先 ' + G.D_REG[it.region] + '</text></g>';
+    g += '<g transform="translate(30 50)"><rect width="66" height="30" rx="15" fill="#fff" stroke="#C9BBA8" stroke-width="2"/><text x="33" y="21" font-size="16" font-weight="700" text-anchor="middle" fill="#5B4A3F">' + G.D_W[it.weight] + '</text></g>';
+    if (it.fragile) g += '<g transform="translate(-92 30) rotate(-8)"><rect width="88" height="34" rx="6" fill="#F7A59A" stroke="#E07F72" stroke-width="2"/><text x="44" y="23" font-size="16" font-weight="800" text-anchor="middle" fill="#fff">ワレモノ</text></g>';
+    return '<svg class="ov" viewBox="-100 -100 200 200">' + g + '</svg>';
+  }
+  function lostSvg(k) {
+    var s;
+    switch (k) {
+      case 0: s = '<path d="M-70 0 Q0 -90 70 0 Q52 -14 35 0 Q17 -14 0 0 Q-17 -14 -35 0 Q-52 -14 -70 0 Z" fill="#9FC9EE" stroke="#5C9FDB" stroke-width="4" stroke-linejoin="round"/><path d="M0 0 V56 Q0 70 -14 70 Q-26 70 -26 58" fill="none" stroke="#8A7768" stroke-width="7" stroke-linecap="round"/>'; break;
+      case 1: s = '<rect x="-64" y="-40" width="128" height="84" rx="16" fill="#C9906B" stroke="#9C6B4E" stroke-width="4"/><path d="M-64 -10 H40 Q60 -10 60 8 Q60 24 40 24 H-64" fill="#B57D59" stroke="#9C6B4E" stroke-width="3"/><circle cx="40" cy="7" r="7" fill="#F5C94A"/>'; break;
+      case 2: s = '<rect x="-38" y="-70" width="76" height="140" rx="16" fill="#9AABBF" stroke="#6F8197" stroke-width="4"/><rect x="-30" y="-56" width="60" height="104" rx="8" fill="#DDEBF7"/><circle cx="0" cy="58" r="5" fill="#DDEBF7"/>'; break;
+      case 3: s = '<circle cx="-36" cy="0" r="30" fill="#F5C94A" stroke="#C99F22" stroke-width="4"/><circle cx="-36" cy="0" r="11" fill="#fff" stroke="#C99F22" stroke-width="3"/><path d="M-6 -8 H70 V8 H56 V22 H44 V8 H30 V18 H18 V8 H-6 Z" fill="#F5C94A" stroke="#C99F22" stroke-width="4" stroke-linejoin="round"/>'; break;
+      case 4: s = '<path d="M-34 60 V-20 Q-34 -60 0 -60 Q34 -60 34 -20 V60 Z" fill="#FFB8C6" stroke="#E5899D" stroke-width="4" stroke-linejoin="round"/><path d="M-34 -6 Q-60 -14 -60 -36 Q-58 -52 -42 -46 L-34 -30" fill="#FFB8C6" stroke="#E5899D" stroke-width="4" stroke-linejoin="round"/><rect x="-38" y="44" width="76" height="20" rx="6" fill="#fff" stroke="#E5899D" stroke-width="3"/>'; break;
+      default: s = '<rect x="-56" y="-66" width="112" height="132" rx="10" fill="#8FCB9B" stroke="#4F9A55" stroke-width="4"/><rect x="-56" y="-66" width="18" height="132" rx="6" fill="#6DB27A"/><rect x="-26" y="-40" width="64" height="22" rx="5" fill="#fff" opacity=".8"/>';
+    }
+    return '<svg viewBox="-100 -100 200 200"><ellipse cx="0" cy="82" rx="64" ry="8" fill="#5B4A3F" opacity=".08"/>' + s + '</svg>';
+  }
+  function lostOverlay(it) {
+    if (!it.tag) return '';
+    return '<svg class="ov" viewBox="-100 -100 200 200"><path d="M40 -60 L62 -80" stroke="#8A7768" stroke-width="2"/><g transform="translate(40 -62) rotate(18)"><rect x="0" y="0" width="56" height="30" rx="6" fill="#fff" stroke="#C9BBA8" stroke-width="2"/><circle cx="8" cy="15" r="3" fill="#C9BBA8"/><text x="32" y="21" font-size="14" font-weight="700" text-anchor="middle" fill="#5B4A3F">名札</text></g></svg>';
+  }
+
   // ---------- 保存（使えなくても動く） ----------
-  var KEY = 'anataWaAI_v1';
-  var save = { stars: {}, sound: true, two: false, diff: 'easy', timer: false };
-  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); for (var k in o) save[k] = o[k]; } } catch (e) {}
+  var KEY = 'anataWaAI_v2';
+  var save = { stars: {}, sound: true, two: false, timer: false, diff: { kids: 'easy', adults: 'easy' }, genre: { kids: 'pic', adults: 'pic' } };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var o = JSON.parse(raw); for (var k in o) save[k] = o[k]; }
+    if (!save.diff || typeof save.diff !== 'object') save.diff = { kids: 'easy', adults: 'easy' };
+    if (!save.genre || typeof save.genre !== 'object') save.genre = { kids: 'pic', adults: 'pic' };
+  } catch (e) {}
   function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
 
   // ---------- 音（さいしょのタップのあとで鳴らせる） ----------
@@ -860,37 +1545,54 @@ if (typeof module !== 'undefined') module.exports = AIGame;
 
   // ---------- 小さな道具 ----------
   function $(id) { return document.getElementById(id); }
-  function K() { return G.DIFFS[(S.game && S.game.diff) || save.diff].kanji; }
+  var S = { aud: 'kids', game: null, mv: { theme: 'parcel', diff: 'easy', level: 1 } };
+  function curAud() { return S.game ? G.THEMES[S.game.theme].aud : S.aud; }
+  function isAdult() { return curAud() === 'adults'; }
+  function U(kids, adults) { return isAdult() ? adults : kids; }
+  function K() { return S.game ? G.cfgOf(S.game.theme, S.game.diff).kanji : isAdult(); }
   function tx(s, kanji) { return G.T(s, kanji === undefined ? K() : kanji); }
-  var SJ = '<ruby>指示書<rt>しじしょ</rt></ruby>';
-  var S = { game: null, mv: { theme: 'A', diff: save.diff, level: 1 } };
+  function SJ() { return isAdult() ? '指示書' : '<ruby>指示書<rt>しじしょ</rt></ruby>'; }
   var timers = [];
   function later(fn, ms) { var id = setTimeout(fn, ms); timers.push(id); return id; }
   function clearTimers() { timers.forEach(clearTimeout); timers = []; if (S.game && S.game.tick) { clearInterval(S.game.tick); S.game.tick = null; } }
-  function show(id) { var s = document.querySelectorAll('.scr'); for (var i = 0; i < s.length; i++) s[i].classList.toggle('on', s[i].id === id); closeSheet(); hideOvl(); }
+  function show(id) {
+    var s = document.querySelectorAll('.scr'); for (var i = 0; i < s.length; i++) s[i].classList.toggle('on', s[i].id === id);
+    $('app').classList.toggle('adult', isAdult() && id !== 'scr-title' && id !== 'scr-manual');
+    closeSheet(); hideOvl();
+  }
   function starsOf(diff, t, lv) { return save.stars[diff + '-' + t + '-' + lv] || 0; }
   function unlocked(diff, t, lv) { return lv === 1 || starsOf(diff, t, lv - 1) > 0; }
   function toast(msg) { var el = $('toast'); el.innerHTML = msg; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); later(function () { el.classList.remove('on'); }, 1000); }
+  function themesOf(aud, genre) { return G.ORDER[aud][genre]; }
+  function genreLabel(g, aud) { return G.GENRES[g][aud || curAud()]; }
+  function backBtn(act) { return '<button class="icon-btn" data-act="' + act + '" aria-label="もどる">←</button>'; }
+  function hdr(act, title) { return '<div class="hdr">' + backBtn(act) + '<div class="ttl">' + title + '</div><span style="width:48px"></span></div>'; }
 
   // ---------- 指示書の表示 ----------
   function chip(themeId, o, kanji) {
-    var t = tx(G.THEMES[themeId].outText(o), kanji);
-    if (themeId === 'A') return '<span class="chip ' + o + '">' + o + '</span>';
-    if (themeId === 'B') return '<span class="chip ' + o + '">' + t + '</span>';
-    return '<span class="chip p">' + sweetsPic(o) + t + '</span>';
+    var th = G.THEMES[themeId], t = G.T(th.outText(o), kanji);
+    if (themeId === 'parcel') return '<span class="chip ' + o + '">' + o + '</span>';
+    if (themeId === 'clinic') return '<span class="chip ' + o + '">' + t + '</span>';
+    if (themeId === 'sweets') return '<span class="chip p">' + sweetsPic(o) + t + '</span>';
+    if (th.genre === 'table') return '<span class="chip p long">' + t + '</span>';
+    return '<span class="chip p">' + t + '</span>';
   }
   function ruleLi(m, i, opts) {
-    var r = m.rules[i], kj = G.DIFFS[m.diff].kanji, p = G.ruleParts(m.themeId, r, kj);
+    var r = m.rules[i], kj = G.cfgOf(m.themeId, m.diff).kanji, p = G.ruleParts(m.themeId, r, kj);
     var cls = 'rule' + (r.fallback ? ' fb' : '') + (opts.newIndex === i ? ' new' : '') + (opts.highlight === i ? ' hl' : '');
+    var newTxt = m.aud === 'adults' ? (m.change === 'replace' ? '変更' : '追加') : (m.change === 'replace' ? 'かわったよ' : 'あたらしい');
     return '<li class="' + cls + '" id="rule-' + i + '"><span class="rnum">' + (i + 1) + '</span><div class="rbody"><div>' + p.cond + '</div><div>→ ' + chip(m.themeId, r.out, kj) + '</div>' +
       (p.exc ? '<div class="rexc">' + p.exc + ' → ' + chip(m.themeId, p.excOut, kj) + '</div>' : '') + '</div>' +
-      (opts.newIndex === i ? '<span class="newtag">' + (m.change === 'replace' ? 'かわったよ' : 'あたらしい') + '</span>' : '') + '</li>';
+      (opts.newIndex === i ? '<span class="newtag">' + newTxt + '</span>' : '') + '</li>';
   }
   function manualHtml(m, opts) {
     opts = opts || {};
-    var kj = G.DIFFS[m.diff].kanji, th = G.THEMES[m.themeId];
-    var h = '<div class="paper">' + CLIP + '<h3>' + SJ + m.themeId + '</h3><div class="sub">' + tx(th.title, kj) + ' ・ レベル' + m.level + ' ・ ' + G.DIFFS[m.diff].label + '</div>';
-    h += '<div class="how">' + tx('{うえから じゅんばんに よんで、さいしょに あてはまった ものが こたえ です。|上から順番に読んで、さいしょに当てはまったものが答えです。}', kj) + '</div><ol class="rules">';
+    var kj = G.cfgOf(m.themeId, m.diff).kanji, th = G.THEMES[m.themeId], ad = m.aud === 'adults';
+    var sj = ad ? '指示書' : '<ruby>指示書<rt>しじしょ</rt></ruby>';
+    var h = '<div class="paper">' + CLIP + '<h3>' + sj + th.code + '</h3><div class="sub">' + G.AUDS[m.aud].label + ' ・ ' + G.T(th.title, kj) + ' ・ レベル' + m.level + ' ・ ' + G.LEVELS[m.aud][m.diff].label + '</div>';
+    h += '<div class="how">' + G.T('{うえから じゅんばんに よんで、さいしょに あてはまった ものが こたえ です。|上から順番に読んで、さいしょに当てはまったものが答えです。}', kj);
+    if (th.genre === 'table') h += G.T('{<br>こたえは「→」の えらびかたで、ひょうから 1つ えらびます。|<br>答えは「→」の選び方で、表から1つ選びます。}', kj);
+    h += '</div><ol class="rules">';
     for (var i = 0; i < m.rules.length; i++) h += ruleLi(m, i, { newIndex: m.newIndex, highlight: opts.highlight });
     return h + '</ol></div>';
   }
@@ -910,45 +1612,68 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     var h = '<div class="scroll" style="flex:1">';
     h += '<div class="logo"><div class="l1">きょうから きみは…</div><div class="l2">あなたは<span class="ai-tag">AI</span>です</div></div>';
     h += '<div class="hero">' + aiPic('normal') + '</div>';
-    h += '<p class="muted" style="text-align:center;margin:0 0 6px;line-height:1.6">見習いAIの「アイ」になって、<br>町のみんなの おねがいに こたえよう！</p>';
-    h += '<div class="diffs">';
-    var dots = { easy: ['var(--mint)', '🌱'], normal: ['var(--sky)', '🌷'], hard: ['var(--peach)', '🌳'] };
-    ['easy', 'normal', 'hard'].forEach(function (d) {
-      var D = G.DIFFS[d];
-      h += '<button class="diff' + (save.diff === d ? ' sel' : '') + '" data-act="diff" data-v="' + d + '"><span class="dot" style="background:' + dots[d][0] + '">' + dots[d][1] + '</span><span><b>' + D.label + '</b><small>' + D.hint + '</small></span></button>';
-    });
-    h += '</div><div class="toggles">';
-    h += '<button class="tog' + (save.two ? ' on' : '') + '" data-act="two"><span><b>👥 ふたりモード</b><small>' + SJ + 'を もう一人が 読む あそびかた</small></span><span class="sw"></span></button>';
-    if (save.diff === 'hard') h += '<button class="tog' + (save.timer ? ' on' : '') + '" data-act="timer"><span><b>⏱ タイマー</b><small>1もん 60びょう</small></span><span class="sw"></span></button>';
+    h += '<p class="lead">だれが あそぶ？</p>';
+    h += '<div class="aud-cards"><button class="aud kids" data-act="aud" data-v="kids"><span class="em">🧒</span><b>こども</b><small>しょうがくせい むけ</small></button>' +
+      '<button class="aud adults" data-act="aud" data-v="adults"><span class="em">🧑</span><b>おとな</b><small>中学生・大人向け</small></button></div>';
+    h += '<div class="toggles">';
+    h += '<button class="tog' + (save.two ? ' on' : '') + '" data-act="two"><span><b>👥 ふたりモード</b><small>指示書を もう一人が 読む あそびかた</small></span><span class="sw"></span></button>';
     h += '<button class="tog' + (save.sound ? ' on' : '') + '" data-act="sound"><span><b>' + (save.sound ? '🔊' : '🔈') + ' おと</b><small>やさしい こうかおん</small></span><span class="sw"></span></button>';
     h += '</div>';
-    if (save.two) h += '<div class="two-help"><b>👥 ふたりで あそぶ ほうほう</b><ol><li>ひとりは この画面で あそぶ（おだいを 見る人）</li><li>もうひとりは べつの スマホで 同じページを ひらいて「📖 ' + SJ + 'だけ 表示」を おす</li><li>同じ ' + SJ + '・むずかしさ・レベルを えらんで、話しあって こたえよう！</li></ol></div>';
-    h += '<div class="title-btns"><button class="btn mint big" data-act="toSelect">▶ あそぶ</button><div class="row"><button class="btn butter" data-act="howto">❓ あそびかた</button><button class="btn sky" data-act="toManual">📖 ' + SJ + 'だけ 表示</button></div></div>';
+    if (save.two) h += '<div class="two-help"><b>👥 ふたりで あそぶ ほうほう</b><ol><li>ひとりは この画面で あそぶ（おだいを 見る人）</li><li>もうひとりは べつの スマホで 同じページを ひらいて「📖 指示書だけ 表示」を おす</li><li>同じ こども／おとな・むずかしさ・ジャンル・指示書・レベルを えらんで、話しあって こたえよう！</li></ol></div>';
+    h += '<div class="row" style="margin-bottom:8px"><button class="btn butter" data-act="howto">❓ あそびかた</button><button class="btn sky" data-act="toManual">📖 指示書だけ 表示</button></div>';
     h += '</div>';
     $('scr-title').innerHTML = h;
   }
   function howto() {
     showOvl('<div class="card"><h2>❓ あそびかた</h2><div class="intro-ai">' + aiPic('happy') + '<p style="line-height:1.6;margin:0">きみは 見習いAIの「アイ」。<br>町のみんなから おねがいが とどくよ。</p></div>' +
-      '<ol style="line-height:1.8;padding-left:1.3em"><li>おねがいの カードを 見る</li><li>「📖 ' + SJ + 'を ひらく」で ルールを 読む</li><li><b>上から じゅんばんに</b> 読んで、<b>さいしょに 当てはまった</b> ものが こたえ</li><li>こたえの ボタンを おす！</li></ol>' +
-      '<p class="muted" style="line-height:1.6">まちがえても だいじょうぶ。アイが どの ルールに 当てはまるか おしえてくれるよ。<br>レベルが 上がると ルールが ふえるよ。<br>「むずかしい」では 3もん まとめて こたえあわせ！</p>' +
+      '<ol style="line-height:1.8;padding-left:1.3em"><li>こども か おとな → むずかしさ → ジャンル を えらぶ</li><li>おねがいを 見る（絵・文章・表）</li><li>「📖 指示書を ひらく」で ルールを 読む</li><li><b>上から じゅんばんに</b> 読んで、<b>さいしょに 当てはまった</b> ものが こたえ</li><li>こたえの ボタンを おす！（表の ときは、表の ぎょうを おす）</li></ol>' +
+      '<p class="muted" style="line-height:1.6">まちがえても だいじょうぶ。どの ルールに 当てはまるか おしえてくれるよ。<br>レベルが 上がると ルールが ふえるよ。<br>おとなの「むずかしい」は 3もん まとめて こたえあわせ。</p>' +
       '<button class="btn mint" style="width:100%" data-act="hideOvl">わかった！</button></div>', true);
   }
 
-  // ---------- ステージえらび ----------
+  // ---------- むずかしさ → ジャンル → ステージ ----------
+  function renderDiff() {
+    var a = S.aud, ad = a === 'adults';
+    var h = hdr('toTitle', ad ? '大人向け' : 'こども むけ') + '<div class="scroll" style="flex:1">';
+    h += '<div class="intro-ai" style="justify-content:center;margin:4px 0 8px">' + aiPic(ad ? 'normal' : 'happy') + '<p class="lead" style="margin:0">' + (ad ? '難易度を選んでください' : 'むずかしさを えらぼう') + '</p></div>';
+    var dots = { easy: ['var(--mint)', '🌱'], normal: ['var(--sky)', '🌷'], hard: ['var(--peach)', '🌳'] };
+    h += '<div class="big-cards">';
+    ['easy', 'normal', 'hard'].forEach(function (d) {
+      var L = G.LEVELS[a][d];
+      h += '<button class="big-card" data-act="diffPick" data-v="' + d + '"><span class="ic" style="background:' + dots[d][0] + '">' + dots[d][1] + '</span><span><b>' + L.label + '</b><small>' + L.hint + '・ルール' + L.counts[0] + '〜' + L.counts[2] + (ad ? '個' : 'こ') + (L.batch ? '・3問まとめて答え合わせ' : '') + '</small></span></button>';
+    });
+    h += '</div>';
+    if (ad) h += '<div class="toggles"><button class="tog' + (save.timer ? ' on' : '') + '" data-act="timer"><span><b>⏱ タイマー</b><small>「むずかしい」で 1問60秒</small></span><span class="sw"></span></button></div>';
+    h += '</div>';
+    $('scr-diff').innerHTML = h;
+  }
+  function renderGenre() {
+    var a = S.aud, ad = a === 'adults', d = save.diff[a];
+    var h = hdr('toDiff', (ad ? '大人向け' : 'こども') + ' ・ ' + G.LEVELS[a][d].label) + '<div class="scroll" style="flex:1">';
+    h += '<p class="lead">' + (ad ? 'ジャンルを選んでください' : 'ジャンルを えらぼう') + '</p><div class="big-cards">';
+    var bg = { pic: 'var(--mint)', text: 'var(--peach)', table: 'var(--sky)' };
+    ['pic', 'text', 'table'].forEach(function (g, i) {
+      var G2 = G.GENRES[g], th = themesOf(a, g), got = 0;
+      th.forEach(function (t) { for (var lv = 1; lv <= 3; lv++) got += starsOf(d, t, lv); });
+      h += '<button class="big-card" data-act="genrePick" data-v="' + g + '"><span class="ic" style="background:' + bg[g] + '">' + G2.icon + '</span><span><b>' + '①②③'.charAt(i) + ' ' + G2[a] + '</b><small>' + G2[a + 'Sub'] + '<br>' + th.map(function (t) { return G.T(G.THEMES[t].title, ad); }).join('／') + '</small></span><span class="stars-mini">★' + got + '</span></button>';
+    });
+    h += '</div></div>';
+    $('scr-genre').innerHTML = h;
+  }
   function renderSelect() {
-    var d = save.diff, kj = G.DIFFS[d].kanji;
-    var h = '<div class="hdr"><button class="icon-btn" data-act="toTitle" aria-label="もどる">←</button><div class="ttl">ステージを えらぼう</div><span style="width:48px"></span></div>';
+    var a = S.aud, ad = a === 'adults', d = save.diff[a], g = save.genre[a], kj = G.LEVELS[a][d].kanji;
+    var h = hdr('toGenre', G.GENRES[g].icon + ' ' + G.GENRES[g][a]);
     h += '<div class="seg">';
-    ['easy', 'normal', 'hard'].forEach(function (x) { h += '<button class="' + (x === d ? 'sel' : '') + '" data-act="diffSel" data-v="' + x + '">' + G.DIFFS[x].label + '</button>'; });
+    ['easy', 'normal', 'hard'].forEach(function (x) { h += '<button class="' + (x === d ? 'sel' : '') + '" data-act="diffSel" data-v="' + x + '">' + G.LEVELS[a][x].label + '</button>'; });
     h += '</div><div class="scroll" style="flex:1">';
-    var bg = { A: 'var(--mint)', B: 'var(--sky)', C: 'var(--peach)' };
-    ['A', 'B', 'C'].forEach(function (t) {
+    var bgs = ['var(--mint)', 'var(--sky)', 'var(--peach)'];
+    themesOf(a, g).forEach(function (t, i) {
       var th = G.THEMES[t];
-      h += '<div class="card theme-card"><div class="tc-head"><span class="tc-ico" style="background:' + bg[t] + '">' + th.icon + '</span><div><b>' + SJ + t + '</b><br>' + tx(th.title, kj) + '</div></div><div class="levels">';
+      h += '<div class="card theme-card"><div class="tc-head"><span class="tc-ico" style="background:' + bgs[i % 3] + '">' + th.icon + '</span><div><b>' + SJ() + th.code + '</b><br>' + G.T(th.title, kj) + '</div></div><div class="levels">';
       for (var lv = 1; lv <= 3; lv++) {
         var ok = unlocked(d, t, lv), st = starsOf(d, t, lv);
         h += '<button class="lv' + (ok ? '' : ' locked') + '" data-act="' + (ok ? 'start' : 'locked') + '" data-t="' + t + '" data-l="' + lv + '">レベル' + lv +
-          (ok ? '<span class="st">' + '★★★'.slice(0, st) + '<span style="color:#E3D6C3">' + '★★★'.slice(0, 3 - st) + '</span></span><small>ルール' + G.DIFFS[d].counts[lv - 1] + 'こ</small>' : '<span>🔒</span>') + '</button>';
+          (ok ? '<span class="st">' + '★★★'.slice(0, st) + '<span style="color:#E3D6C3">' + '★★★'.slice(0, 3 - st) + '</span></span><small>ルール' + G.LEVELS[a][d].counts[lv - 1] + (ad ? '個' : 'こ') + '</small>' : '<span>🔒</span>') + '</button>';
       }
       h += '</div></div>';
     });
@@ -957,31 +1682,29 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   }
 
   // ---------- ゲーム ----------
-  var PRAISE = ['すごい！', 'ばっちり！', '名探偵みたい！', 'さすが アイ！', 'せいかい！', 'かんぺき！', 'いいね！'];
-  var REQ = {
-    A: { id: 'req_bear', who: 'ゆうびんやの くまさん', say: ['この にもつ、どの はこに いれる？', 'つぎの にもつ だよ。どこに はこぶ？', 'これは どの はこかな？'] },
-    B: { id: 'req_rabbit', who: 'かんごしの うさぎさん', say: ['この かた、とおして いい？', 'うけつけに だれか 来たよ！', 'カードを 見て きめてね。'] },
-    C: { id: 'req_fox', who: 'おかしやの きつねさん', say: ['どの おかしを わたせば いい？', 'お客さんが 来たよ！', 'どの おかしが いいかな？'] }
-  };
+  var PRAISE_K = ['すごい！', 'ばっちり！', '名探偵みたい！', 'さすが アイ！', 'せいかい！', 'かんぺき！', 'いいね！'];
+  var PRAISE_A = ['正解！', 'お見事！', '名探偵ですね！', 'さすがです！', '完璧です！', 'いい判断です！'];
   function startStage(t, lv) {
     clearTimers();
-    var d = save.diff;
-    S.game = { theme: t, level: lv, diff: d, manual: G.getManual(t, d, lv), qs: G.makeQuestions(t, d, lv, 5), idx: 0, hearts: 3, mistakes: 0, results: [], pending: [], busy: false, two: save.two, timer: d === 'hard' && save.timer };
+    var th = G.THEMES[t], d = save.diff[th.aud], cfg = G.LEVELS[th.aud][d];
+    S.aud = th.aud;
+    S.game = { theme: t, level: lv, diff: d, manual: G.getManual(t, d, lv), qs: G.makeQuestions(t, d, lv, 5), idx: 0, hearts: 3, mistakes: 0, results: [], busy: false, two: save.two, batch: !!cfg.batch, timer: !!cfg.batch && save.timer, easy: th.aud === 'kids' && d === 'easy' };
     show('scr-game');
     renderGame();
     intro();
   }
+  function stageBadge(g) { var th = G.THEMES[g.theme]; return SJ() + th.code + '・' + G.AUDS[th.aud].label + '・' + G.LEVELS[th.aud][g.diff].label + '・' + G.GENRES[th.genre][th.aud] + '・レベル' + g.level; }
   function intro() {
     var g = S.game, m = g.manual, th = G.THEMES[g.theme];
-    var h = '<div class="card"><div class="intro-ai">' + aiPic('normal') + '<div><b style="font-size:20px">' + SJ + g.theme + ' ・ レベル' + g.level + '</b><br>' + tx(th.title) + '</div></div>';
+    var h = '<div class="card"><div class="intro-ai">' + aiPic('normal') + '<div><b style="font-size:20px">' + SJ() + th.code + ' ・ レベル' + g.level + '</b><br>' + tx(th.title) + '</div></div>';
     if (m.newIndex >= 0) {
-      var head = m.change === 'replace' ? '🔄 ルールが 1つ かわったよ！' : '✨ 新しい ルールが ふえたよ！';
-      if (g.two) h += '<div class="newrule"><b>' + head + '</b>' + SJ + 'を 読む人に、' + (m.newIndex + 1) + 'ばんの ルールを 読んでもらってね。</div>';
+      var head = m.change === 'replace' ? U('🔄 ルールが 1つ かわったよ！', '🔄 ルールが1つ変わりました') : U('✨ 新しい ルールが ふえたよ！', '✨ 新しいルールが追加されました');
+      if (g.two) h += '<div class="newrule"><b>' + head + '</b>' + U(SJ() + 'を 読む人に、' + (m.newIndex + 1) + 'ばんの ルールを 読んでもらってね。', '指示書の担当の方に、' + (m.newIndex + 1) + '番のルールを読んでもらいましょう。') + '</div>';
       else h += '<div class="newrule"><b>' + head + '</b><ol class="rules">' + ruleLi(m, m.newIndex, { newIndex: m.newIndex }) + '</ol></div>';
     }
-    h += '<p style="line-height:1.6">5もん こたえてね。' + (g.diff === 'hard' ? '<br><b>むずかしい</b>は 3もん まとめて こたえあわせ するよ。' : '') + (g.diff === 'easy' ? '<br>まちがえても さいごまで あそべるよ。' : '<br>ハートが なくなると やりなおし。') + '</p>';
-    if (g.two) h += '<p class="two-note">👥 ' + SJ + 'の人は「' + SJ + g.theme + '・レベル' + g.level + '・' + G.DIFFS[g.diff].label + '」を ひらいてね</p>';
-    h += '<button class="btn mint big" style="width:100%" data-act="begin">はじめる！</button></div>';
+    h += '<p style="line-height:1.6">' + U('5もん こたえてね。', '全5問です。') + (g.batch ? U('', '<br>3問ずつまとめて答え合わせをします。') : '') + (g.easy ? '<br>まちがえても さいごまで あそべるよ。' : U('<br>ハートが なくなると やりなおし。', '<br>ハートがなくなるとやり直しです。')) + (th.genre === 'table' ? U('<br>こたえは ひょうの ぎょうを おしてね。', '<br>答えは表の行をタップしてください。') : '') + '</p>';
+    if (g.two) h += '<p class="two-note">👥 ' + U(SJ() + 'の人は「' + stageBadge(g) + '」を ひらいてね', '指示書の担当の方は「' + stageBadge(g) + '」を開いてください') + '</p>';
+    h += '<button class="btn mint big" style="width:100%" data-act="begin">' + U('はじめる！', 'はじめる') + '</button></div>';
     showOvl(h, true);
   }
   function heartsHtml() { var g = S.game, h = ''; for (var i = 0; i < 3; i++) h += heartSvg(i < g.hearts); return h; }
@@ -1000,27 +1723,29 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     var h = '<div class="gtop"><button class="icon-btn" data-act="quit" aria-label="やめる">←</button><div class="hearts" id="hearts">' + heartsHtml() + '</div><span class="badge">' + (g.idx + 1) + ' / ' + g.qs.length + '</span></div>';
     h += '<div class="prog" id="prog">' + progHtml() + '</div>';
     if (g.timer) h += '<div class="timer" id="timer"><i style="width:100%"></i></div>';
-    h += '<div class="req" style="margin-top:6px"><span class="req-ava">' + pic(R.id, emojiSvg(PICTURES[R.id].emoji), '', R.who) + '</span><div class="bubble"><b>' + R.who + '</b>' + R.say[g.idx % R.say.length] + '<br>' + SJ + g.theme + 'を 読んで、こたえを 出してください。</div></div>';
-    h += '<div class="stage" id="stage"><div class="stage-in">' + stageHtml(q) + '</div>' + (g.theme === 'A' ? '<span class="mini-ai">' + aiPic('think') + '</span>' : '') + '</div>';
+    var ava = R.pic ? pic(R.pic, emojiSvg(R.emoji), '', R.who) : emojiSvg(R.emoji);
+    h += '<div class="req" style="margin-top:6px"><span class="req-ava">' + ava + '</span><div class="bubble"><b>' + R.who + '</b>' + R.say[g.idx % R.say.length] + (th.genre === 'pic' ? '<br>' + U(SJ() + th.code + 'を 読んで、こたえを 出してください。', '指示書' + th.code + 'を読んで、答えを出してください。') : U('（' + SJ() + th.code + 'で しらべてね）', '（指示書' + th.code + 'で判断してください）')) + '</div></div>';
+    h += '<div class="stage" id="stage"><div class="stage-in">' + stageHtml(q) + '</div>' + (g.theme === 'parcel' ? '<span class="mini-ai">' + aiPic('think') + '</span>' : '') + '</div>';
     h += '<div class="bottom">';
-    if (g.two) h += '<div class="two-note">👥 ' + SJ + 'は、もう一人が 読んでね<br><span class="badge">' + SJ + g.theme + '・レベル' + g.level + '・' + G.DIFFS[g.diff].label + '</span></div>';
-    else h += '<button class="btn manual-btn" data-act="manual">📖 ' + SJ + 'を ひらく</button>';
+    if (g.two) h += '<div class="two-note">👥 ' + U(SJ() + 'は、もう一人が 読んでね', '指示書は、もう一人が読んでください') + '<br><span class="badge">' + stageBadge(g) + '</span></div>';
+    else h += '<button class="btn manual-btn" data-act="manual">📖 ' + U(SJ() + 'を ひらく', '指示書を開く') + '</button>';
     h += answersHtml(q) + '</div>';
     $('scr-game').innerHTML = h;
+    $('scr-game').classList.toggle('compact', th.genre !== 'pic');
     g.busy = false;
     if (g.timer) startTimer();
   }
+  function rowsHtml(t) { var r = ''; t.forEach(function (x) { r += '<div><span>' + tx(x[0]) + '</span><b>' + tx(x[1]) + '</b></div>'; }); return r; }
   function stageHtml(q) {
-    var it = q.item, kj = K();
-    if (q.themeId === 'A') {
-      var id = 'parcel_' + COLOR_KEYS[it.color] + '_' + SHAPE_KEYS[it.shape];
-      var sc = it.size ? 100 : 64;
+    var it = q.item, th = G.THEMES[q.themeId], i;
+    if (q.themeId === 'parcel') {
+      var id = 'parcel_' + COLOR_KEYS[it.color] + '_' + SHAPE_KEYS[it.shape], sc = it.size ? 100 : 64;
       var label = G.COLORS[it.color] + 'いろの ' + G.SHAPES[it.shape] + 'の にもつ、' + (it.size ? 'おおきい' : 'ちいさい') + '、ハート' + it.hearts + 'まい、ほし' + it.stars + 'まい' + (it.snow ? '、ゆきマークあり' : '');
       return '<div class="belt" role="img" aria-label="' + label + '"><span class="size-tag">' + (it.size ? tx('{おおきい|大きい}') : tx('{ちいさい|小さい}')) + '</span><div class="parcel" style="width:' + sc + '%;height:' + sc + '%">' + pic(id, parcelBaseSvg(it.color, it.shape)) + parcelOverlay(it) + '</div></div>';
     }
-    if (q.themeId === 'B') {
+    if (q.themeId === 'clinic') {
       var vid = 'visitor_' + VISITOR_KEYS[it.animal];
-      return '<div class="board">📅 ' + tx('きょうは') + ' ' + tx(G.DAYS[it.today]) + '</div><div class="vcard" id="vcard"><h4>🏥 ' + tx('{うけつけ カード|受付カード}') + '</h4><div class="vrow"><span class="vface">' + pic(vid, emojiSvg(PICTURES[vid].emoji, '#D6EAFB')) + '</span><div class="vtable">' +
+      return '<div class="board">📅 ' + tx('{きょうは|今日は}') + ' ' + tx(G.DAYS[it.today]) + '</div><div class="vcard" id="vcard"><h4>🏥 ' + tx('{うけつけ カード|受付カード}') + '</h4><div class="vrow"><span class="vface">' + pic(vid, emojiSvg(PICTURES[vid].emoji, '#D6EAFB')) + '</span><div class="vtable">' +
         '<div><span>' + tx('{なまえ|名前}') + '</span><b style="font-size:19px;letter-spacing:.08em">' + it.name + '</b></div>' +
         '<div><span>' + tx('{いきもの|動物}') + '</span><b>' + G.ANIMALS[it.animal] + '</b></div>' +
         '<div><span>' + tx('{よやくの ひ|予約の日}') + '</span><b>' + tx(G.DAYS[it.day]) + '</b></div>' +
@@ -1028,20 +1753,53 @@ if (typeof module !== 'undefined') module.exports = AIGame;
         '<div><span>はんこ</span>' + (it.stamp ? '<span class="hanko yes">🐾</span>' : '<span class="hanko no">なし</span>') + '</div>' +
         '</div></div></div>';
     }
-    var cid = 'customer_' + CUSTOMER_KEYS[it.customer];
-    var ppl = ''; for (var i = 0; i < it.people; i++) ppl += '<i></i>';
-    return '<div class="order"><h4>🍰 ' + tx('{ちゅうもん カード|注文カード}') + '</h4><div class="vrow"><span class="vface">' + pic(cid, emojiSvg(PICTURES[cid].emoji, '#FFDCCB')) + '</span><div class="vtable">' +
-      '<div><span>' + tx('{おきゃくさん|お客さん}') + '</span><b>' + tx(it.kid ? '{こども|子ども}' : '{おとな|大人}') + '</b></div>' +
-      '<div><span>' + tx('{すきな あじ|好きな味}') + '</span><b>' + G.FLAVORS[it.flavor] + '</b></div>' +
-      '<div><span>' + tx('{にんずう|人数}') + '</span><b>' + it.people + tx('{にん|人}') + ' <span class="people">' + ppl + '</span></b></div>' +
-      '<div><span>' + tx('{たべる ばしょ|食べる場所}') + '</span><b>' + tx(it.takeout ? '{おうち|お家}' : '{おみせ|お店}') + '</b></div>' +
-      '<div><span>🎂マーク</span><b>' + (it.bday ? '🎂 ある' : 'ない') + '</b></div>' +
-      '</div></div></div>';
+    if (q.themeId === 'sweets') {
+      var cid = 'customer_' + CUSTOMER_KEYS[it.customer], ppl = '';
+      for (i = 0; i < it.people; i++) ppl += '<i></i>';
+      return '<div class="order"><h4>🍰 ' + tx('{ちゅうもん カード|注文カード}') + '</h4><div class="vrow"><span class="vface">' + pic(cid, emojiSvg(PICTURES[cid].emoji, '#FFDCCB')) + '</span><div class="vtable">' +
+        '<div><span>' + tx('{おきゃくさん|お客さん}') + '</span><b>' + tx(it.kid ? '{こども|子ども}' : '{おとな|大人}') + '</b></div>' +
+        '<div><span>' + tx('{すきな あじ|好きな味}') + '</span><b>' + G.FLAVORS[it.flavor] + '</b></div>' +
+        '<div><span>' + tx('{にんずう|人数}') + '</span><b>' + it.people + tx('{にん|人}') + ' <span class="people">' + ppl + '</span></b></div>' +
+        '<div><span>' + tx('{たべる ばしょ|食べる場所}') + '</span><b>' + tx(it.takeout ? '{おうち|お家}' : '{おみせ|お店}') + '</b></div>' +
+        '<div><span>🎂マーク</span><b>' + (it.bday ? '🎂 ある' : 'ない') + '</b></div>' +
+        '</div></div></div>';
+    }
+    if (q.themeId === 'delivery') {
+      var did = 'delivery_' + DELIVERY_KEYS[it.type];
+      return '<div class="board small">本日の締切　市内16時・県内15時・県外14時・離島13時</div>' +
+        '<div class="pkg" role="img" aria-label="' + G.D_TYPE[it.type] + '">' + pic(did, deliverySvg(it.type)) + deliveryOverlay(it) + '</div>' +
+        '<div class="info"><span>種類：' + G.D_TYPE[it.type] + '</span><span>受付時刻：' + G.D_TIME[it.time] + '</span></div>';
+    }
+    if (q.themeId === 'lost') {
+      var lid = 'lost_' + LOST_KEYS[it.kind];
+      return '<div class="board small">📅 今日は ' + it.todayText + '</div>' +
+        '<div class="pkg" role="img" aria-label="' + G.LO_KIND[it.kind] + '">' + pic(lid, lostSvg(it.kind)) + lostOverlay(it) + '</div>' +
+        '<div class="info"><span>品物：' + G.LO_KIND[it.kind] + '</span><span>拾った場所：' + G.LO_PLACE[it.place] + '</span><span>拾った日：' + it.foundText + '</span><span>持ち主からの問い合わせ：' + (it.inquiry ? 'あり' : 'なし') + '</span></div>';
+    }
+    if (th.genre === 'text') {
+      var lines = it.lines.map(function (l) { return tx(l); });
+      if (th.aud === 'adults') {
+        return '<div class="board small">📅 今日は ' + it.todayText + '</div><div class="mailbox"><div class="subj">' + lines[0] + '</div>' + lines.slice(1).map(function (l) { return '<p>' + l + '</p>'; }).join('') + '</div>';
+      }
+      return '<div class="letter' + (q.themeId === 'memo' ? ' memo' : '') + '"><p class="to">' + lines[0] + '</p>' + lines.slice(1, -1).map(function (l) { return '<p>' + l + '</p>'; }).join('') + '<p class="sig">' + lines[lines.length - 1] + '</p></div>';
+    }
+    if (th.genre === 'table') {
+      var cols = th.cols, tmpl = 'grid-template-columns:repeat(' + cols.length + ',1fr)';
+      var h = '<div class="ctx">' + rowsHtml(th.ctx(it)) + '</div><div class="tbl"><div class="th" style="' + tmpl + '">' + cols.map(function (c) { return '<span>' + tx(c[1]) + '</span>'; }).join('') + '</div>';
+      q.rows.forEach(function (r, ix) {
+        h += '<button class="trow ans" style="' + tmpl + '" data-act="answer" data-v="' + ix + '" id="trow-' + ix + '">' + cols.map(function (c) { return '<span>' + tx(th.fmt(c[0], r[c[0]])) + '</span>'; }).join('') + '</button>';
+      });
+      return h + '</div>';
+    }
+    return '';
   }
   function answersHtml(q) {
-    if (q.themeId === 'A') return '<div class="answers a3">' + ['A', 'B', 'C'].map(function (o) { return '<button class="ans box' + o + '" data-act="answer" data-v="' + o + '">' + o + '<small>の はこ</small></button>'; }).join('') + '</div>';
-    if (q.themeId === 'B') return '<div class="answers a2"><button class="ans yes" data-act="answer" data-v="yes">はい<small>とおす</small></button><button class="ans no" data-act="answer" data-v="no">いいえ<small>まってもらう</small></button></div>';
-    return '<div class="answers a4">' + q.candidates.map(function (o) { return '<button class="ans cand" data-act="answer" data-v="' + o + '">' + sweetsPic(o) + G.THEMES.C.outText(o) + '</button>'; }).join('') + '</div>';
+    var th = G.THEMES[q.themeId];
+    if (q.themeId === 'parcel') return '<div class="answers a3">' + ['A', 'B', 'C'].map(function (o) { return '<button class="ans box' + o + '" data-act="answer" data-v="' + o + '">' + o + '<small>の はこ</small></button>'; }).join('') + '</div>';
+    if (q.themeId === 'clinic') return '<div class="answers a2"><button class="ans yes" data-act="answer" data-v="yes">はい<small>とおす</small></button><button class="ans no" data-act="answer" data-v="no">いいえ<small>まってもらう</small></button></div>';
+    if (q.themeId === 'sweets') return '<div class="answers a4">' + q.candidates.map(function (o) { return '<button class="ans cand" data-act="answer" data-v="' + o + '">' + sweetsPic(o) + th.outText(o) + '</button>'; }).join('') + '</div>';
+    if (th.genre === 'table') return '<p class="tap-hint">' + U('👆 ひょうの ぎょうを おして こたえてね', '👆 表の行をタップして答えてください') + '</p>';
+    return '<div class="answers alist">' + th.outcomes.map(function (o) { return '<button class="ans" data-act="answer" data-v="' + o + '">' + tx(th.outText(o)) + '</button>'; }).join('') + '</div>';
   }
   function startTimer() {
     var g = S.game, total = 60000, t0 = Date.now();
@@ -1057,19 +1815,19 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     var g = S.game; if (!g || g.busy) return;
     g.busy = true;
     if (g.tick) { clearInterval(g.tick); g.tick = null; }
-    var q = g.qs[g.idx], ok = v === q.answer;
+    var q = g.qs[g.idx], ok = v !== null && String(v) === String(q.answer);
     var btns = document.querySelectorAll('.ans'); for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
     var delay = 0;
-    if (q.themeId === 'B' && v) {
+    if (q.themeId === 'clinic' && v) {
       var vc = $('vcard'); if (vc) vc.insertAdjacentHTML('beforeend', '<div class="bigstamp ' + v + '">' + (v === 'yes' ? 'とおす' : 'まってね') + '</div>');
       Snd.stamp(); delay = 550;
     }
+    if (G.THEMES[q.themeId].genre === 'table' && v !== null) { var tr = $('trow-' + v); if (tr) tr.classList.add('picked'); delay = 250; }
     later(function () {
-      if (g.diff === 'hard') {
+      if (g.batch) {
         g.results[g.idx] = { ok: ok, v: v, revealed: false };
-        var batchEnd = g.idx === 2 || g.idx === g.qs.length - 1;
-        if (batchEnd) reveal();
-        else { toast(v === null ? '⏱ じかんぎれ…' : '📝 こたえを きろくしたよ'); later(next, 700); }
+        if (g.idx === 2 || g.idx === g.qs.length - 1) reveal();
+        else { toast(v === null ? '⏱ 時間切れ…' : '📝 回答を記録しました'); later(next, 700); }
         return;
       }
       g.results[g.idx] = { ok: ok, v: v, revealed: true };
@@ -1085,108 +1843,143 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     }, delay);
   }
   function praise() {
-    var p = $('praise');
-    p.innerHTML = aiPic('happy') + '<div class="txt">' + PRAISE[Math.floor(Math.random() * PRAISE.length)] + '</div>';
+    var p = $('praise'), L = isAdult() ? PRAISE_A : PRAISE_K;
+    p.innerHTML = aiPic('happy') + '<div class="txt">' + L[Math.floor(Math.random() * L.length)] + '</div>';
     p.classList.add('on'); later(function () { p.classList.remove('on'); }, 1100);
   }
+  function answerChip(q, kanji) {
+    var th = G.THEMES[q.themeId];
+    if (th.genre === 'table') return '<span class="chip p long">' + G.T(th.rowLabel(q.rows[q.answer]), kanji) + '</span>';
+    return chip(q.themeId, q.answer, kanji);
+  }
   function whyText(q, m) {
-    var r = m.rules[q.ruleIndex], n = q.ruleIndex + 1;
-    if (r.fallback) return 'どれにも 当てはまらないので、さいごの <b class="num">' + n + 'ばん</b> に なるよ。';
-    if (q.branch) return '指示書の <b class="num">' + n + 'ばん</b> の「ただし」に 当てはまるよ。';
-    return '指示書の <b class="num">' + n + 'ばん</b> に 当てはまるよ。';
+    var r = m.rules[q.ruleIndex], n = q.ruleIndex + 1, sj = SJ();
+    if (r.fallback) return U('どれにも 当てはまらないので、さいごの <b class="num">' + n + 'ばん</b> に なるよ。', 'どれにも当てはまらないため、最後の <b class="num">' + n + '番</b> になります。');
+    if (q.branch) return U(sj + 'の <b class="num">' + n + 'ばん</b> の「ただし」に 当てはまるよ。', '指示書の <b class="num">' + n + '番</b> の「ただし」に当てはまります。');
+    return U(sj + 'の <b class="num">' + n + 'ばん</b> に 当てはまるよ。', '指示書の <b class="num">' + n + '番</b> に当てはまります。');
   }
   function feedback(q) {
-    var g = S.game, m = g.manual, kj = K();
-    var h = '<div class="card fb-card"><div class="fb-head">' + aiPic('oops') + '<span>おしい！</span></div>';
-    h += '<p>' + tx(G.THEMES[g.theme].noun) + 'は ' + whyText(q, m).replace(/指示書/g, SJ) + '</p>';
-    h += '<ol class="rules" start="' + (q.ruleIndex + 1) + '">' + ruleLi(m, q.ruleIndex, { highlight: q.ruleIndex }) + '</ol>';
-    h += '<p>こたえは ' + chip(g.theme, q.answer, kj) + ' だよ。</p>';
-    if (g.theme === 'C' || g.theme === 'A') h += '<p class="muted">上の ルールから じゅんばんに たしかめて みよう。</p>';
-    h += '<div class="row">' + (g.two ? '' : '<button class="btn butter small" data-act="checkManual" data-i="' + q.ruleIndex + '">📖 たしかめる</button>') + '<button class="btn mint small" data-act="afterFb">つぎへ ▶</button></div></div>';
+    var g = S.game, m = g.manual, kj = K(), th = G.THEMES[g.theme];
+    var h = '<div class="card fb-card"><div class="fb-head">' + aiPic('oops') + '<span>' + U('おしい！', '惜しい！') + '</span></div>';
+    h += '<p>' + tx(th.noun) + U('は ', 'は ') + whyText(q, m) + '</p>';
+    h += '<ol class="rules">' + ruleLi(m, q.ruleIndex, { highlight: q.ruleIndex }) + '</ol>';
+    if (th.genre === 'table') h += '<p>' + U('その えらびかたで ひょうを 見ると、こたえは ', 'その選び方で表を見ると、答えは ') + answerChip(q, kj) + U(' だよ。', ' です。') + '</p>';
+    else h += '<p>' + U('こたえは ', '答えは ') + answerChip(q, kj) + U(' だよ。', ' です。') + '</p>';
+    if (th.genre === 'table') { var tr = $('trow-' + q.answer); if (tr) tr.classList.add('right'); }
+    h += '<div class="row">' + (g.two ? '' : '<button class="btn butter small" data-act="checkManual" data-i="' + q.ruleIndex + '">📖 ' + U('たしかめる', '確認する') + '</button>') + '<button class="btn mint small" data-act="afterFb">' + U('つぎへ ▶', '次へ ▶') + '</button></div></div>';
     showOvl(h);
   }
   function reveal() {
-    var g = S.game, m = g.manual, kj = K();
+    var g = S.game, kj = K();
     var start = g.idx <= 2 ? 0 : 3, end = g.idx, okN = 0, h = '';
     for (var i = start; i <= end; i++) {
       var r = g.results[i], q = g.qs[i]; r.revealed = true;
       if (r.ok) okN++; else { g.mistakes++; if (g.hearts > 0) g.hearts--; }
-      h += '<div class="rev-row"><span class="mk ' + (r.ok ? 'ok' : 'ng') + '">' + (r.ok ? '○' : '×') + '</span><div>' + (i + 1) + 'もんめ：' + (r.ok ? 'せいかい！' : (r.v === null ? 'じかんぎれ。' : '') + 'こたえは ' + chip(g.theme, q.answer, kj) + '<br><span class="muted">' + SJ + 'の ' + (q.ruleIndex + 1) + 'ばん' + (q.branch ? 'の「ただし」' : '') + 'に 当てはまるよ</span>') + '</div></div>';
+      h += '<div class="rev-row"><span class="mk ' + (r.ok ? 'ok' : 'ng') + '">' + (r.ok ? '○' : '×') + '</span><div>' + (i + 1) + '問目：' + (r.ok ? '正解！' : (r.v === null ? '時間切れ。' : '') + '答えは ' + answerChip(q, kj) + '<br><span class="muted">指示書の ' + (q.ruleIndex + 1) + '番' + (q.branch ? 'の「ただし」' : '') + 'に当てはまります</span>') + '</div></div>';
     }
     var n = end - start + 1;
     if (okN === n) Snd.chime(); else Snd.oops();
     $('hearts').innerHTML = heartsHtml(); $('prog').innerHTML = progHtml();
-    showOvl('<div class="card"><div class="fb-head">' + aiPic(okN === n ? 'happy' : 'think') + '<span>こたえあわせ</span></div><p style="font-size:20px;font-weight:800;text-align:center">' + n + 'もん中 ' + okN + 'もん せいかい！</p>' + h +
-      '<button class="btn mint" style="width:100%;margin-top:8px" data-act="afterFb">つぎへ ▶</button></div>');
+    showOvl('<div class="card"><div class="fb-head">' + aiPic(okN === n ? 'happy' : 'think') + '<span>答え合わせ</span></div><p style="font-size:20px;font-weight:800;text-align:center">' + n + '問中 ' + okN + '問 正解</p>' + h +
+      '<button class="btn mint" style="width:100%;margin-top:8px" data-act="afterFb">次へ ▶</button></div>');
   }
   function next() {
     var g = S.game; if (!g) return;
     if (g.quitOpen) { g.pendingNext = true; return; }
     hideOvl();
-    if (g.diff !== 'easy' && g.hearts <= 0) return gameOver();
+    if (!g.easy && g.hearts <= 0) return gameOver();
     if (g.idx >= g.qs.length - 1) return finish();
     g.idx++;
     renderGame();
+  }
+  function nextStageBtn(g) {
+    var th = G.THEMES[g.theme], list = themesOf(th.aud, th.genre), i = list.indexOf(g.theme);
+    if (g.level < 3) return '<button class="btn mint big" style="width:100%" data-act="start" data-t="' + g.theme + '" data-l="' + (g.level + 1) + '">' + U('つぎの レベルへ ▶', '次のレベルへ ▶') + '</button>';
+    if (i < list.length - 1) return '<button class="btn mint big" style="width:100%" data-act="start" data-t="' + list[i + 1] + '" data-l="1">' + U('つぎの ' + SJ() + 'へ ▶', '次の指示書へ ▶') + '</button>';
+    return '';
   }
   function finish() {
     var g = S.game; clearTimers();
     var stars = g.mistakes === 0 ? 3 : g.mistakes <= 2 ? 2 : 1, key = g.diff + '-' + g.theme + '-' + g.level;
     if ((save.stars[key] || 0) < stars) { save.stars[key] = stars; persist(); }
     Snd.fanfare();
-    var msg = stars === 3 ? 'かんぺき！ 一人前の AIだね！' : stars === 2 ? 'すごい！ あと すこしで かんぺき！' : 'クリア おめでとう！ つぎは もっと できるよ！';
+    var msg = stars === 3 ? U('かんぺき！ 一人前の AIだね！', '完璧です！一人前のAIですね。') : stars === 2 ? U('すごい！ あと すこしで かんぺき！', 'お見事！あと少しで完璧です。') : U('クリア おめでとう！ つぎは もっと できるよ！', 'クリアおめでとうございます！');
     var st = ''; for (var i = 0; i < 3; i++) st += '<span class="' + (i < stars ? 'on' : '') + '" style="animation-delay:' + (i * 0.2) + 's">' + starSvg(i < stars) + '</span>';
-    var conf = '<div class="confetti">'; var cols = ['#CDEFE0', '#FFDCCB', '#D6EAFB', '#FFEDB0', '#E6DDF8', '#FF8FA8'];
-    for (var c = 0; c < 26; c++) conf += '<i style="left:' + Math.floor(Math.random() * 100) + '%;background:' + cols[c % cols.length] + ';animation-delay:' + (Math.random() * 1.2).toFixed(2) + 's"></i>';
+    var conf = '<div class="confetti">', cols = ['#CDEFE0', '#FFDCCB', '#D6EAFB', '#FFEDB0', '#E6DDF8', '#FF8FA8'];
+    for (var c = 0; c < (isAdult() ? 14 : 26); c++) conf += '<i style="left:' + Math.floor(Math.random() * 100) + '%;background:' + cols[c % cols.length] + ';animation-delay:' + (Math.random() * 1.2).toFixed(2) + 's"></i>';
     conf += '</div>';
-    var nextBtn = g.level < 3 ? '<button class="btn mint big" style="width:100%" data-act="start" data-t="' + g.theme + '" data-l="' + (g.level + 1) + '">つぎの レベルへ ▶</button>' :
-      (g.theme !== 'C' ? '<button class="btn mint big" style="width:100%" data-act="start" data-t="' + (g.theme === 'A' ? 'B' : 'C') + '" data-l="1">つぎの ' + SJ + 'へ ▶</button>' : '');
-    $('scr-result').innerHTML = conf + '<div class="center-col">' + aiPic('happy') + '<h2>ステージ クリア！</h2><div class="res-stars">' + st + '</div><p style="font-size:18px;font-weight:700;margin:4px 0">' + msg + '</p><p class="muted">まちがい：' + g.mistakes + 'かい</p></div>' +
-      '<div style="display:grid;gap:10px">' + nextBtn + '<div class="row"><button class="btn butter" data-act="start" data-t="' + g.theme + '" data-l="' + g.level + '">もういちど</button><button class="btn sky" data-act="toSelect">ステージ えらび</button></div></div>';
+    $('scr-result').innerHTML = conf + '<div class="center-col">' + aiPic('happy') + '<h2>' + U('ステージ クリア！', 'ステージクリア') + '</h2><div class="res-stars">' + st + '</div><p style="font-size:18px;font-weight:700;margin:4px 0">' + msg + '</p><p class="muted">' + U('まちがい：' + g.mistakes + 'かい', 'ミス：' + g.mistakes + '回') + '</p></div>' +
+      '<div style="display:grid;gap:10px">' + nextStageBtn(g) + '<div class="row"><button class="btn butter" data-act="start" data-t="' + g.theme + '" data-l="' + g.level + '">' + U('もういちど', 'もう一度') + '</button><button class="btn sky" data-act="toSelect">' + U('ステージ えらび', 'ステージ選択') + '</button></div></div>';
     show('scr-result');
   }
   function gameOver() {
     var g = S.game; clearTimers();
-    $('scr-retry').innerHTML = '<div class="center-col">' + aiPic('oops') + '<h2>ちょっと ひとやすみ</h2><p style="line-height:1.7">ハートが なくなっちゃった。<br>でも だいじょうぶ！<br>' + SJ + 'を 上から じっくり 読んで、<br>もういちど やってみよう。</p></div>' +
-      '<div style="display:grid;gap:10px"><button class="btn mint big" data-act="start" data-t="' + g.theme + '" data-l="' + g.level + '">もういちど</button><button class="btn sky" data-act="toSelect">ステージ えらび</button></div>';
+    $('scr-retry').innerHTML = '<div class="center-col">' + aiPic('oops') + '<h2>' + U('ちょっと ひとやすみ', 'ひと休みしましょう') + '</h2><p style="line-height:1.7">' + U('ハートが なくなっちゃった。<br>でも だいじょうぶ！<br>' + SJ() + 'を 上から じっくり 読んで、<br>もういちど やってみよう。', 'ハートがなくなりました。<br>指示書を上から順番に、<br>じっくり読み直してみましょう。') + '</p></div>' +
+      '<div style="display:grid;gap:10px"><button class="btn mint big" data-act="start" data-t="' + g.theme + '" data-l="' + g.level + '">' + U('もういちど', 'もう一度') + '</button><button class="btn sky" data-act="toSelect">' + U('ステージ えらび', 'ステージ選択') + '</button></div>';
     show('scr-retry');
   }
 
-  // ---------- 指示書だけ モード（#manual-A など） ----------
+  // ---------- 指示書だけ モード（#manual-<テーマ>-<レベル>-<むずかしさ>） ----------
   function renderManualView() {
-    var mv = S.mv, h = '<div class="hdr"><button class="icon-btn" data-act="mvBack" aria-label="もどる">←</button><div class="ttl">📖 ' + SJ + 'だけ モード</div><span style="width:48px"></span></div>';
-    h += '<div class="mv-tabs">' + ['A', 'B', 'C'].map(function (t) { return '<button class="' + (mv.theme === t ? 'sel' : '') + '" data-act="mvTheme" data-v="' + t + '">' + G.THEMES[t].icon + ' ' + SJ + t + '</button>'; }).join('') + '</div>';
-    h += '<div class="seg">' + ['easy', 'normal', 'hard'].map(function (d) { return '<button class="' + (mv.diff === d ? 'sel' : '') + '" data-act="mvDiff" data-v="' + d + '">' + G.DIFFS[d].label + '</button>'; }).join('') + '</div>';
+    var mv = S.mv, th = G.THEMES[mv.theme], a = th.aud, g = th.genre;
+    var h = hdr('mvBack', '📖 指示書だけ モード');
+    h += '<div class="scroll" style="flex:1">';
+    h += '<div class="seg">' + ['kids', 'adults'].map(function (x) { return '<button class="' + (a === x ? 'sel' : '') + '" data-act="mvAud" data-v="' + x + '">' + G.AUDS[x].label + '</button>'; }).join('') + '</div>';
+    h += '<div class="seg">' + ['easy', 'normal', 'hard'].map(function (d) { return '<button class="' + (mv.diff === d ? 'sel' : '') + '" data-act="mvDiff" data-v="' + d + '">' + G.LEVELS[a][d].label + '</button>'; }).join('') + '</div>';
+    h += '<div class="seg">' + ['pic', 'text', 'table'].map(function (x) { return '<button class="' + (g === x ? 'sel' : '') + '" data-act="mvGenre" data-v="' + x + '">' + G.GENRES[x].icon + ' ' + G.GENRES[x][a] + '</button>'; }).join('') + '</div>';
+    var list = themesOf(a, g);
+    h += '<div class="mv-tabs" style="grid-template-columns:repeat(' + list.length + ',1fr)">' + list.map(function (t) { var T2 = G.THEMES[t]; return '<button class="' + (mv.theme === t ? 'sel' : '') + '" data-act="mvTheme" data-v="' + t + '">' + T2.icon + ' 指示書' + T2.code + '</button>'; }).join('') + '</div>';
     h += '<div class="seg">' + [1, 2, 3].map(function (l) { return '<button class="' + (mv.level === l ? 'sel' : '') + '" data-act="mvLevel" data-v="' + l + '">レベル' + l + '</button>'; }).join('') + '</div>';
-    h += '<div class="scroll" style="flex:1;padding:14px 2px 6px"><p class="muted" style="margin:0 0 12px;text-align:center">おだいの 画面と 同じ ' + SJ + '・むずかしさ・レベルを えらんでね</p>' + manualHtml(G.getManual(mv.theme, mv.diff, mv.level)) + '</div>';
+    h += '<p class="muted" style="margin:4px 0 16px;text-align:center">おだいの 画面と 同じものを えらんでね</p>' + manualHtml(G.getManual(mv.theme, mv.diff, mv.level)) + '</div>';
     $('scr-manual').innerHTML = h;
   }
-  function setManualHash() { try { history.replaceState(null, '', '#manual-' + S.mv.theme); } catch (e) {} }
+  function setManualHash() { try { history.replaceState(null, '', '#manual-' + S.mv.theme + '-' + S.mv.level + '-' + S.mv.diff); } catch (e) {} }
+  var OLD = { A: 'parcel', B: 'clinic', C: 'sweets' };
   function route() {
-    var m = /^#manual-([ABC])(?:-([123]))?(?:-(easy|normal|hard))?$/.exec(location.hash || '');
+    var h = location.hash || '';
+    var m = /^#manual(?:-([a-zA-Z]+))?(?:-([123]))?(?:-(easy|normal|hard))?$/.exec(h);
     if (m) {
       clearTimers(); S.game = null;
-      S.mv.theme = m[1]; if (m[2]) S.mv.level = +m[2]; if (m[3]) S.mv.diff = m[3];
+      var t = m[1] ? (OLD[m[1]] || m[1]) : S.mv.theme;
+      if (!G.THEMES[t]) t = 'parcel';
+      S.mv.theme = t; if (m[2]) S.mv.level = +m[2]; if (m[3]) S.mv.diff = m[3];
       show('scr-manual'); renderManualView();
-    } else if (!S.game) { renderTitle(); show('scr-title'); }
+      return;
+    }
+    if (h === '#kids' || h === '#adults') {
+      clearTimers(); S.game = null; S.aud = h.slice(1);
+      renderDiff(); show('scr-diff');
+      return;
+    }
+    clearTimers(); S.game = null;
+    renderTitle(); show('scr-title');
   }
+  function goHash(h) { if (location.hash === h) route(); else location.hash = h; }
+  function toTitle() { try { history.pushState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; } route(); }
 
   // ---------- ボタンの動き ----------
   var A = {
-    diff: function (b) { save.diff = b.dataset.v; persist(); renderTitle(); },
-    diffSel: function (b) { save.diff = b.dataset.v; persist(); renderSelect(); },
+    aud: function (b) { goHash('#' + b.dataset.v); },
+    diffPick: function (b) { save.diff[S.aud] = b.dataset.v; persist(); renderGenre(); show('scr-genre'); },
+    genrePick: function (b) { save.genre[S.aud] = b.dataset.v; persist(); renderSelect(); show('scr-select'); },
+    diffSel: function (b) { save.diff[S.aud] = b.dataset.v; persist(); renderSelect(); },
+    toDiff: function () { renderDiff(); show('scr-diff'); },
+    toGenre: function () { renderGenre(); show('scr-genre'); },
     two: function () { save.two = !save.two; persist(); renderTitle(); },
-    timer: function () { save.timer = !save.timer; persist(); renderTitle(); },
+    timer: function () { save.timer = !save.timer; persist(); renderDiff(); },
     sound: function () { save.sound = !save.sound; persist(); Snd.unlock(); renderTitle(); if (save.sound) Snd.chime(); },
     toSelect: function () { clearTimers(); S.game = null; renderSelect(); show('scr-select'); },
-    toTitle: function () { clearTimers(); S.game = null; renderTitle(); show('scr-title'); },
+    toTitle: toTitle,
     howto: howto, hideOvl: hideOvl,
-    toManual: function () { S.mv.diff = save.diff; location.hash = '#manual-A'; },
-    mvBack: function () { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; } renderTitle(); show('scr-title'); },
+    toManual: function () { goHash('#manual'); },
+    mvBack: toTitle,
+    mvAud: function (b) { var g = G.THEMES[S.mv.theme].genre; S.mv.theme = themesOf(b.dataset.v, g)[0]; setManualHash(); renderManualView(); },
+    mvGenre: function (b) { S.mv.theme = themesOf(G.THEMES[S.mv.theme].aud, b.dataset.v)[0]; setManualHash(); renderManualView(); },
     mvTheme: function (b) { S.mv.theme = b.dataset.v; setManualHash(); renderManualView(); },
-    mvDiff: function (b) { S.mv.diff = b.dataset.v; renderManualView(); },
-    mvLevel: function (b) { S.mv.level = +b.dataset.v; renderManualView(); },
+    mvDiff: function (b) { S.mv.diff = b.dataset.v; setManualHash(); renderManualView(); },
+    mvLevel: function (b) { S.mv.level = +b.dataset.v; setManualHash(); renderManualView(); },
     start: function (b) { startStage(b.dataset.t, +b.dataset.l); },
-    locked: function () { toast('🔒 まえの レベルを クリアしてね'); },
+    locked: function () { toast(U('🔒 まえの レベルを クリアしてね', '🔒 前のレベルをクリアしてください')); },
     begin: function () { hideOvl(); },
     manual: function () { openSheet(); },
     closeSheet: closeSheet,
@@ -1197,13 +1990,13 @@ if (typeof module !== 'undefined') module.exports = AIGame;
       var g = S.game; hideOvl(); if (!g) return;
       g.quitOpen = false;
       if (g.pendingNext) { g.pendingNext = false; next(); }
-      else if (g.savedOvl) { showOvl(g.savedOvl.html, g.savedOvl.center); }
+      else if (g.savedOvl) showOvl(g.savedOvl.html, g.savedOvl.center);
       g.savedOvl = null;
     },
     quit: function () {
       var g = S.game, o = $('ovl');
       if (g) { g.quitOpen = true; g.savedOvl = o.classList.contains('on') ? { html: o.innerHTML, center: o.classList.contains('center') } : null; }
-      showOvl('<div class="card" style="text-align:center"><div class="intro-ai" style="justify-content:center">' + aiPic('think') + '</div><h2>ステージを やめる？</h2><div class="row"><button class="btn butter" data-act="resume">つづける</button><button class="btn sky" data-act="toSelect">やめる</button></div></div>', true);
+      showOvl('<div class="card" style="text-align:center"><div class="intro-ai" style="justify-content:center">' + aiPic('think') + '</div><h2>' + U('ステージを やめる？', 'ステージをやめますか？') + '</h2><div class="row"><button class="btn butter" data-act="resume">' + U('つづける', '続ける') + '</button><button class="btn sky" data-act="toSelect">' + U('やめる', 'やめる') + '</button></div></div>', true);
     }
   };
   document.addEventListener('click', function (e) {
