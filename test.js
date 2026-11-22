@@ -93,6 +93,21 @@ ok(Object.keys(G.SCENES).length >= 10, '場面は10以上');
   for (let i = 0; i < 100; i++) { const st = G.pickStage(1, r1); open.add(G.makeSession(st.scene, 1, r1, st.user).qs[0].msg); }
   ok(open.size >= 30, `Lv1 の最初のメッセージが100回中30種類以上 (${open.size})`);
 }
+// 話し方：どのレベルでも全タイプが出て、どれも30%以下
+{
+  const r2 = G.seededRng('style-test');
+  for (let lv = 1; lv <= 10; lv++) {
+    const c = {}; for (let i = 0; i < 600; i++) { const st = G.pickStage(lv, r2); const s = G.userById(st.user).style; c[s] = (c[s] || 0) + 1; }
+    Object.keys(G.STYLE_NAME).forEach(s => ok(c[s] > 0, `Lv${lv} 話し方「${s}」が出る`));
+    const mx = Math.max(...Object.values(c)) / 600; ok(mx <= 0.3, `Lv${lv} どの話し方も30%以下 (${(mx * 100).toFixed(0)}%)`);
+  }
+  // イライラさんは最初から機嫌が低く、言い方ミスで多く下がる
+  for (let lv = 1; lv <= 10; lv++) {
+    ok(G.moodStart(lv, 'iraira') < G.L(lv).mood.max || G.L(lv).mood.max === 1, `Lv${lv} イライラさんは機嫌が低くスタート`);
+    ok(G.moodStart(lv, 'zakkuri') === G.L(lv).mood.max, `Lv${lv} ふつうの人は最大からスタート`);
+    ok(G.moodStep(5, 'tone', lv, 'iraira') === Math.max(0, 5 - G.L(lv).mood.tone - G.STYLE_MOOD.iraira.tone), `Lv${lv} イライラさんの言い方ミス`);
+  }
+}
 // 最初から遊べるレベルの設定
 ok(/var FREE_LEVELS = 7;/.test(uiSrc), '最初から遊べるレベルの設定がある（Lv7）');
 
@@ -125,6 +140,18 @@ for (const id of Object.keys(G.SCENES)) {
       ok(sc.users.includes(sess.user), `${tag} この場面に出られるユーザー`);
       let prevMemo = null;
       ok(new Set(sess.qs.map(q => q.msg)).size === sess.qs.length, `${tag} 1つのチャットに同じメッセージがない`);
+      // 会話の流れ：同じ種類の質問はくり返さない（ちがうパラメータで1回だけ、続けてはだめ）
+      {
+        const ks = sess.qs.map(q => G.kindOf(q)); let rep = 0;
+        ks.forEach((k, i) => { if (ks.indexOf(k) < i) rep++; if (i > 0) ok(k !== ks[i - 1], `${tag} 同じ種類の質問が続かない`); });
+        ok(rep <= 1, `${tag} 同じ種類の質問のくり返しは1回まで (${rep})`);
+        ok(sess.qs.length >= 3, `${tag} チャットは3問以上`);
+      }
+      // 絵文字と「〜」はゆるふわさんだけ
+      {
+        const u = G.userById(sess.user), EMOJI = /[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/u;
+        if (u.style !== 'yurufuwa') sess.qs.forEach(q => ok(!EMOJI.test(q.msg) && !/〜/.test(q.msg), `${tag} ゆるふわさん以外は絵文字・「〜」なし: ${q.msg}`));
+      }
       sess.qs.forEach((q, qi) => {
         made++;
         const it = q.item, mine = myEval(m, it);
@@ -171,6 +198,7 @@ for (const id of Object.keys(G.SCENES)) {
         if (lv >= 6) q.cands.forEach(c => ok(!/[ぁ-ん]{15,}/.test(c.text.replace(/\s/g, '')), `${tag} Lv6〜の返事に長いひらがなの続きがない: ${c.text}`));
         if (sess.kana) [q.msg].concat(q.cands.map(c => c.text)).forEach(s => ok(lv > 2 || !KANJI.test(s.replace(WEEKDAY, '')), `${tag} Lv1〜2の文に漢字なし: ${s}`));
         ok(!/[{}|]|undefined|NaN|null/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 表示の文がきれい`);
+        ok(!/。。|、、|？？/.test(q.msg + q.cands.map(c => c.text).join('')), `${tag} 句読点が重ならない: ${q.msg}`);
         prevMemo = q.memo;
       });
       if (lv <= 2) {

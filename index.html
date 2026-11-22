@@ -272,9 +272,9 @@ var AIGame = (function () {
        0 になると、ユーザーは会話を終えてしまいます。
   ================================================================= */
   var LEVELS = [
-    { lv: 1,  fit: '小学校 低学年',   counts: 1, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 1, tone: 0, ask: 1, perfect: 1 } },
-    { lv: 2,  fit: '小学校 中学年',   counts: 2, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 2, tone: 1, ask: 1, perfect: 1 } },
-    { lv: 3,  fit: '小学校 高学年',   counts: 2, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 1,  fit: '小学校 低学年',   counts: 2, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 1, tone: 0, ask: 1, perfect: 1 } },
+    { lv: 2,  fit: '小学校 中学年',   counts: 3, tier: 1, kanji: false, n: 5, mood: { max: 6, content: 2, tone: 1, ask: 1, perfect: 1 } },
+    { lv: 3,  fit: '小学校 高学年',   counts: 3, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
     { lv: 4,  fit: '中学生',          counts: 3, tier: 2, kanji: true,  n: 5, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
     { lv: 5,  fit: '高校生',          counts: 4, tier: 2, kanji: true,  n: 6, mood: { max: 5, content: 2, tone: 1, ask: 1, perfect: 1 } },
     { lv: 6,  fit: '大学生',          counts: 5, tier: 3, kanji: true,  n: 6, mood: { max: 4, content: 2, tone: 1, ask: 1, perfect: 1 } },
@@ -284,10 +284,10 @@ var AIGame = (function () {
     { lv: 10, fit: '達人',            counts: 9, tier: 3, kanji: true,  n: 8, mood: { max: 3, content: 2, tone: 1, ask: 2, perfect: 0 } }
   ];
   function L(lv) { return LEVELS[lv - 1]; }
-  function moodStep(mood, result, lv) {
-    var s = L(lv).mood;
+  function moodStep(mood, result, lv, style) {
+    var s = L(lv).mood, x = STYLE_MOOD[style] || {};
     if (result === 'perfect') return Math.min(s.max, mood + s.perfect);
-    if (result === 'tone') return Math.max(0, mood - s.tone);
+    if (result === 'tone') return Math.max(0, mood - s.tone - (x.tone || 0));
     if (result === 'askBad') return Math.max(0, mood - s.ask);
     return Math.max(0, mood - s.content);
   }
@@ -301,19 +301,25 @@ var AIGame = (function () {
   var USERS = [
     { id: 'yuto',    name: 'ゆうと',           age: 'child',   who: '小学2年生',             style: 'zakkuri',  pref: 0, kana: true,  color: '#5B8DEF' },
     { id: 'mimi',    name: 'ミミ',             age: 'child',   who: '小学1年生',             style: 'yurufuwa', pref: 0, kana: true,  color: '#EF7FA4' },
-    { id: 'haru',    name: 'ハル',             age: 'child',   who: '小学5年生',             style: 'sekkachi', pref: 1, kana: true,  color: '#F2A43A' },
-    { id: 'kazuko',  name: 'かずこ おばあちゃん', age: 'senior', who: '70だい',              style: 'yurufuwa', pref: 0, kana: true,  color: '#B07CD8' },
-    { id: 'masao',   name: 'まさお おじいちゃん', age: 'senior', who: '70だい',              style: 'teinei',   pref: 2, kana: true,  color: '#6C9A73' },
+    { id: 'haru',    name: 'ハル',             age: 'child',   who: '小学5年生',             style: 'iraira',   pref: 0, kana: true,  color: '#F2A43A' },
+    { id: 'riko',    name: 'りこ',             age: 'child',   who: '小学3年生',             style: 'sekkachi', pref: 1, kana: true,  color: '#57B38A' },
+    { id: 'kazuko',  name: 'かずこ おばあちゃん', age: 'senior', who: '70だい',              style: 'teinei',   pref: 2, kana: true,  color: '#B07CD8' },
+    { id: 'masao',   name: 'まさお おじいちゃん', age: 'senior', who: '70だい',              style: 'tanpaku',  pref: 1, kana: true,  color: '#6C9A73' },
     { id: 'mayu',    name: 'まゆ',             age: 'adult',   who: 'こそだて ちゅうの ママ', style: 'sekkachi', pref: 0, kana: true,  color: '#E0775C' },
     { id: 'takuya',  name: 'たくや',           age: 'adult',   who: 'しゅふの パパ',         style: 'yurufuwa', pref: 2, kana: true,  color: '#4AA6A6' },
-    { id: 'sakura',  name: 'さくら',           age: 'teen',    who: '中学2年生',             style: 'zakkuri',  pref: 0, kana: false, color: '#D46A8C' },
+    { id: 'sakura',  name: 'さくら',           age: 'teen',    who: '中学2年生',             style: 'tanpaku',  pref: 0, kana: false, color: '#D46A8C' },
     { id: 'sota',    name: 'そうた',           age: 'teen',    who: '高校1年生',             style: 'yurufuwa', pref: 2, kana: false, color: '#5C9FDB' },
-    { id: 'sho',     name: '翔',               age: 'adult',   who: '大学生・料理初心者',    style: 'yurufuwa', pref: 0, kana: false, color: '#8E7CC3' },
-    { id: 'koharu',  name: '小春',             age: 'adult',   who: '大学生',                style: 'zakkuri',  pref: 1, kana: false, color: '#E39B4A' },
+    { id: 'sho',     name: '翔',               age: 'adult',   who: '大学生・料理初心者',    style: 'zakkuri',  pref: 0, kana: false, color: '#8E7CC3' },
+    { id: 'koharu',  name: '小春',             age: 'adult',   who: '大学生',                style: 'iraira',   pref: 0, kana: false, color: '#E39B4A' },
     { id: 'kenta',   name: '健太',             age: 'adult',   who: '一人暮らしの会社員',    style: 'sekkachi', pref: 1, kana: false, color: '#3F7CAC' },
     { id: 'haruka',  name: '遥',               age: 'adult',   who: '旅行好きの会社員',      style: 'teinei',   pref: 2, kana: false, color: '#C76D7E' }
   ];
-  var STYLE_NAME = { zakkuri: 'ざっくりさん', yurufuwa: 'ゆるふわさん', teinei: 'ていねいさん', sekkachi: 'せっかちさん' };
+  var STYLE_NAME = { zakkuri: 'ざっくりさん', yurufuwa: 'ゆるふわさん', teinei: 'ていねいさん', sekkachi: 'せっかちさん', tanpaku: 'あっさりさん', iraira: 'イライラさん' };
+  /* ★ 話し方ごとの機嫌の設定（試験的）
+       start … スタートの機嫌を、レベルの max からいくつ下げるか（イライラさんは最初から機嫌が悪い）
+       tone  … 言い方をまちがえたときに、ふつうより多く下がる量 */
+  var STYLE_MOOD = { iraira: { start: -2, tone: 1 } };
+  function moodStart(lv, style) { var x = STYLE_MOOD[style] || {}; return Math.max(1, L(lv).mood.max + (x.start || 0)); }
   function userById(id) { return USERS.filter(function (u) { return u.id === id; })[0]; }
 
   // ---------- 言い回しの部品 ----------
@@ -333,6 +339,7 @@ var AIGame = (function () {
   // AIが知ることのできる手がかりだけを使う：メッセージの言葉・プロフィールの好み・時刻・前のやりとり
   function toneLib(noLate) {
     var L = [
+      R('tone', 2, [E('irr', 1)], 'sorry'),
       R('tone', 3, [E('fb', 1)], 'plain'),
       R('tone', 2, [E('pref', 1)], 'plain'),
       R('tone', 2, [E('pref', 2)], 'kind'),
@@ -342,9 +349,10 @@ var AIGame = (function () {
     ];
     return noLate ? L.filter(function (r) { return r.conds[0].k !== 'late'; }) : L;
   }
-  var TONE_DEF = D('tone', [E('emo', 0), E('hurry', 0), E('pref', 0), E('late', 0), E('fb', 0)], 'plain');
+  var TONE_DEF = D('tone', [E('emo', 0), E('hurry', 0), E('pref', 0), E('late', 0), E('fb', 0), E('irr', 0)], 'plain');
   var TONE_SAY = {
-    emo: [null, V('「💦」「😢」「どうしよう」など {きもちの ことばが ある|気持ちの言葉がある}', '{きもちの ことばが あって|気持ちの言葉があって}', '{きもちの ことばが あれば|気持ちの言葉があれば}')],
+    irr: [null, V('「さっきから」「もう いい」「まだ？」など {イライラした ことばが ある|イライラした言葉がある}', '{イライラした ことばが あって|イライラした言葉があって}', '{イライラした ことばが あれば|イライラした言葉があれば}')],
+    emo: [null, V('「どうしよう」「{しんぱい|不安}」「💦」など {きもちの ことばが ある|気持ちの言葉がある}', '{きもちの ことばが あって|気持ちの言葉があって}', '{きもちの ことばが あれば|気持ちの言葉があれば}')],
     hurry: [null, V('「{いそいでる|急いでる}」「{はやく|早く}」「{てみじかに|手短に}」が ある', '「{いそいでる|急いでる}」などが あって', '「{いそいでる|急いでる}」などが あれば')],
     pref: [null, V('{プロフィールの へんじの このみが「みじかめ」|プロフィールの返事の好みが「短め」}', '{へんじの このみが「みじかめ」で|返事の好みが「短め」で}', '{へんじの このみが「みじかめ」なら|返事の好みが「短め」なら}'),
       V('{プロフィールの へんじの このみが「ていねい」|プロフィールの返事の好みが「ていねい」}', '{へんじの このみが「ていねい」で|返事の好みが「ていねい」で}', '{へんじの このみが「ていねい」なら|返事の好みが「ていねい」なら}')],
@@ -352,8 +360,11 @@ var AIGame = (function () {
     fb: [null, V('{まえに「へんじが ながい」と いわれて いる|前に「返事が長い」と言われている}', '{まえに「ながい」と いわれて いて|前に「長い」と言われていて}', '{まえに「ながい」と いわれて いれば|前に「長い」と言われていれば}')]
   };
   var TONE_DEF_TXT = '{うえの どれにも あてはまらない|上のどれにも当てはまらない}';
-  var TONE_OUT = { plain: '{ようてんだけ こたえる（たんたんと）|要点だけ答える（淡々と）}', kind: '{まず きもちに よりそってから こたえる（しんみに）|まず気持ちに寄り添ってから答える（親身に）}' };
+  var TONE_OUT = { sorry: '{ひとこと あやまってから ようてんだけ こたえる|謝罪をひと言そえて要点だけ答える}', plain: '{ようてんだけ こたえる（たんたんと）|要点だけ答える（淡々と）}', kind: '{まず きもちに よりそってから こたえる（しんみに）|まず気持ちに寄り添ってから答える（親身に）}' };
   var EMO = { k: ['どうしよう〜💦', 'しんぱいだよ〜😢', 'こまった〜😭'], j: ['どうしよう〜💦', '不安…😢', '困った〜😭'] };
+  var EMO_PLAIN = { k: ['どうしよう。', 'しんぱいだな。', 'こまったな。'], j: ['どうしよう。', '不安だな。', '困ったな。'] };
+  var IRR = { k: ['もう！ さっきから きいてるんだけど、', 'もう いいから、', 'ちょっと、まだ？ '], j: ['さっきから聞いてるんだけど、', 'もういい、', 'まだ？ いい加減にしてほしいんだけど、'] };
+  var SORRY = { k: ['おまたせして ごめんね。', 'ごめんね。'], j: ['お待たせしてすみません。', '失礼しました。'] };
   var HURRY = { k: ['いそいでる！', 'はやく おしえて！'], j: ['急いでる！', '手短に。'] };
   var KIND = { k: ['しんぱいだよね。だいじょうぶ！', 'こまったね。いっしょに みよう！'], j: ['ご不安ですよね。確認しました。', 'お困りですよね、すぐ調べました。'] };
 
@@ -377,7 +388,7 @@ var AIGame = (function () {
     return keys[rank];
   }
   SCENES.snack = {
-    id: 'snack', kind: 'photo', kana: true, minLv: 1, title: '{いつもの おやつ|いつものおやつ}', users: ['yuto', 'mimi', 'haru'], noLate: true,
+    id: 'snack', kind: 'photo', timeMatters: true, kana: true, minLv: 1, title: '{いつもの おやつ|いつものおやつ}', users: ['yuto', 'mimi', 'haru', 'riko'], noLate: true,
     slots: [{ id: 'which', t: '{どの おやつ？|どのおやつ？}' }, { id: 'care', t: '{きを つける こと|気をつけること}' }],
     space: function () { return facts({ word: 4, sick: 2, night: 2 }); },
     lib: [R('which', 1, [E('word', 1)], 'yday'), R('which', 1, [E('word', 2)], 'sib'), R('which', 2, [E('word', 3)], 'second'), R('care', 3, [E('night', 1)], 'after'), R('care', 2, [E('sick', 1)], 'pudding')],
@@ -538,7 +549,7 @@ var AIGame = (function () {
   var GOMI_CAT = ['{もえるごみ|燃えるごみ}', 'プラスチック', '{かみ|紙}', '{かん・びん|缶・びん}', '{もえないごみ|燃えないごみ}'];
   var GOMI_OF = [1, 2, 3, 3];
   SCENES.gomi = {
-    id: 'gomi', kind: 'table', kana: true, minLv: 1, title: '{これ いつ だせば いい？|これ、いつ出せばいい？}', users: KANA_USERS, noLate: true,
+    id: 'gomi', kind: 'table', timeMatters: true, kana: true, minLv: 1, title: '{これ いつ だせば いい？|これ、いつ出せばいい？}', users: KANA_USERS, noLate: true,
     slots: [{ id: 'cat', t: '{なにの ごみ？|何のごみ？}' }, { id: 'day', t: '{いつ だす？|いつ出す？}' }],
     space: function () { return facts({ item: 4, dirty: 2, broken: 2, ask: 2, past8: 2 }).filter(function (f) { return !(f.dirty && f.item !== 0) && !(f.broken && f.item !== 3); }); },
     lib: [R('cat', 1, [E('dirty', 1)], 'burn'), R('cat', 3, [E('broken', 1)], 'nonburn'), R('day', 1, [E('ask', 1)], 'tmr'), R('day', 2, [E('past8', 1)], 'skip')],
@@ -588,7 +599,7 @@ var AIGame = (function () {
   // =====================================================================
   var LK = ['傘', '財布', '手袋', '本'], STAFF = ['佐藤', '鈴木', '高橋', '伊藤', '渡辺', '山本', '中村'];
   SCENES.lost = {
-    id: 'lost', kind: 'photo', kana: false, minLv: 3, title: '「これ、誰の？」', users: ['kenta', 'haruka', 'koharu', 'sota', 'sho'], noLate: true,
+    id: 'lost', kind: 'photo', timeMatters: true, kana: false, minLv: 3, title: '「これ、誰の？」', users: ['kenta', 'haruka', 'koharu', 'sota', 'sho'], noLate: true,
     slots: [{ id: 'who', t: '持ち主の推定' }, { id: 'handle', t: '品物ごとの扱い' }],
     space: function () { return facts({ when: 4, kind: 4, tag: 2 }); },
     lib: [R('who', 3, [E('tag', 1)], 'tagged'), R('who', 1, [E('when', 1)], 'morning'), R('who', 2, [E('when', 2)], 'noon'), R('who', 2, [E('when', 3)], 'yday'),
@@ -712,7 +723,7 @@ var AIGame = (function () {
       for (var i = 0; i < 6; i++) rows.push(CITIES.map(function () { var s = ri(rng, 0, 2); return { s: s, p: s === 0 ? ri(rng, 0, 2) * 10 : s === 1 ? ri(rng, 2, 5) * 10 : ri(rng, 5, 9) * 10 }; }));
       (this.m ? this.m.rules : []).forEach(function (r) { if (r.slot === 'day') { var o = self.dayOff(r.out, { today: today }); if (offs.indexOf(o) < 0) offs.push(o); } });
       var hasAsk = this.m && this.m.rules.some(function (r) { return r.out === 'ask'; });
-      return { today: today, rows: rows, home: c[0], office: c[1], tripCity: c[2], tripDay: offs.length ? pick(rng, offs) : 1, nohome: hasAsk && rng() < 0.5 ? 1 : 0 };
+      return { today: today, rows: rows, home: c[0], office: c[1], tripCity: c[2], tripDay: offs.length && this.m && this.m.rules.some(function (r) { return r.out === 'trip'; }) ? pick(rng, offs) : 5, nohome: hasAsk && rng() < 0.5 ? 1 : 0 };
     },
     asks: { place: {
       needs: ['named'],
@@ -754,17 +765,18 @@ var AIGame = (function () {
   // =====================================================================
   var SHOPS = [['カフェ木もれ日', 'カフェ'], ['らーめん大地', 'ラーメン'], ['ベーカリー麦', 'パン'], ['定食こまち', '定食'], ['スパイス屋', 'カレー']];
   SCENES.shop = {
-    id: 'shop', kind: 'table', kana: false, minLv: 3, title: '「いつもの店、今から行ける？」', users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'takuya', 'mayu'], noLate: true,
+    id: 'shop', kind: 'table', timeMatters: true, kana: false, minLv: 3, title: '「いつもの店、今から行ける？」', followNeedsAns: true, users: ['sakura', 'sota', 'sho', 'koharu', 'kenta', 'haruka', 'takuya', 'mayu'], noLate: true,
     slots: [{ id: 'which', t: 'どの店か' }, { id: 'ans', t: '答える内容' }],
-    space: function () { return facts({ word: 3, ask: 2, closed: 2 }); },
-    lib: [R('which', 1, [E('word', 1)], 'near'), R('which', 2, [E('word', 2)], 'cheap'), R('ans', 1, [E('ask', 1)], 'until'), R('ans', 3, [E('closed', 1)], 'holiday')],
+    space: function () { return facts({ word: 4, ask: 3, closed: 2 }); },
+    lib: [R('which', 1, [E('word', 1)], 'near'), R('which', 2, [E('word', 2)], 'cheap'), core(R('which', 2, [E('word', 3)], 'prevQ')), R('ans', 1, [E('ask', 1)], 'until'), R('ans', 2, [E('ask', 2)], 'walk'), R('ans', 3, [E('closed', 1)], 'holiday')],
     defaults: [D('which', [E('word', 0)], 'usual'), D('ans', [E('ask', 0), E('closed', 0)], 'can')],
     phr: {
-      word: [sayA('いつもの店'), sayA('近くの店'), sayA('安い店')],
-      ask: [V('「今から」と言われた', '「今から」と言われて', '「今から」と言われたら'), V('「何時まで」と聞かれた', '「何時まで」と聞かれて', '「何時まで」と聞かれたら')],
+      word: [sayA('いつもの店'), sayA('近くの店'), sayA('安い店'), sayA('そこ')],
+      ask: [V('「今から」と言われた', '「今から」と言われて', '「今から」と言われたら'), V('「何時まで」と聞かれた', '「何時まで」と聞かれて', '「何時まで」と聞かれたら'), V('「何分」と聞かれた', '「何分」と聞かれて', '「何分」と聞かれたら')],
       closed: [V('今日がその店の定休日ではない', '今日が定休日ではなく', '今日が定休日でなければ'), V('今日がその店の定休日である', '今日がその店の定休日で', '今日がその店の定休日なら')]
     },
     outs: {
+      prevQ: '前の質問で答えた店', walk: '歩いて何分かを答える',
       usual: '来店履歴で最も多い店', near: '徒歩10分以内で最も近い店', cheap: '予算が最も安い店',
       can: '「今の時刻＋歩く時間」に営業中なら「行けます」、そうでなければ「間に合いません」', until: '閉店時刻を答える', holiday: '「今日は定休日です」と答える（時刻より優先）'
     },
@@ -785,16 +797,18 @@ var AIGame = (function () {
       }
     },
     realize: function (it, S, vals, prev, rng) {
-      var idx = S[vals.which];
+      if (vals.which === 'prevQ' && (!prev || prev.ans === vals.ans)) return null;
+      var idx = vals.which === 'prevQ' ? prev.idx : S[vals.which];
       if ((S.rows[idx].off === S.today.getUTCDay() ? 1 : 0) !== it.closed) return null;
-      return { msg: ['いつもの店', '近くの店', '安い店'][it.word] + '、' + pick(rng, [['今から行ける？', '今から行けるかな？', '今から行って間に合う？'], ['何時まで？', '何時までやってる？', '何時まで開いてる？']][it.ask]), time: S.now };
+      return { msg: pick(rng, [['いつもの店', 'いつものところ'], ['近くの店', 'この辺の店'], ['安い店', '安めの店'], ['じゃあ、そこ', 'そこって', 'で、そこ']][it.word]) + '、' + pick(rng, [['今から行ける？', '今から行けるかな？', '今から行って間に合う？'], ['何時まで？', '何時までやってる？', '何時まで開いてる？'], ['歩いて何分？', '何分で着く？', 'ここから何分？']][it.ask]), time: S.now };
     },
-    content: function (vals, it, S) {
-      var r = S.rows[S[vals.which]], t;
+    content: function (vals, it, S, prev) {
+      var idx = vals.which === 'prevQ' ? prev.idx : S[vals.which], r = S.rows[idx], t;
       if (vals.ans === 'holiday') t = r.name + 'は、今日は定休日です。';
+      else if (vals.ans === 'walk') t = r.name + 'までは徒歩' + r.walk + '分です。';
       else if (vals.ans === 'until') t = r.name + 'は' + hm(r.close) + 'までです。';
       else { var at = S.now + r.walk; t = at >= r.open && at < r.close ? r.name + 'に行けます（' + hm(r.close) + 'まで）。' : r.name + 'は間に合いません（' + hm(r.open) + '〜' + hm(r.close) + '）。'; }
-      return { key: t, text: t };
+      return { key: t, text: t, memo: { idx: idx, ans: vals.ans } };
     },
     context: function (S) {
       return { info: [['今日', dj(S.today)], ['今の時刻', hm(S.now)], ['来店履歴', S.hist.map(function (i) { return SHOPS[i][0]; }).join('、')]],
@@ -806,7 +820,7 @@ var AIGame = (function () {
   // 9. 乗り換え「何時の電車に乗ればいい？」（表）
   // =====================================================================
   SCENES.train = {
-    id: 'train', kind: 'table', kana: false, minLv: 3, title: '「何時の電車に乗ればいい？」', users: ['sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'kazuko'], noLate: true,
+    id: 'train', kind: 'table', timeMatters: true, kana: false, minLv: 3, title: '「何時の電車に乗ればいい？」', users: ['sota', 'sho', 'koharu', 'kenta', 'haruka', 'masao', 'kazuko'], noLate: true,
     slots: [{ id: 'goal', t: '「いつまでに」の解釈' }, { id: 'pick', t: 'どの電車を選ぶか' }],
     space: function () { return facts({ word: 4, safe: 2 }); },
     lib: [R('goal', 1, [E('word', 1)], 'plan'), R('goal', 2, [E('word', 2)], 'first'), R('goal', 3, [E('word', 3)], 'now'), R('pick', 2, [E('safe', 1)], 'early')],
@@ -878,8 +892,8 @@ var AIGame = (function () {
     realize: function (it, S, vals, prev, rng) {
       if (it.follow && !prev) return null;
       if ((S.tie && it.word === 0 && !it.follow ? 1 : 0) !== it.tie) return null;
-      var w = it.follow ? pick(rng, ['それって', 'それ', 'じゃあそれって']) : pick(rng, [['あれ', 'あれって', 'あれさ', 'ねえ、あれ'], ['次の予定', '次の予定って', '次の予定さ'], [S.fam + 'の誕生日', S.fam + 'の誕生日って', S.fam + 'の誕生日さ'], ['来週の予定', '来週の予定って', '来週のやつ']][it.word]);
-      return { msg: w + '、' + pick(rng, [['何日だっけ？', 'いつの予定だっけ？', '何日だった？'], ['あと何日？', 'まであと何日？', 'あと何日だっけ？']][it.ask]) };
+      var w = it.follow ? pick(rng, ['それって', 'それ', 'じゃあそれって']) : pick(rng, [['あれ', 'あれって', 'あれさ'], ['次の予定', '次の予定って', '次の予定さ'], [S.fam + 'の誕生日', S.fam + 'の誕生日って', S.fam + 'の誕生日さ'], ['来週の予定', '来週の予定って', '来週のやつ']][it.word]);
+      return { msg: w + '、' + pick(rng, [['何日だっけ？', 'いつの予定だっけ？', '何日だった？'], ['あと何日？', 'あと何日だっけ？', 'あと何日ある？']][it.ask]) };
     },
     pickEv: function (v, S, prev, x) {
       if (v === 'prevQ') return prev.ev;
@@ -1011,8 +1025,11 @@ var AIGame = (function () {
   function kmd(d) { return (d.getUTCMonth() + 1) + 'がつ ' + d.getUTCDate() + 'にち'; }
   function jmd(d) { return (d.getUTCMonth() + 1) + '月' + d.getUTCDate() + '日'; }
   function tableScene(o) {
+    // どの ばめんにも「そこ」（まえに こたえた もの）を たす
+    var F = o.follow;
+    o.words = o.words.concat([{ kw: F.kw, follow: true, say: F.say, sayJ: F.sayJ, out: 'prevQ', tier: 1, text: '{まえの しつもんで こたえた もの|前の質問で答えたもの}' }]);
     var sc = {
-      id: o.id, kind: 'table', kana: true, minLv: 1, title: o.title, users: KANA_USERS, noLate: true,
+      id: o.id, kind: 'table', kana: true, minLv: 1, followNeedsAns: true, title: o.title, users: KANA_USERS, noLate: true,
       slots: [{ id: 'which', t: o.whichT }, { id: 'ans', t: o.ansT }],
       space: function () { return facts({ word: o.words.length, ask: o.asks.length }); },
       lib: o.words.slice(1).map(function (w, i) { return R('which', w.tier, [E('word', i + 1)], w.out); })
@@ -1025,21 +1042,25 @@ var AIGame = (function () {
       outs: {},
       session: function (rng) {
         for (var t = 0; t < 300; t++) {
-          var S = o.make(rng), idx = o.words.map(function (w) { return w.pick(S); });
+          var S = o.make(rng), idx = o.words.filter(function (w) { return !w.follow; }).map(function (w) { return w.pick(S); });
           if (idx.every(function (x) { return x != null && x >= 0; }) && new Set(idx).size === idx.length) return S;
         }
         throw new Error('session ' + o.id);
       },
       realize: function (it, S, vals, prev, rng) {
         var w = o.words[it.word], a = o.asks[it.ask];
+        if (w.follow && (!prev || prev.ans === vals.ans)) return null;
         if (!KJ) return { msg: pick(rng, w.say) + ' ' + pick(rng, a.say) };
         var aw = pick(rng, a.sayJ);
-        return { msg: pick(rng, w.sayJ) + (/^(まで|って|の)/.test(aw) ? '' : '、') + aw };
+        var wj = pick(rng, w.sayJ);
+        if (/って$/.test(wj) && /^って/.test(aw)) aw = aw.slice(2);
+        return { msg: wj + (/^(まで|って|の)/.test(aw) || /って$/.test(wj) ? '' : '、') + aw };
       },
-      content: function (vals, it, S) {
+      content: function (vals, it, S, prev) {
         var w = o.words.filter(function (x) { return x.out === vals.which; })[0], a = o.asks.filter(function (x) { return x.out === vals.ans; })[0];
-        var t = a.val(S.rows[w.pick(S)], S);
-        return { key: t, text: t };
+        var row = w.follow ? prev.row : w.pick(S);
+        var t = a.val(S.rows[row], S);
+        return { key: t, text: t, memo: { row: row, ans: vals.ans } };
       },
       context: o.context
     };
@@ -1053,7 +1074,7 @@ var AIGame = (function () {
   var TV_NAMES = ['{どうぶつ ずかん|動物図鑑}', '{ゆかいな うた|ゆかいな歌}', '{クイズ なんでしょう|クイズ何でしょう}', '{おりょうり きょうしつ|お料理教室}', 'ニュース', 'サッカー', '{まほうの じかん|魔法の時間}', '{むかしばなし|昔話}'];
   var TV_ANIME = ['{アニメ ほしの こ|アニメ 星の子}', '{アニメ もりの なかま|アニメ 森の仲間}', 'アニメ ロボくん'];
   tableScene({
-    id: 'tv', title: '{あの ばんぐみ なんじから？|あの番組、何時から？}', whichT: '{どの ばんぐみ？|どの番組？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'tv', follow: { kw: '{その ばんぐみ|その番組}', say: ['じゃあ その ばんぐみ', 'その ばんぐみって', 'さっきの ばんぐみ'], sayJ: ['じゃあ、その番組', 'その番組って', 'さっきの番組'] }, title: '{あの ばんぐみ なんじから？|あの番組、何時から？}', whichT: '{どの ばんぐみ？|どの番組？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var names = shuffle(rng, shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME).slice(0, 2))), t = 16 * 60, rows = [];
       names.forEach(function (n) { var len = pick(rng, [15, 30, 30, 45]); rows.push({ name: n, s: t, ch: ri(rng, 1, 9), len: len, anime: TV_ANIME.indexOf(n) >= 0 }); t += len; });
@@ -1078,7 +1099,7 @@ var AIGame = (function () {
   // バスの じこくひょう
   var BUS_DEST = ['{えき|駅}', '{がっこう|学校}', '{びょういん|病院}', '{こうえん|公園}', '{としょかん|図書館}'];
   tableScene({
-    id: 'bus', title: '{つぎの バス なんじ？|次のバス、何時？}', whichT: '{どの バス？|どのバス？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'bus', follow: { kw: '{その バス|そのバス}', say: ['じゃあ その バス', 'その バスって', 'さっきの バス'], sayJ: ['じゃあ、そのバス', 'そのバスって', 'さっきのバス'] }, title: '{つぎの バス なんじ？|次のバス、何時？}', whichT: '{どの バス？|どのバス？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var t = ri(rng, 7, 15) * 60 + ri(rng, 0, 20), rows = [];
       for (var i = 0; i < 6; i++) { t += ri(rng, 6, 18); rows.push({ t: t, dest: pick(rng, BUS_DEST), nb: ri(rng, 1, 4) }); }
@@ -1102,7 +1123,7 @@ var AIGame = (function () {
   var FAM = ['パパ', 'ママ', '{おねえちゃん|お姉ちゃん}', 'おじいちゃん', 'おばあちゃん', '{いとこの ケン|いとこのケン}'];
   var LIKES = ['{おはな|お花}', 'ケーキ', '{えほん|絵本}', '{おちゃ|お茶}', '{ぼうし|帽子}', '{えのぐ|絵の具}', '{てぶくろ|手袋}', 'クッキー'];
   tableScene({
-    id: 'bday', title: '{たんじょうび いつ？|誕生日、いつ？}', whichT: '{だれの たんじょうび？|誰の誕生日？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'bday', follow: { kw: '{その ひと|その人}', say: ['じゃあ その ひと', 'その ひとって', 'さっきの ひと'], sayJ: ['じゃあ、その人', 'その人って', 'さっきの人'] }, title: '{たんじょうび いつ？|誕生日、いつ？}', whichT: '{だれの たんじょうび？|誰の誕生日？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var today = new Date(Date.UTC(2026, ri(rng, 0, 11), ri(rng, 1, 28))), offs = shuffle(rng, range(60).map(function (i) { return i + 2; })).slice(0, 5);
       var who = ['ママ'].concat(shuffle(rng, FAM.filter(function (f) { return f !== 'ママ'; })).slice(0, 4)), likes = shuffle(rng, LIKES);
@@ -1127,7 +1148,7 @@ var AIGame = (function () {
   var LESSONS = [['ピアノ', '{がくふ|楽譜}'], ['{すいえい|水泳}', '{みずぎ|水着}'], ['サッカー', 'ボール'], ['{えいご|英語}', '{えいごの ノート|英語のノート}'], ['{しゅうじ|習字}', '{ふで|筆}'], ['{たいそう|体操}', '{たいそうふく|体操服}']];
   var HOMEWORK = ['{さんすう プリント|算数プリント}', '{かんじ ドリル|漢字ドリル}', '{にっき|日記}', '{おんどく|音読}', '{けいさん カード|計算カード}', '{えにっき|絵日記}'];
   tableScene({
-    id: 'lesson', title: '{あした なに ある？|明日、何がある？}', whichT: '{いつの こと？|いつのこと？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'lesson', follow: { kw: '{その ひ|その日}', say: ['じゃあ その ひ', 'その ひって', 'さっきの ひ'], sayJ: ['じゃあ、その日', 'その日って', 'さっきの日'] }, title: '{あした なに ある？|明日、何がある？}', whichT: '{いつの こと？|いつのこと？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var today = weekdayToday(rng), rows = [];
       for (var i = 0; i < 6; i++) { var l = pick(rng, LESSONS), d = addDays(today, i); rows.push({ d: J(dk(d), dj(d)), les: l[0], item: l[1], hw: pick(rng, HOMEWORK) }); }
@@ -1152,7 +1173,7 @@ var AIGame = (function () {
   var PETS = [['{いぬ|犬}', ['ポチ', 'コロ', 'ハチ']], ['{ねこ|猫}', ['タマ', 'ミケ', 'クロ']], ['{とり|鳥}', ['ピーちゃん', 'チュン']], ['うさぎ', ['ぴょん', 'モモ']], ['カメ', ['カメきち', 'のろ']]];
   var PET_FOOD = ['ドッグフード', 'キャットフード', '{とりの えさ|鳥のえさ}', 'にんじん', '{カメの えさ|カメのえさ}'];
   tableScene({
-    id: 'pet', title: '{うちの こ ごはん いつ？|うちの子のごはん、いつ？}', whichT: '{どの ペット？|どのペット？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'pet', follow: { kw: '{その こ|その子}', say: ['じゃあ その こ', 'その こって', 'さっきの こ'], sayJ: ['じゃあ、その子', 'その子って', 'さっきの子'] }, title: '{うちの こ ごはん いつ？|うちの子のごはん、いつ？}', whichT: '{どの ペット？|どのペット？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var ks = [0].concat(shuffle(rng, [1, 2, 3, 4]).slice(0, 3)), years = shuffle(rng, [1, 2, 3, 4, 5, 6]).slice(0, 4);
       var rows = shuffle(rng, ks).map(function (k, i) { var h1 = pick(rng, [7, 8, 12]), h2 = pick(rng, [5, 6, 7]); return { name: pick(rng, PETS[k][1]), kind: PETS[k][0], food: PET_FOOD[k], time: J('あさ ' + h1 + 'じと よる ' + h2 + 'じ', '朝' + h1 + '時と夜' + h2 + '時'), y: years[i] }; });
@@ -1175,7 +1196,7 @@ var AIGame = (function () {
   // おみせ
   var KSHOPS = [['{パンやさん|パン屋さん}', 'パン'], ['{ほんやさん|本屋さん}', '本'], ['{おもちゃやさん|おもちゃ屋さん}', 'おもちゃ'], ['{やおやさん|八百屋さん}', '野菜'], ['{くすりやさん|薬屋さん}', '薬'], ['{はなやさん|花屋さん}', '花'], ['{おかしやさん|お菓子屋さん}', 'お菓子']];
   tableScene({
-    id: 'kshop', title: '{いつもの おみせ やってる？|いつものお店、やってる？}', whichT: '{どの おみせ？|どのお店？}', ansT: '{なにを こたえる？|何を答える？}',
+    id: 'kshop', follow: { kw: '{その おみせ|その店}', say: ['じゃあ その おみせ', 'その おみせって', 'さっきの おみせ'], sayJ: ['じゃあ、その店', 'その店って', 'さっきの店'] }, title: '{いつもの おみせ やってる？|いつものお店、やってる？}', whichT: '{どの おみせ？|どのお店？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
       var sh = shuffle(rng, KSHOPS).slice(0, 5), walks = shuffle(rng, range(18).map(function (i) { return i + 3; })).slice(0, 5);
       var rows = sh.map(function (s, i) { return { name: s[0], sells: s[1], walk: walks[i], close: ri(rng, 17, 21) }; });
@@ -1201,16 +1222,18 @@ var AIGame = (function () {
     var sc = SCENES[id];
     var prefs0 = sc.users.map(function (u) { return userById(u).pref; });
     sc.slots = sc.slots.concat([{ id: 'tone', t: '{どんな いいかた？|返事の言い方}' }]);
-    sc.lib = sc.lib.concat(toneLib(sc.noLate).filter(function (r) { return r.conds[0].k !== 'pref' || prefs0.indexOf(r.conds[0].v) >= 0; }));
-    sc.defaults = sc.defaults.concat([sc.noLate ? D('tone', [E('emo', 0), E('hurry', 0), E('pref', 0), E('fb', 0)], 'plain') : TONE_DEF]);
+    var hasIrr = sc.users.some(function (u) { return userById(u).style === 'iraira'; });
+    sc.lib = sc.lib.concat(toneLib(sc.noLate).filter(function (r) { var k = r.conds[0].k; return (k !== 'pref' || prefs0.indexOf(r.conds[0].v) >= 0) && k !== 'irr'; }));
+    // イライラさんが出る場面では「イライラ → あやまって要点だけ」をいつも指示書に入れる（いちばん上）
+    sc.defaults = sc.defaults.concat(hasIrr ? [D('tone', [E('irr', 1)], 'sorry')] : []).concat([sc.noLate ? D('tone', [E('emo', 0), E('hurry', 0), E('pref', 0), E('fb', 0), E('irr', 0)], 'plain') : TONE_DEF]);
     var sp0 = sc.space, prefs = sc.users.map(function (u) { return userById(u).pref; });
     sc.space = function () {
-      var tf = facts(sc.noLate ? { emo: 2, hurry: 2, pref: 3, fb: 2 } : { emo: 2, hurry: 2, pref: 3, late: 2, fb: 2 }).filter(function (t) { return prefs.indexOf(t.pref) >= 0; }), out = [];
+      var tf = facts(sc.noLate ? { emo: 2, hurry: 2, pref: 3, fb: 2, irr: 2 } : { emo: 2, hurry: 2, pref: 3, late: 2, fb: 2, irr: 2 }).filter(function (t) { return prefs.indexOf(t.pref) >= 0 && !(t.irr && t.emo); }), out = [];
       sp0.call(sc).forEach(function (c) { tf.forEach(function (t) { var o = Object.assign({}, c, t); if (sc.noLate) o.late = 0; out.push(o); }); });
       return out;
     };
     sc.say = function (a) { return TONE_SAY[a.k] ? TONE_SAY[a.k][a.v] : sc.phr[a.k][a.v]; };
-    sc.outs.plain = TONE_OUT.plain; sc.outs.kind = TONE_OUT.kind;
+    sc.outs.plain = TONE_OUT.plain; sc.outs.kind = TONE_OUT.kind; sc.outs.sorry = TONE_OUT.sorry;
   });
 
   // ---------- ルールの判定 ----------
@@ -1236,7 +1259,7 @@ var AIGame = (function () {
   // ---------- 指示書の文章 ----------
   function ruleParts(sceneId, rule, kanji) {
     var sc = SCENES[sceneId], f = rule.conds.map(function (c) { return sc.say(c); }), cond;
-    if (rule.def && rule.slot === 'tone') cond = TONE_DEF_TXT + ' とき';
+    if (rule.def && rule.slot === 'tone' && rule.conds[0].k !== 'irr') cond = TONE_DEF_TXT + ' とき';
     else cond = f.length === 1 ? f[0].a + ' とき' : f.slice(0, -1).map(function (x) { return x.t; }).join('、') + '、' + f[f.length - 1].a + ' とき';
     return { cond: T(cond, kanji), out: T(sc.outs[rule.out], kanji) };
   }
@@ -1250,7 +1273,9 @@ var AIGame = (function () {
     var rules = [];
     slots.forEach(function (sid) {
       sc.lib.forEach(function (r, i) { if (r.slot === sid && idxs.indexOf(i) >= 0) rules.push(Object.assign({ lib: i }, r)); });
-      sc.defaults.forEach(function (d) { if (d.slot === sid) rules.push(Object.assign({ lib: -1 }, d)); });
+      var irrD = sc.defaults.filter(function (d) { return d.slot === sid && d.conds[0].k === 'irr'; });
+      if (irrD.length) { var at = rules.findIndex(function (r) { return r.slot === sid; }); rules.splice(at < 0 ? rules.length : at, 0, Object.assign({ lib: -1 }, irrD[0])); }
+      sc.defaults.forEach(function (d) { if (d.slot === sid && d.conds[0].k !== 'irr') rules.push(Object.assign({ lib: -1 }, d)); });
     });
     return rules;
   }
@@ -1294,28 +1319,41 @@ var AIGame = (function () {
       for (var lv = sc.minLv; lv <= 10 && ok; lv++) {
         var cfg = L(lv), elig = sc.lib.map(function (r, i) { return i; }).filter(function (i) { return sc.lib[i].tier <= cfg.tier && !used[i]; });
         var core = elig.filter(function (i) { return sc.lib[i].core; }), rest = elig.filter(function (i) { return !sc.lib[i].core; });
-        var pool = shuffle(rng, core).concat(shuffle(rng, rest)), change = null, added = -1, target = cfg.counts;
+        var restC = rest.filter(function (i) { return sc.lib[i].slot !== 'tone'; }), restT = rest.filter(function (i) { return sc.lib[i].slot === 'tone'; });
+        var pool = lv === sc.minLv ? shuffle(rng, core).concat(shuffle(rng, restC), shuffle(rng, restT)) : shuffle(rng, core).concat(shuffle(rng, rest)), change = null, added = -1, target = cfg.counts;
         if (lv === sc.minLv) { if (pool.length < 1) { ok = false; break; } var n0 = Math.min(target, pool.length); cur = pool.slice(0, n0); cur.forEach(function (i) { used[i] = 1; }); }
         else if (pool.length) {
           added = pool[0]; used[added] = 1;
-          if (target > cur.length) change = 'add'; else { cur = cur.slice(1); change = 'replace'; }
+          if (target > cur.length) change = 'add'; else { var isT = sc.lib[added].slot === 'tone', ro = cur.filter(function (i) { return (sc.lib[i].slot === 'tone') === isT; })[0]; if (ro === undefined) ro = cur[0]; cur = cur.filter(function (i) { return i !== ro; }); change = 'replace'; }
           cur = cur.concat([added]);
         }
         var slots = activeSlots(sc, cfg.tier).filter(function (sid) { return sid === 'tone' || sc.lib.some(function (r, i) { return r.slot === sid && cur.indexOf(i) >= 0; }) || true; });
         var m = { scene: sceneId, level: lv, slots: slots, rules: assemble(sc, slots, cur), change: change, kanji: cfg.kanji };
         m.newIndex = added < 0 ? -1 : m.rules.findIndex(function (r) { return r.lib === added; });
-        if (!validate(m)) ok = false; else levels[lv] = m;
+        var ansOuts = {}; m.rules.forEach(function (r) { if (r.slot === 'ans') ansOuts[r.out] = 1; });
+        var followBad = sc.followNeedsAns && m.rules.some(function (r) { return r.out === 'prevQ'; }) && Object.keys(ansOuts).length < 2;
+        if (followBad || !validate(m) || plainKinds(m) < 3) ok = false; else levels[lv] = m;
         prevCount = cur.length;
       }
       if (ok) return levels;
     }
     throw new Error('指示書を作れませんでした ' + sceneId);
   }
+  // 「前の答え」を使わない質問の種類の数（会話がくり返しにならないための目安）
+  function plainKinds(m) {
+    var ks = {};
+    analyze(m).valid.forEach(function (it) { var e = evaluate(m, it), v = {}; Object.keys(e.vals).forEach(function (k) { if (k !== 'tone') v[k] = e.vals[k]; }); var s = JSON.stringify(v); if (!/"prev/.test(s)) ks[s] = 1; });
+    return Object.keys(ks).length;
+  }
   var chainCache = {};
   function getManual(sceneId, lv) {
     var chain = chainCache[sceneId] || (chainCache[sceneId] = buildChain(sceneId));
     var m = chain[lv];
-    if (m && !m.buckets) { var a = analyze(m); m.valid = a.valid; m.buckets = a.buckets; }
+    if (m && !m.buckets) {
+      var a = analyze(m), ks = {}; m.valid = a.valid; m.buckets = a.buckets;
+      a.valid.forEach(function (it) { var e = evaluate(m, it); ks[kindOf({ vals: e.vals, askCorrect: m.slots.some(function (s) { return e.vals[s] === 'ask'; }) })] = 1; });
+      m.maxKinds = Object.keys(ks).length;
+    }
     return m || null;
   }
 
@@ -1332,12 +1370,16 @@ var AIGame = (function () {
 
   // ---------- メッセージに話し方（気持ち・急ぎ・ていねい…）をつける ----------
   var FLUFF = { k: ['ねえねえ、', 'あのね〜、'], j: ['ねえねえ〜、', 'あの〜、'] };
-  function decorate(x, it, user, kana, rng) {
-    var K = kana ? 'k' : 'j', m = x.msg;
-    if (user.style === 'yurufuwa') m = (it.emo ? '' : pick(rng, FLUFF[K])) + m + (it.emo ? '' : (kana ? ' 🎵' : ' ✨'));
-    else if (user.style === 'teinei') { var qn = /？$/.test(m); m = 'すみません、' + m.replace(/[！？〜]+$/, '') + (qn ? (kana ? '？ おしえて ください。' : '？ 教えてください。') : '。 おねがいします。'); }
-    else if (user.style === 'sekkachi') m = (kana ? 'ねえ！ ' : 'ちょっと！ ') + m;
-    if (it.emo) m += ' ' + pick(rng, EMO[K]);
+  // 話し方ごとの書き方。絵文字と「〜」は ゆるふわさん だけが使う
+  function decorate(x, it, user, kana, rng, lv) {
+    var K = kana ? 'k' : 'j', m = x.msg, st = user.style;
+    if (st !== 'yurufuwa') m = m.replace(/〜/g, '');
+    if (st === 'yurufuwa') { if (it.hurry && lv < 6) return null; m = (it.emo ? '' : pick(rng, FLUFF[K])) + m + (it.emo ? '' : (kana ? ' 🎵' : ' ✨')); }
+    else if (st === 'teinei') { var qn = /？$/.test(m); m = 'すみません、' + m.replace(/[！？。]+$/, '') + (qn ? (kana ? '？ おしえて ください。' : '？ 教えていただけますか。') : (kana ? '。 おねがいします。' : '。お願いします。')); }
+    else if (st === 'sekkachi') m = (kana ? 'ねえ！ ' : 'ちょっと！ ') + m + pick(rng, kana ? ['', ' で？'] : ['', ' で？']);
+    else if (st === 'tanpaku') m = m.replace(/[！？。]+$/, '') + '。';
+    else if (st === 'iraira' && it.irr) m = pick(rng, IRR[K]) + m;
+    if (it.emo) m += ' ' + pick(rng, (st === 'yurufuwa' ? EMO : EMO_PLAIN)[K]);
     if (it.hurry) m += ' ' + pick(rng, HURRY[K]);
     x.msg = m;
     if (x.time == null) x.time = it.late ? ri(rng, 0, 3) * 60 + ri(rng, 0, 59) : ri(rng, 7, 22) * 60 + ri(rng, 0, 59);
@@ -1347,11 +1389,16 @@ var AIGame = (function () {
   var POLITE = { k: ['きいて くれて ありがとう！', 'しらべて みたよ！'], j: ['お問い合わせありがとうございます。', 'ご連絡ありがとうございます。'] };
   function decorateReply(msg, user, kana, rng) {
     if (user.style === 'yurufuwa') return msg + (kana ? '！🎵' : '〜！✨');
+    msg = msg.replace(/〜/g, '');
     if (user.style === 'teinei') return msg + (kana ? '、おねがいします。' : 'でお願いします。');
+    if (user.style === 'iraira') return msg + (kana ? '。 さいしょから そう いってるでしょ。' : '。最初からそう言ってるでしょ。');
     if (user.style === 'sekkachi') return msg + '！';
     return msg + '。';
   }
-  function wrapTone(tone, text, kana, rng, it) { return tone === 'plain' ? text : pick(rng, (it.emo ? KIND : POLITE)[kana ? 'k' : 'j']) + ' ' + text; }
+  function wrapTone(tone, text, kana, rng, it) { return tone === 'plain' ? text : pick(rng, (tone === 'sorry' ? SORRY : it.emo ? KIND : POLITE)[kana ? 'k' : 'j']) + ' ' + text; }
+  function otherTone(t) { return t === 'plain' ? 'kind' : t === 'kind' ? 'plain' : 'kind'; }
+  // 質問の「種類」（言い方以外の読み方の組み合わせ）。同じ種類はチャットの中で続けない
+  function kindOf(q) { var v = {}; Object.keys(q.vals).forEach(function (k) { if (k !== 'tone') v[k] = q.vals[k]; }); return JSON.stringify(v) + (q.askCorrect ? '#ask' : ''); }
 
   // ---------- 会話（1ステージ）づくり ----------
   // 返事の候補：正しい内容×正しい言い方 ＋ 言い方だけちがう ＋ よくある読みちがい
@@ -1366,26 +1413,37 @@ var AIGame = (function () {
       var usesKey = function (k) { return m.rules.some(function (r) { return !r.def && r.conds.some(function (c) { return c.k === k; }); }); };
       S.pref = m.rules.some(function (r) { return !r.def && r.conds.some(function (c) { return c.k === 'pref' && c.v === user.pref; }); }) ? user.pref : 0;
       S.fb = usesKey('fb') && rng() < 0.3 ? 1 : 0;
+      S.irr = user.style === 'iraira' ? 1 : 0; S.lv = lv;
       var qs = [], prev = null, ok = true;
       var sessKey = m.newIndex >= 0 && m.rules[m.newIndex].conds.some(function (c) { return c.k === 'fb' || c.k === 'pref'; });
       var force = m.newIndex >= 0 && !sessKey && tries < 50 && rng() < 0.8 ? Math.floor(rng() * Math.min(cfg.n, 3)) : -1;
       var targets = m.rules.map(function (r, i) { return i; }).filter(function (i) { return !m.rules[i].def; });
-      for (var q = 0; q < cfg.n && ok; q++) {
+      var kinds = {}, repeats = 0, lastKind = null, nQ = Math.min(cfg.n, Math.max(3, m.maxKinds));
+      var strict = true;
+      var kindOk = function (qq) { var k = kindOf(qq); return !kinds[k] || (!strict && repeats < 1 && k !== lastKind); };
+      var useKind = function (qq) { var k = kindOf(qq); if (kinds[k]) repeats++; kinds[k] = 1; lastKind = k; };
+      for (var q = 0; q < nQ && ok; q++) {
         var order = q === force ? [m.newIndex] : shuffle(rng, rng() < 0.25 || !targets.length ? m.rules.map(function (r, i) { return i; }) : targets);
+        if (q !== force) order = order.concat(shuffle(rng, m.rules.map(function (r, i) { return i; }).filter(function (i) { return order.indexOf(i) < 0; })));
         var made = null;
+        for (var pass = 0; pass < 2 && !made; pass++) { strict = pass === 0;
         for (var oi = 0; oi < order.length && !made; oi++) {
           var bucket = shuffle(rng, m.buckets[order[oi]]).slice(0, 40);
-          for (var bi = 0; bi < bucket.length && !made; bi++) made = tryQuestion(th, m, Object.assign({}, bucket[bi]), S, prev, order[oi], rng, user, kana);
+          for (var bi = 0; bi < bucket.length && !made; bi++) { made = tryQuestion(th, m, Object.assign({}, bucket[bi]), S, prev, order[oi], rng, user, kana); if (made && !kindOk(made)) made = null; }
+        }
         }
         if (made && made.askCorrect) {
           var r2 = made.resolve, x2 = Object.assign({}, made.x, r2.x, { pre: null, pic: null, msg: decorateReply(r2.msg, user, kana, rng) });
           var it2 = Object.assign({}, made.item, r2.it, { emo: 0, hurry: 0 });
           var ev2 = evaluate(m, it2), t2 = ev2 ? ev2.hits.filter(function (h) { return h.slot === made.askCorrect; })[0].index : -1;
           var f2 = ev2 ? tryQuestion(th, m, it2, S, prev, t2, rng, user, kana, x2) : null;
-          if (!f2 || f2.askCorrect) made = null;
+          if (!f2 || f2.askCorrect || kindOf(f2) === kindOf(made)) made = null;
           else { f2.followOf = qs.length; made.next = f2; }
         }
-        if (!made) { ok = false; break; }
+        strict = false;
+        if (made && made.next) { var k1 = kindOf(made), k2 = kindOf(made.next), add = (kinds[k1] ? 1 : 0) + (kinds[k2] ? 1 : 0); if (k1 === k2 || repeats + add > 1) made = null; }
+        if (!made) { if (qs.length >= Math.min(3, nQ) && (m.newIndex < 0 || qs.some(function (x) { return x.hits.some(function (h) { return h.index === m.newIndex; }); }) || force < 0)) break; ok = false; break; }
+        useKind(made); if (made.next) useKind(made.next);
         qs.push(made); S._msgs[made.msg] = 1; if (made.next) S._msgs[made.next.msg] = 1;
         if (made.next) { qs.push(made.next); q++; prev = made.next.memo; delete made.next; } else prev = made.memo;
       }
@@ -1395,6 +1453,8 @@ var AIGame = (function () {
         if (S.fb) ctx.past = kana ? 'まえの かいわで「へんじ ながいよ」と いわれた' : '前回の会話で「返事、長いよ」と言われた';
         var fix = function (v) { return typeof v === 'string' ? T(v, cfg.kanji) : Array.isArray(v) ? v.map(fix) : v && typeof v === 'object' && !(v instanceof Date) ? Object.keys(v).reduce(function (o, k) { o[k] = fix(v[k]); return o; }, {}) : v; };
         ctx = fix(ctx);
+        // 時刻が答えに関係しない場面では、時刻を出さない（ばらばらの時刻は不自然なので）
+        if (!base.timeMatters && !usesKey('late')) qs.forEach(function (q) { q.time = null; });
         qs.forEach(function (q) { q.msg = T(q.msg, cfg.kanji); if (q.pre) q.pre = q.pre.map(function (p) { return T(p, cfg.kanji); }); q.cands.forEach(function (c) { c.text = T(c.text, cfg.kanji); }); });
         return { scene: sceneId, level: lv, user: user.id, kana: kana, ctx: ctx, qs: qs, S: S, code: 'lv' + lv + '-' + sceneId };
       }
@@ -1402,11 +1462,11 @@ var AIGame = (function () {
     throw new Error('会話を作れませんでした ' + sceneId + ' ' + lv);
   }
   function tryQuestion(th, m, it, S, prev, target, rng, user, kana, fixedX) {
-    if (it.pref !== S.pref || it.fb !== S.fb) return null;
+    if (it.pref !== S.pref || it.fb !== S.fb || (it.irr || 0) !== S.irr) return null;
     var ev = evaluate(m, it); if (!ev) return null;
     var x;
     if (fixedX) x = fixedX;
-    else { x = th.realize(it, S, ev.vals, prev, rng); if (!x) return null; x = decorate(x, it, user, kana, rng); if (!x) return null; }
+    else { x = th.realize(it, S, ev.vals, prev, rng); if (!x) return null; x = decorate(x, it, user, kana, rng, S.lv); if (!x) return null; }
     if (S._msgs && S._msgs[x.msg]) return null;
     var askSlot = m.slots.filter(function (s) { return ev.vals[s] === 'ask'; })[0];
     if (askSlot) return askQuestion(th, m, it, S, prev, target, rng, kana, ev, x, askSlot);
@@ -1434,7 +1494,7 @@ var AIGame = (function () {
       });
     });
     if (!targetOk || wrongs.length < 1) return null;
-    var tone = ev.vals.tone, other = tone === 'plain' ? 'kind' : 'plain';
+    var tone = ev.vals.tone, other = otherTone(tone);
     if (tr.slot === 'tone' && !tr.def) {
       var wt = Object.assign({}, m, { rules: m.rules.filter(function (r, i) { return i !== target; }) });
       var e3 = evaluate(wt, it); if (e3 && e3.vals.tone === tone) return null;
@@ -1466,12 +1526,12 @@ var AIGame = (function () {
       dv = outs[gi];
     }
     if (!guess) return null;
-    var tone = ev.vals.tone, other = tone === 'plain' ? 'kind' : 'plain';
+    var tone = ev.vals.tone, other = otherTone(tone);
     var cands = [{ key: 'ask#' + tone, content: good, tone: tone, ok: true, ask: true }, { key: 'ask#' + other, content: good, tone: other, toneWrong: true, ask: true },
       { key: 'askopen#' + tone, content: bad, tone: tone, askBad: 'open' }, { key: guess.key + '#' + tone, content: guess, tone: tone, wrong: { slot: slot, val: dv, why: 'guess' } }];
     var ASKKIND = { k: ['しんぱいだよね。', 'だいじょうぶだよ。'], j: ['ご不安ですよね。', '大丈夫ですよ。'] };
     var ASKPOL = { k: ['ごめんね、', 'ちょっと きいても いい？ '], j: ['恐れ入りますが、', '確認させてください。'] };
-    cands.forEach(function (c) { c.text = c.tone === 'kind' && c.ask ? pick(rng, (it.emo ? ASKKIND : ASKPOL)[kana ? 'k' : 'j']) + ' ' + c.content.text : wrapTone(c.tone, c.content.text, kana, rng, it); c.pic = c.content.pic || null; });
+    cands.forEach(function (c) { c.text = c.tone === 'kind' && c.ask && !it.irr ? pick(rng, (it.emo ? ASKKIND : ASKPOL)[kana ? 'k' : 'j']) + ' ' + c.content.text : wrapTone(c.tone, c.content.text, kana, rng, it); c.pic = c.content.pic || null; });
     // ユーザーの答え → 次のターンで本当の答えを選ぶ
     var r = A.resolve(it, S, x, opts, rng, kana);
     return { item: it, x: x, pre: x.pre || null, msg: x.msg, time: x.time, pic: x.pic || null, vals: ev.vals, hits: ev.hits, target: target, answer: 'ask#' + tone, cands: shuffle(rng, cands), askCorrect: slot, resolve: r, memo: prev };
@@ -1484,7 +1544,7 @@ var AIGame = (function () {
   }
 
   return {
-    LEVELS: LEVELS, USERS: USERS, STYLE_NAME: STYLE_NAME, SCENES: SCENES, SWEET_NAME: SWEET_NAME, LK: LK,
+    LEVELS: LEVELS, USERS: USERS, STYLE_MOOD: STYLE_MOOD, moodStart: moodStart, kindOf: kindOf, STYLE_NAME: STYLE_NAME, SCENES: SCENES, SWEET_NAME: SWEET_NAME, LK: LK,
     T: T, hm: hm, L: L, evaluate: evaluate, ruleParts: ruleParts, slotTitle: slotTitle, getManual: getManual, makeSession: makeSession, judge: judge, moodStep: moodStep,
     pickStage: pickStage, scenesFor: scenesFor, usersFor: usersFor, userById: userById, seededRng: seededRng, spaceOf: spaceOf
   };
@@ -1780,28 +1840,30 @@ if (typeof module !== 'undefined') module.exports = AIGame;
   }
 
   // ---------- ゲーム（1ステージ＝1人とのチャット） ----------
+  // ユーザーの反応（ゆるふわさんだけ絵文字と「〜」を使う）
   var REACT = {
-    perfect: { k: ['ありがとう！', 'わかった！', 'たすかった〜！😊'], j: ['ありがとう！', '助かる〜！', 'なるほど、了解。'] },
-    cold: { k: ['…なんか つめたい', 'え、つめたい…😢'], j: ['え、冷た…😢', 'もうちょっと優しく言ってほしかったな。'] },
-    long: { k: ['ながいよ〜', 'みじかく いってって いったのに〜'], j: ['前置きいいから。', '長い…要点だけでいいよ。'] },
-    content: { k: ['えー、ちがうよ〜', 'それじゃ ないよ！'], j: ['いや、そういうことじゃなくて。', '前にも言ったよね？', 'え〜違うよ😢'] },
-    needless: { k: ['さっき いったよね？', 'それ かいてあるでしょ〜'], j: ['それプロフィールに書いてあるでしょ。', 'さっき言ったよね？'] },
-    open: { k: ['えーと、なんて いえば いいの…', 'しつもん おおすぎ〜'], j: ['えーと、なんて言えばいいの…', '質問が多すぎる…'] }
+    perfect: { k: ['ありがとう！', 'わかった！', 'たすかった！'], j: ['ありがとう。', '助かる。', 'なるほど、了解。'], fk: ['ありがとう〜！😊', 'たすかった〜🎵'], fj: ['助かる〜！😊', 'ありがと〜✨'], ik: ['…まあ いいけど。', 'はじめから そう いってよ。'], ij: ['…まあ、いいけど。', '最初からそう言ってよ。'] },
+    cold: { k: ['…なんか つめたい', 'もっと やさしく いってよ'], j: ['なんだか冷たいね。', 'もうちょっと優しく言ってほしかった。'], fk: ['え、つめたい…😢'], fj: ['え、冷た…😢', 'なんか事務的〜💦'], ik: ['あやまりも なしなの？'], ij: ['まず一言あってもいいんじゃない？'] },
+    long: { k: ['ながいよ', 'みじかく いってって いったのに'], j: ['前置きいいから。', '長い。要点だけでいい。'], fk: ['ながいよ〜💦'], fj: ['長いよ〜💦', 'もっと短くていいよ〜'], ik: ['そういうの いいから！'], ij: ['そういうのいいから。', '長い。'] },
+    content: { k: ['えー、ちがうよ', 'それじゃ ないよ！'], j: ['いや、そういうことじゃなくて。', '前にも言ったよね？', '違う。'], fk: ['えー、ちがうよ〜😢'], fj: ['え〜違うよ😢', 'そっちじゃないよ〜💦'], ik: ['ちがう！ もう いい！'], ij: ['違う。もういい。', 'だから違うって。'] },
+    needless: { k: ['さっき いったよね？', 'それ かいてあるでしょ'], j: ['それプロフィールに書いてあるでしょ。', 'さっき言ったよね？'], fk: ['さっき いったよ〜😢'], fj: ['それ前に言ったよ〜💦'], ik: ['なんで きくの？'], ij: ['見ればわかるでしょ。'] },
+    open: { k: ['えーと、なんて いえば いいの…', 'しつもん おおすぎ'], j: ['えーと、なんて言えばいいの…', '質問が多すぎる。'], fk: ['え〜、わかんないよ〜💦'], fj: ['え〜、そんなに答えられないよ〜💦'], ik: ['しつもん おおすぎ！'], ij: ['質問多すぎ。'] }
   };
+  function reactLine(kind, K, style) { var R = REACT[kind]; var key = style === 'yurufuwa' ? 'f' + K : style === 'iraira' ? 'i' + K : K; return rnd(R[key] || R[K]); }
   var QUIP = { k: ['「あれ」だけで つたわると おもってるみたい。', 'ひにちを いってくれたら もっと らくなのにね。'], j: ['「例の」「あれ」で通じると思われているのは、信頼の証かもしれません。', '主語と日付があれば、AIはもう少し楽ができます。', '曖昧さの解消も、アシスタントの仕事のうちです。'] };
   var LEAVE = { k: ['おこって いっちゃった…', 'もう いいよ〜って いっちゃった…'], j: ['「自分で調べた方が早かった」とのことです。', 'ユーザーは別のアシスタントを検索し始めました。', '「AIって結局使えないね」とつぶやいて去りました。'] };
   function startStage(lv, forced) {
     clearTimers();
     var st = forced || G.pickStage(lv), cfg = G.L(lv);
     var sess = G.makeSession(st.scene, lv, Math.random, st.user);
-    S.game = { lv: lv, scene: st.scene, manual: G.getManual(st.scene, lv), sess: sess, user: G.userById(st.user), qs: sess.qs, idx: 0, mood: cfg.mood.max, moodMax: cfg.mood.max, results: [], busy: false, two: save.two, t0: 0, thread: [], ctxOpen: false };
+    S.game = { lv: lv, scene: st.scene, manual: G.getManual(st.scene, lv), sess: sess, user: G.userById(st.user), qs: sess.qs, idx: 0, mood: G.moodStart(lv, G.userById(st.user).style), moodMax: cfg.mood.max, results: [], busy: false, two: save.two, t0: 0, thread: [], ctxOpen: false };
     show('scr-game');
     renderGame();
     intro();
   }
   function intro() {
     var g = S.game, m = g.manual, u = g.user;
-    var h = '<div class="card"><div class="intro-p">' + avatar(u, false) + '<div><div class="muted">' + U('きょうの あいて', '今回の相手') + '</div><b style="font-size:17px">' + u.name + '</b> <span class="ptag">' + G.STYLE_NAME[u.style] + '</span><div class="muted">' + u.who + '</div></div></div>';
+    var h = '<div class="card"><div class="intro-p">' + avatar(u, false) + '<div><div class="muted">' + U('きょうの あいて', '今回の相手') + '</div><b style="font-size:17px">' + u.name + '</b> <span class="ptag">' + G.STYLE_NAME[u.style] + '</span><div class="muted">' + u.who + '</div>' + (u.style === 'iraira' ? '<div class="muted">' + U('さいしょから ちょっと きげんが わるいみたい…', '最初から少し機嫌が悪いようです…') + '</div>' : '') + '</div></div>';
     h += '<p class="muted" style="margin:10px 0 0">' + U('ばめん：', '場面：') + G.T(G.SCENES[g.scene].title, m.kanji) + '　コード：lv' + g.lv + '-' + g.scene + '</p>';
     if (m.newIndex >= 0) h += '<div class="newrule"><b>' + (m.kanji ? 'Lv' + g.lv + 'で追加されたルール' : 'あたらしい ルール') + '</b>' + (g.two ? '' : '<ol class="rules">' + ruleLi(m, m.newIndex, {}) + '</ol>') + '</div>';
     h += '<p style="line-height:1.6;margin:10px 0;font-size:14px">' + U('しつもんは ' + g.qs.length + 'こ。ないようと いいかたが あう へんじを えらんでね。', '質問は' + g.qs.length + '件。内容と言い方の両方が合う返事を選んでください。') + '</p>';
@@ -1869,12 +1931,12 @@ if (typeof module !== 'undefined') module.exports = AIGame;
     var q = g.qs[g.idx], K = g.sess.kana ? 'k' : 'j';
     var res = G.judge(q, key), chosen = q.cands.filter(function (c) { return c.key === key; })[0], correct = q.cands.filter(function (c) { return c.ok; })[0];
     var before = g.mood;
-    g.mood = G.moodStep(g.mood, res, g.lv);
+    g.mood = G.moodStep(g.mood, res, g.lv, g.user.style);
     g.results[g.idx] = res;
-    var kind = res === 'perfect' ? 'perfect' : res === 'tone' ? (correct.tone === 'kind' ? 'cold' : 'long') : res === 'askBad' ? chosen.askBad : 'content';
+    var kind = res === 'perfect' ? 'perfect' : res === 'tone' ? (correct.tone === 'plain' ? 'long' : correct.tone === 'sorry' ? 'cold' : 'cold') : res === 'askBad' ? chosen.askBad : 'content';
     if (res === 'perfect' && q.askCorrect) kind = null;
     g.thread.push({ type: 'a', text: chosen.text, pic: chosen.pic });
-    if (kind) g.thread.push({ type: 'r', res: res, text: rnd(REACT[kind][K]) });
+    if (kind) g.thread.push({ type: 'r', res: res, text: reactLine(kind, K, g.user.style) });
     if (res === 'perfect') Snd.chime(); else Snd.oops();
     var hl = {};
     q.hits.forEach(function (h) { hl[h.index] = 'ok-hl'; });
