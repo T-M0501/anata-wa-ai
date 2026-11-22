@@ -778,7 +778,7 @@ var AIGame = (function () {
     outs: {
       prevQ: '前の質問で答えた店', walk: '歩いて何分かを答える',
       usual: '来店履歴で最も多い店', near: '徒歩10分以内で最も近い店', cheap: '予算が最も安い店',
-      can: '「今の時刻＋歩く時間」に営業中なら「行けます」、そうでなければ「間に合いません」', until: '閉店時刻を答える', holiday: '「今日は定休日です」と答える（時刻より優先）'
+      can: '「今の時刻＋歩く時間」に営業中なら「行けます」、そうでなければ「間に合いません」', until: '閉店時刻を答える（もう閉まっていればそれも伝える）', holiday: '「今日は定休日です」と答える（時刻より優先）'
     },
     session: function (rng) {
       for (;;) {
@@ -806,7 +806,7 @@ var AIGame = (function () {
       var idx = vals.which === 'prevQ' ? prev.idx : S[vals.which], r = S.rows[idx], t;
       if (vals.ans === 'holiday') t = r.name + 'は、今日は定休日です。';
       else if (vals.ans === 'walk') t = r.name + 'までは徒歩' + r.walk + '分です。';
-      else if (vals.ans === 'until') t = r.name + 'は' + hm(r.close) + 'までです。';
+      else if (vals.ans === 'until') t = r.name + 'は' + hm(r.close) + 'までです' + (S.now >= r.close ? '（今日はもう閉店しています）' : S.now < r.open ? '（' + hm(r.open) + '開店です）' : '') + '。';
       else { var at = S.now + r.walk; t = at >= r.open && at < r.close ? r.name + 'に行けます（' + hm(r.close) + 'まで）。' : r.name + 'は間に合いません（' + hm(r.open) + '〜' + hm(r.close) + '）。'; }
       return { key: t, text: t, memo: { idx: idx, ans: vals.ans } };
     },
@@ -826,32 +826,35 @@ var AIGame = (function () {
     lib: [R('goal', 1, [E('word', 1)], 'plan'), R('goal', 2, [E('word', 2)], 'first'), R('goal', 3, [E('word', 3)], 'now'), R('pick', 2, [E('safe', 1)], 'early')],
     defaults: [D('goal', [E('word', 0)], 'clock'), D('pick', [E('safe', 0)], 'last')],
     phr: {
-      word: [sayA('◯時に着きたい'), sayA('予定に間に合う'), sayA('朝イチ'), sayA('今から')],
+      word: [sayA('◯時に着きたい'), sayA('予定に間に合う'), sayA('明日の朝イチ'), sayA('今から')],
       safe: [V('「余裕をもって」がない', '「余裕をもって」がなく', '「余裕をもって」がなければ'), sayA('余裕をもって')]
     },
     outs: {
-      clock: '言われた時刻までに着く電車', plan: '予定表の開始時刻の10分前までに着く電車', first: 'その日の始発（最初の電車）',
+      clock: '今から乗れる（今の時刻＋駅まで10分より後に出る）電車のうち、言われた時刻までに着く電車', plan: '今から乗れる電車のうち、予定表の開始時刻の10分前までに着く電車', first: '明日の始発（最初の電車）',
       now: '「今の時刻＋駅まで10分」より後に出る最初の電車', last: '条件に合う中で最も遅く出る電車（「今から」「朝イチ」は最初の電車）', early: '条件に合う中で、最も遅い電車の1本前'
     },
     session: function (rng) {
       var dep = [], t = 6 * 60 + ri(rng, 0, 20);
       while (t < 10 * 60) { dep.push(t); t += ri(rng, 8, 18); }
       var dur = ri(rng, 25, 40);
-      return { today: weekdayToday(rng), now: 6 * 60 + ri(rng, 10, 150), dep: dep, dur: dur, goalClock: pick(rng, [8 * 60, 8 * 60 + 30, 9 * 60]), plan: pick(rng, [8 * 60 + 40, 9 * 60 + 10, 9 * 60 + 30]), place: pick(rng, ['駅前クリニック', '市民ホール', '中央図書館']) };
+      var goalClock = pick(rng, [8 * 60, 8 * 60 + 30, 9 * 60]), plan = pick(rng, [8 * 60 + 40, 9 * 60 + 10, 9 * 60 + 30]);
+      // 今の時刻は、始発より後で、まだ間に合う電車がある時間（すでに出た電車もある）
+      var latest = Math.min(goalClock, plan - 10) - dur - 10 - 20;
+      return { today: weekdayToday(rng), now: ri(rng, dep[1] - 5, Math.max(dep[1] - 5, latest)), dep: dep, dur: dur, goalClock: goalClock, plan: plan, place: pick(rng, ['駅前クリニック', '市民ホール', '中央図書館']) };
     },
     realize: function (it, S, vals, prev, rng) {
-      var w = pick(rng, [[hm(S.goalClock) + 'に着きたいんだけど', hm(S.goalClock) + 'に着きたい', hm(S.goalClock) + 'には着きたいんだけど'], ['予定に間に合う電車', '予定に間に合うやつ', '予定に間に合う便'], ['朝イチの電車', '朝イチで行きたい', '朝イチので'], ['今から出るんだけど', '今から出るから', '今から行くんだけど']][it.word]);
+      var w = pick(rng, [[hm(S.goalClock) + 'に着きたいんだけど', hm(S.goalClock) + 'に着きたい', hm(S.goalClock) + 'には着きたいんだけど'], ['予定に間に合う電車', '予定に間に合うやつ', '予定に間に合う便'], ['明日の朝イチの電車', '明日、朝イチで行きたい', '明日の朝イチので'], ['今から出るんだけど', '今から出るから', '今から行くんだけど']][it.word]);
       return { msg: w + pick(rng, ['、何時のに乗ればいい？', '、どの電車に乗ればいい？', '、何時発に乗ればいい？']) + (it.safe ? ' 余裕をもって。' : ''), time: S.now };
     },
     content: function (vals, it, S) {
       var list = S.dep.map(function (d) { return { d: d, a: d + S.dur }; }), cand;
       if (vals.goal === 'first') cand = [list[0]];
       else if (vals.goal === 'now') cand = list.filter(function (x) { return x.d >= S.now + 10; }).slice(0, 1);
-      else { var lim = vals.goal === 'plan' ? S.plan - 10 : S.goalClock; cand = list.filter(function (x) { return x.a <= lim; }); }
+      else { var lim = vals.goal === 'plan' ? S.plan - 10 : S.goalClock; cand = list.filter(function (x) { return x.a <= lim && x.d >= S.now + 10; }); }
       if (!cand.length) return { key: 'none', text: '間に合う電車がありません。' };
       var p = vals.goal === 'first' || vals.goal === 'now' ? (vals.pick === 'early' ? null : cand[0]) : vals.pick === 'early' ? cand[Math.max(0, cand.length - 2)] : cand[cand.length - 1];
       if (!p) return { key: 'early-na', text: '1本前の電車はありません。' };
-      var t = hm(p.d) + '発に乗ってください（' + hm(p.a) + '着）。';
+      var t = (vals.goal === 'first' ? '明日の始発、' : '') + hm(p.d) + '発に乗ってください（' + hm(p.a) + '着）。';
       return { key: t, text: t };
     },
     context: function (S) {
@@ -1076,14 +1079,16 @@ var AIGame = (function () {
   tableScene({
     id: 'tv', follow: { kw: '{その ばんぐみ|その番組}', say: ['じゃあ その ばんぐみ', 'その ばんぐみって', 'さっきの ばんぐみ'], sayJ: ['じゃあ、その番組', 'その番組って', 'さっきの番組'] }, title: '{あの ばんぐみ なんじから？|あの番組、何時から？}', whichT: '{どの ばんぐみ？|どの番組？}', ansT: '{なにを こたえる？|何を答える？}',
     make: function (rng) {
-      var names = shuffle(rng, shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME).slice(0, 2))), t = 16 * 60, rows = [];
+      // 6つの番組。いまは 2つめの番組の途中（まえの番組は もう はじまっている／おわっている）
+      var names = shuffle(rng, shuffle(rng, TV_NAMES).slice(0, 3).concat(shuffle(rng, TV_ANIME))), t = 15 * 60 + 30, rows = [];
       names.forEach(function (n) { var len = pick(rng, [15, 30, 30, 45]); rows.push({ name: n, s: t, ch: ri(rng, 1, 9), len: len, anime: TV_ANIME.indexOf(n) >= 0 }); t += len; });
-      return { rows: rows, now: 16 * 60 + ri(rng, 0, 50), fav: ri(rng, 0, 4) };
+      var now = rows[1].s + ri(rng, 1, rows[1].len - 1), fut = rows.map(function (r, i) { return i; }).filter(function (i) { return rows[i].s > now; });
+      return { rows: rows, now: now, fav: pick(rng, fut) };
     },
     words: [
-      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], sayJ: ['いつもの番組', 'いつものテレビ番組', 'いつものやつ'], out: 'fav', text: '{プロフィールの「すきな ばんぐみ」|プロフィールの「好きな番組」}', pick: function (S) { return S.fav; } },
+      { kw: 'いつもの', say: ['いつもの ばんぐみ', 'いつもの テレビ', 'いつもの やつ'], sayJ: ['いつもの番組', 'いつものテレビ番組', 'いつものやつ'], out: 'fav', text: '{プロフィールの「すきな ばんぐみ」（いまより あとに はじまる もの）|プロフィールの「好きな番組」（今より後に始まるもの）}', pick: function (S) { return S.rows[S.fav].s > S.now ? S.fav : -1; } },
       { kw: '{つぎの|次の}', say: ['つぎの ばんぐみ', 'つぎの テレビ', 'つぎの やつ'], sayJ: ['次の番組', '次のテレビ', '次の放送'], out: 'next', tier: 1, text: '{いまの じかんより あとに はじまる さいしょの ばんぐみ|今の時刻より後に始まる最初の番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.s > S.now; }); } },
-      { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], sayJ: ['アニメ', 'アニメの番組', 'アニメのやつ'], out: 'anime', tier: 2, text: '{アニメの なかで いちばん はやく はじまる ばんぐみ|アニメの中でいちばん早く始まる番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime; }); } }
+      { kw: 'アニメ', say: ['アニメ', 'アニメの ばんぐみ', 'アニメの やつ'], sayJ: ['アニメ', 'アニメの番組', 'アニメのやつ'], out: 'anime', tier: 2, text: '{いまより あとに はじまる アニメの なかで、いちばん はやい ばんぐみ|今の時刻より後に始まるアニメの中で、いちばん早く始まる番組}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.anime && r.s > S.now; }); } }
     ],
     asks: [
       { kw: '{なんじ|何時}', say: ['なんじから？', 'なんじに はじまる？', 'なんじから やる？'], sayJ: ['何時から？', '何時に始まる？', '何時からやる？'], out: 'time', text: '{はじまる じかんを こたえる|始まる時刻を答える}', val: function (r) { var n = JT(r.name); return J(n + 'は ' + hm(r.s) + 'から だよ。', n + 'は' + hm(r.s) + 'から放送です。'); } },
@@ -1103,12 +1108,12 @@ var AIGame = (function () {
     make: function (rng) {
       var t = ri(rng, 7, 15) * 60 + ri(rng, 0, 20), rows = [];
       for (var i = 0; i < 6; i++) { t += ri(rng, 6, 18); rows.push({ t: t, dest: pick(rng, BUS_DEST), nb: ri(rng, 1, 4) }); }
-      return { rows: rows, now: rows[0].t + ri(rng, -5, 3) };
+      return { rows: rows, now: rows[1].t + ri(rng, -2, 3) };
     },
     words: [
       { kw: '{つぎの|次の}', say: ['つぎの バス', 'つぎの バスって', 'つぎに くる バスの'], sayJ: ['次のバス', '次のバスって', '次の便'], out: 'next', text: '{いまより あとに でる さいしょの バス|今より後に出る最初のバス}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now; }); } },
       { kw: '{がっこう|学校}', say: ['がっこう いきの バス', 'がっこうに いく バス', 'がっこうまでの バス'], sayJ: ['学校行きのバス', '学校に行くバス', '学校までのバス'], out: 'school', tier: 1, text: '{「がっこう」いきで、いまより あとの さいしょの バス|「学校」行きで、今より後の最初のバス}', pick: function (S) { return firstIdx(S.rows, function (r) { return r.t > S.now && r.dest === BUS_DEST[1]; }); } },
-      { kw: '{さいご|最後}', say: ['さいごの バス', 'きょう さいごの バス', 'いちばん さいごの バス'], sayJ: ['最後のバス', '今日最後のバス', 'いちばん最後のバス'], out: 'last', tier: 2, text: '{ひょうの いちばん さいごの バス|表のいちばん最後のバス}', pick: function (S) { return S.rows.length - 1; } }
+      { kw: '{さいご|最後}', say: ['さいごの バス', 'きょう さいごの バス', 'いちばん さいごの バス'], sayJ: ['最後のバス', '今日最後のバス', 'いちばん最後のバス'], out: 'last', tier: 2, text: '{きょうの いちばん さいごの バス（ひょうの いちばん した）|今日の最後のバス（表のいちばん下）}', pick: function (S) { return S.rows.length - 1; } }
     ],
     asks: [
       { kw: '{なんじ|何時}', say: ['なんじ？', 'なんじに でる？', 'なんじに くる？'], sayJ: ['何時？', '何時に出る？', '何時に来る？'], out: 'time', text: '{でる じかんを こたえる|出発時刻を答える}', val: function (r) { var d = JT(r.dest); return J(d + ' いきは ' + hm(r.t) + 'に でるよ。', d + '行きは' + hm(r.t) + 'に出発します。'); } },

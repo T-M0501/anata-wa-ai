@@ -111,6 +111,32 @@ ok(Object.keys(G.SCENES).length >= 10, '場面は10以上');
 // 最初から遊べるレベルの設定
 ok(/var FREE_LEVELS = 7;/.test(uiSrc), '最初から遊べるレベルの設定がある（Lv7）');
 
+// ---------- 時刻・日付の常識チェック（場面ごとに1つ） ----------
+function mins(t) { const m = /^(\d+):(\d\d)$/.exec(t); return +m[1] * 60 + +m[2]; }
+function dayOffsetOf(today, mo, d) {
+  // いちばん近い日（-30日〜+330日の中）を探す。日だけのときは -15〜+20日
+  const lo = mo == null ? -15 : -30, hi = mo == null ? 20 : 330;
+  for (let i = 0; i <= Math.max(-lo, hi); i++) for (const j of [i, -i]) {
+    if (j < lo || j > hi) continue;
+    const x = new Date(today.getTime() + j * 86400000);
+    if ((mo == null || x.getUTCMonth() + 1 === mo) && x.getUTCDate() === d) return j;
+  }
+  return null;
+}
+function datesIn(S, text) {
+  const out = [], re = /(\d+)(?:月|がつ ?)(\d+)(?:日|にち)|(?:^|[^\d月つ ])(\d+)(?:日|にち)（/g; let m;
+  while ((m = re.exec(text))) out.push(m[1] ? dayOffsetOf(S.today, +m[1], +m[2]) : dayOffsetOf(S.today, null, +m[3]));
+  return out;
+}
+function commonSense(id, S, text, tag) {
+  const times = (text.match(/\d+:\d\d/g) || []).map(mins);
+  if (id === 'tv') times.forEach(t => ok(t > S.now, `${tag} 常識：もう始まった番組を「これから」と答えない (${text})`));
+  if (id === 'bus') times.forEach(t => ok(t > S.now, `${tag} 常識：もう出たバスを答えない (${text})`));
+  if (id === 'train' && !/明日/.test(text) && /発/.test(text)) ok(times[0] >= S.now + 10, `${tag} 常識：今から間に合わない電車を答えない (${text})`);
+  if (id === 'shop' && /行けます/.test(text)) { const r = S.rows.find(x => text.startsWith(x.name)); ok(r && S.now + r.walk >= r.open && S.now + r.walk < r.close, `${tag} 常識：閉まっている店に「行けます」と言わない`); }
+  if (['bday', 'remind', 'hotel', 'gomi'].includes(id)) datesIn(S, text).forEach(o => ok(o !== null && o >= 0, `${tag} 常識：過ぎた日付を「これから」として答えない (${text})`));
+}
+
 // 6. 場面 × レベルごとに 300問以上
 const QN = 300, rng = G.seededRng('test-run-v7');
 const summary = [];
@@ -188,6 +214,8 @@ for (const id of Object.keys(G.SCENES)) {
           });
         }
         if (q.followOf != null) follows++;
+        // 常識チェック（時刻・日付）：正しい返事が「もう過ぎたもの」を答えていないか
+        if (!askSlot) commonSense(id, sess.S, okc[0].content.text, tag);
         // 文字のレベル：Lv4〜は漢字まじり、Lv6〜は長いひらがなの続きがない
         if (lv >= 4) {
           const u = G.userById(sess.user);
